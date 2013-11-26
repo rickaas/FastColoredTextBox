@@ -173,6 +173,12 @@
     <Compile Include="SplitSample.Designer.cs">
       <DependentUpon>SplitSample.cs</DependentUpon>
     </Compile>
+    <Compile Include="TabStopsInText.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TabStopsInText.Designer.cs">
+      <DependentUpon>TabStopsInText.cs</DependentUpon>
+    </Compile>
     <Compile Include="TooltipSample.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -370,6 +376,9 @@
     <EmbeddedResource Include="SyntaxHighlightingByXmlDescription.resx">
       <DependentUpon>SyntaxHighlightingByXmlDescription.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TabStopsInText.resx">
+      <DependentUpon>TabStopsInText.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TooltipSample.resx">
       <DependentUpon>TooltipSample.cs</DependentUpon>
