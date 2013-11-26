@@ -310,6 +310,14 @@ namespace FastColoredTextBoxNS
         public bool AcceptsReturn { get; set; }
 
         /// <summary>
+        /// Indicates if tabs are converted to spaces.
+        /// Use TabLength to set the Spaces count for a tab.
+        /// </summary>
+        [DefaultValue(false)]
+        [Description("Indicates if tabs are converted to spaces.")]
+        public bool ConvertTabToSpaces { get; set; }
+
+        /// <summary>
         /// Shows or hides the caret
         /// </summary>
         [DefaultValue(true)]
@@ -4726,7 +4734,19 @@ namespace FastColoredTextBoxNS
                 textRange = Selection.GetIntersectionWith(textRange);
                 if (textRange != null && SelectionStyle != null)
                 {
-                    SelectionStyle.Draw(gr, new Point(startX + (textRange.Start.iChar - from)*CharWidth, y),
+                    int next;
+                    if (this.ConvertTabToSpaces)
+                    {
+                        next = (textRange.Start.iChar - from) * CharWidth;
+                    }
+                    else
+                    {
+                        var llll = textRange.tb[textRange.Start.iLine]; // text on the line
+                        string beforeRangeText = llll.Text.Substring(0, textRange.Start.iChar); // all text before the range
+                        // Calculate where previous range ended
+                        next = TextSizeCalculator.TextWidth(beforeRangeText, textRange.tb.TabLength) * CharWidth;
+                    }
+                    SelectionStyle.Draw(gr, new Point(startX + next, y),
                                         textRange);
                 }
             }
@@ -5175,6 +5195,7 @@ namespace FastColoredTextBoxNS
 
         /// <summary>
         /// Gets nearest line and char position from coordinates
+        /// FIXME: Take care of wordwrapping and real TABs
         /// </summary>
         /// <param name="point">Point</param>
         /// <returns>Line and char position</returns>
@@ -5212,7 +5233,18 @@ namespace FastColoredTextBoxNS
             //
             int start = LineInfos[iLine].GetWordWrapStringStartPosition(iWordWrapLine);
             int finish = LineInfos[iLine].GetWordWrapStringFinishPosition(iWordWrapLine, lines[iLine]);
-            var x = (int) Math.Round((float) point.X/CharWidth);
+            
+            int x;
+            if (this.ConvertTabToSpaces)
+            {
+                // each character has a fixed width
+                x = (int)Math.Round((float)point.X / CharWidth); 
+            }
+            else
+            {
+                // we need to correct the charwidth width the tablength
+                x = TextSizeCalculator.CharIndexAtPoint(lines[iLine].Text, this.TabLength, this.CharWidth, point.X);
+            }
             x = x < 0 ? start : start + x;
             if (x > finish)
                 x = finish + 1;
@@ -5231,7 +5263,17 @@ namespace FastColoredTextBoxNS
             point.Offset(HorizontalScroll.Value, VerticalScroll.Value);
             point.Offset(-LeftIndent - Paddings.Left, 0);
             int iLine = YtoLineIndex(point.Y);
-            var x = (int) Math.Round((float) point.X/CharWidth);
+            int x;
+            if (this.ConvertTabToSpaces)
+            {
+                // each character has a fixed width
+                x = (int)Math.Round((float)point.X / CharWidth);
+            }
+            else
+            {
+                // we need to correct the charwidth width the tablength
+                x = TextSizeCalculator.CharIndexAtPoint(lines[iLine].Text, this.TabLength, this.CharWidth, point.X);
+            }
             if (x < 0) x = 0;
             return new Place(x, iLine);
         }
@@ -5548,7 +5590,10 @@ namespace FastColoredTextBoxNS
             //
             int iWordWrapIndex = LineInfos[place.iLine].GetWordWrapStringIndex(place.iChar);
             y += iWordWrapIndex*CharHeight;
-            int x = (place.iChar - LineInfos[place.iLine].GetWordWrapStringStartPosition(iWordWrapIndex))*CharWidth;
+            string offsetChars = this.lines[place.iLine].Text.Substring(0, place.iChar);
+            int offset = TextSizeCalculator.TextWidth(offsetChars, this.TabLength);
+            int x = (offset - LineInfos[place.iLine].GetWordWrapStringStartPosition(iWordWrapIndex)) * CharWidth;
+            //int x = (place.iChar - LineInfos[place.iLine].GetWordWrapStringStartPosition(iWordWrapIndex))*CharWidth;
             //
             y = y - VerticalScroll.Value;
             x = LeftIndent + Paddings.Left + x - HorizontalScroll.Value;
@@ -5941,17 +5986,29 @@ namespace FastColoredTextBoxNS
             {
                 if (!Selection.ReadOnly)
                 {
-                    //insert tab as spaces
-                    int spaces = TabLength - (Selection.Start.iChar % TabLength);
-                    //replace mode? select forward chars
-                    if (IsReplaceMode)
+                    if (this.ConvertTabToSpaces)
                     {
-                        for (int i = 0; i < spaces; i++)
-                            Selection.GoRight(true);
-                        Selection.Inverse();
-                    }
+                        //insert tab as spaces
+                        int spaces = TabLength - (Selection.Start.iChar % TabLength);
+                        //replace mode? select forward chars
+                        if (IsReplaceMode)
+                        {
+                            for (int i = 0; i < spaces; i++)
+                                Selection.GoRight(true);
+                            Selection.Inverse();
+                        }
 
-                    InsertText(new String(' ', spaces));
+                        InsertText(new String(' ', spaces));
+                    }
+                    else
+                    {
+                        if (IsReplaceMode)
+                        {
+                            Selection.GoRight(true);
+                            Selection.Inverse();
+                        }
+                        InsertText("\t");
+                    }
                 }
                 return;
             }

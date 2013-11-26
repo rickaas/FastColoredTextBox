@@ -110,14 +110,25 @@ namespace FastColoredTextBoxNS
                     }
                     break;
                 case '\t':
-                    int spaceCountNextTabStop = tb.TabLength - (tb.Selection.Start.iChar % tb.TabLength);
-                    if (spaceCountNextTabStop == 0)
-                        spaceCountNextTabStop = tb.TabLength;
+                    if (tb.ConvertTabToSpaces)
+                    {
+                        // convert TAB to spaces
+                        int spaceCountNextTabStop = tb.TabLength - (tb.Selection.Start.iChar%tb.TabLength);
+                        if (spaceCountNextTabStop == 0)
+                            spaceCountNextTabStop = tb.TabLength;
 
-                    for (int i = 0; i < spaceCountNextTabStop; i++)
-                        ts[tb.Selection.Start.iLine].Insert(tb.Selection.Start.iChar, new Char(' '));
+                        for (int i = 0; i < spaceCountNextTabStop; i++)
+                            ts[tb.Selection.Start.iLine].Insert(tb.Selection.Start.iChar, new Char(' '));
 
-                    tb.Selection.Start = new Place(tb.Selection.Start.iChar + spaceCountNextTabStop, tb.Selection.Start.iLine);
+                        tb.Selection.Start = new Place(tb.Selection.Start.iChar + spaceCountNextTabStop,
+                                                       tb.Selection.Start.iLine);
+                    }
+                    else
+                    {
+                        // allow \t as characters, do not convert to spaces
+                        ts[tb.Selection.Start.iLine].Insert(tb.Selection.Start.iChar, new Char(c));
+                        tb.Selection.Start = new Place(tb.Selection.Start.iChar + 1, tb.Selection.Start.iLine);
+                    }
                     break;
                 default:
                     ts[tb.Selection.Start.iLine].Insert(tb.Selection.Start.iChar, new Char(c));
