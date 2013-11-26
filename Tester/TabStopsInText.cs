@@ -19,6 +19,7 @@ namespace Tester
             this.fastColoredTextBox1.ConvertTabToSpaces = false;
             //this.fastColoredTextBox1.DefaultStyle = new TabCharStyle(null, null, FontStyle.Regular, true);
             this.fastColoredTextBox1.DefaultStyle.SpecialTabDraw = true;
+            this.fastColoredTextBox1.DefaultStyle.TabDrawColor = Color.Gold;
             this.fastColoredTextBox1.SelectionStyle.SpecialTabDraw = true;
             this.fastColoredTextBox1.Text = "a\tvv\tbbb\txxxx\n1234____1234____1234\nh\tii\tzzz\tyyyy";
         }
