@@ -108,6 +108,8 @@ namespace FastColoredTextBoxNS
         //public readonly Font Font;
         public StringFormat stringFormat;
 
+        public Color TabDrawColor { get; set; }
+
         /// <summary>
         /// Draw the \t (tab character) using a special character.
         /// </summary>
@@ -118,6 +120,7 @@ namespace FastColoredTextBoxNS
             this.ForeBrush = foreBrush;
             this.BackgroundBrush = backgroundBrush;
             this.FontStyle = fontStyle;
+            this.TabDrawColor = Color.FromArgb(255, 0, 0, 255);
             stringFormat = new StringFormat(StringFormatFlags.MeasureTrailingSpaces);
         }
 
@@ -198,10 +201,17 @@ namespace FastColoredTextBoxNS
                                 // draw the rightwards arrow character (http://www.fileformat.info/info/unicode/char/2192/index.htm)
                                 //gr.DrawString("\u2192", f, ForeBrush, x, y, stringFormat);
                                 // or draw an arrow via DrawLine?
-                                Pen pen = new Pen(Color.FromArgb(255, 0, 0, 255), 1);
-                                pen.EndCap = LineCap.ArrowAnchor;
-                                gr.DrawLine(pen, x, y + (range.tb.CharHeight / 2.0F), x + (tabWidth * dx), y + (range.tb.CharHeight / 2.0F));
-
+                                using (Pen pen = new Pen(this.TabDrawColor, range.tb.CharHeight / 10F))
+                                {
+                                    pen.EndCap = LineCap.ArrowAnchor;
+                                    // add (range.tb.CharWidth/3) because the tab-arrow doesn't need spacing
+                                    gr.DrawLine(pen, 
+                                                x + range.tb.CharWidth/3F, 
+                                                y + (range.tb.CharHeight/2F),
+                                                x + (tabWidth*dx) + range.tb.CharWidth/3F,
+                                                y + (range.tb.CharHeight/2F));
+                                }
+                                
                                 x += tabWidth * dx; // tab has variable width
                                 currentSize += tabWidth;
                             }
