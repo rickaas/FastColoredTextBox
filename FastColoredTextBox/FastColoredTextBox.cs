@@ -5379,9 +5379,9 @@ namespace FastColoredTextBoxNS
             //
             int start = LineInfos[iLine].GetWordWrapStringStartPosition(iWordWrapLine);
             int finish = LineInfos[iLine].GetWordWrapStringFinishPosition(iWordWrapLine, lines[iLine]);
-<<<<<<< HEAD
-            
+
             int x;
+            // var x = (int) Math.Round((float) point.X/CharWidth);
             if (this.ConvertTabToSpaces)
             {
                 // each character has a fixed width
@@ -5392,12 +5392,11 @@ namespace FastColoredTextBoxNS
                 // we need to correct the charwidth width the tablength
                 x = TextSizeCalculator.CharIndexAtPoint(lines[iLine].Text, this.TabLength, this.CharWidth, point.X);
             }
-=======
-            var x = (int) Math.Round((float) point.X/CharWidth);
+
             if (iWordWrapLine > 0)
                 x -= LineInfos[iLine].wordWrapIndent;
 
->>>>>>> PavelTorgashov/master
+
             x = x < 0 ? start : start + x;
             if (x > finish)
                 x = finish + 1;
@@ -5743,16 +5742,15 @@ namespace FastColoredTextBoxNS
             //
             int iWordWrapIndex = LineInfos[place.iLine].GetWordWrapStringIndex(place.iChar);
             y += iWordWrapIndex*CharHeight;
-<<<<<<< HEAD
+
             string offsetChars = this.lines[place.iLine].Text.Substring(0, place.iChar);
             int offset = TextSizeCalculator.TextWidth(offsetChars, this.TabLength);
             int x = (offset - LineInfos[place.iLine].GetWordWrapStringStartPosition(iWordWrapIndex)) * CharWidth;
             //int x = (place.iChar - LineInfos[place.iLine].GetWordWrapStringStartPosition(iWordWrapIndex))*CharWidth;
-=======
-            int x = (place.iChar - LineInfos[place.iLine].GetWordWrapStringStartPosition(iWordWrapIndex))*CharWidth;
+
             if(iWordWrapIndex > 0 )
                 x += LineInfos[place.iLine].wordWrapIndent * CharWidth;
->>>>>>> PavelTorgashov/master
+
             //
             y = y - VerticalScroll.Value;
             x = LeftIndent + Paddings.Left + x - HorizontalScroll.Value;
