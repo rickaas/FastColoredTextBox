@@ -1,4 +1,4 @@
-﻿namespace Tester
+namespace Tester
 {
     partial class MainForm
     {
@@ -96,8 +96,12 @@
             this.button33 = new System.Windows.Forms.Button();
             this.label34 = new System.Windows.Forms.Label();
             this.button34 = new System.Windows.Forms.Button();
-            this.button35 = new System.Windows.Forms.Button();
             this.label35 = new System.Windows.Forms.Label();
+            this.button35 = new System.Windows.Forms.Button();
+            this.label36 = new System.Windows.Forms.Label();
+            this.button36 = new System.Windows.Forms.Button();
+            this.label37 = new System.Windows.Forms.Label();
+            this.button37 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
@@ -756,9 +760,18 @@
             this.button34.UseVisualStyleBackColor = true;
             this.button34.Click += new System.EventHandler(this.button34_Click);
             // 
+            // label35
+            // 
+            this.label35.Location = new System.Drawing.Point(629, 430);
+            this.label35.Name = "label35";
+            this.label35.Size = new System.Drawing.Size(189, 24);
+            this.label35.TabIndex = 69;
+            this.label35.Text = "DiffMerge sample.";
+            this.label35.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
             // button35
             // 
-            this.button35.Location = new System.Drawing.Point(824, 420);
+            this.button35.Location = new System.Drawing.Point(824, 425);
             this.button35.Name = "button35";
             this.button35.Size = new System.Drawing.Size(75, 23);
             this.button35.TabIndex = 68;
@@ -766,19 +779,53 @@
             this.button35.UseVisualStyleBackColor = true;
             this.button35.Click += new System.EventHandler(this.button35_Click);
             // 
-            // label35
+            // label36
             // 
-            this.label35.Location = new System.Drawing.Point(632, 420);
-            this.label35.Name = "label35";
-            this.label35.Size = new System.Drawing.Size(186, 34);
-            this.label35.TabIndex = 69;
-            this.label35.Text = "Text editor with tab stops";
+            this.label36.Location = new System.Drawing.Point(629, 473);
+            this.label36.Name = "label36";
+            this.label36.Size = new System.Drawing.Size(189, 24);
+            this.label36.TabIndex = 71;
+            this.label36.Text = "Custom scrollbars sample.";
+            this.label36.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // button36
+            // 
+            this.button36.Location = new System.Drawing.Point(824, 468);
+            this.button36.Name = "button36";
+            this.button36.Size = new System.Drawing.Size(75, 23);
+            this.button36.TabIndex = 70;
+            this.button36.Text = "Show";
+            this.button36.UseVisualStyleBackColor = true;
+            this.button36.Click += new System.EventHandler(this.button36_Click);
+            // 
+            // label37
+            // 
+            this.label37.Location = new System.Drawing.Point(629, 516);
+            this.label37.Name = "label37";
+            this.label37.Size = new System.Drawing.Size(189, 24);
+            this.label37.TabIndex = 73;
+            this.label37.Text = "Custom wordwrap sample.";
+            this.label37.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // button37
+            // 
+            this.button37.Location = new System.Drawing.Point(824, 511);
+            this.button37.Name = "button37";
+            this.button37.Size = new System.Drawing.Size(75, 23);
+            this.button37.TabIndex = 72;
+            this.button37.Text = "Show";
+            this.button37.UseVisualStyleBackColor = true;
+            this.button37.Click += new System.EventHandler(this.button37_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(915, 561);
+            this.Controls.Add(this.label37);
+            this.Controls.Add(this.button37);
+            this.Controls.Add(this.label36);
+            this.Controls.Add(this.button36);
             this.Controls.Add(this.label35);
             this.Controls.Add(this.button35);
             this.Controls.Add(this.label34);
@@ -927,7 +974,11 @@
         private System.Windows.Forms.Button button33;
         private System.Windows.Forms.Label label34;
         private System.Windows.Forms.Button button34;
-        private System.Windows.Forms.Button button35;
         private System.Windows.Forms.Label label35;
+        private System.Windows.Forms.Button button35;
+        private System.Windows.Forms.Label label36;
+        private System.Windows.Forms.Button button36;
+        private System.Windows.Forms.Label label37;
+        private System.Windows.Forms.Button button37;
     }
 }
