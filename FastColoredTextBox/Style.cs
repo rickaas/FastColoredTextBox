@@ -115,6 +115,11 @@ namespace FastColoredTextBoxNS
         /// </summary>
         public bool SpecialTabDraw { get; set; }
 
+        /// <summary>
+        /// When true the TAB character isn't drawn, but the required tab width is still skipped
+        /// </summary>
+        public bool HiddenTabCharacter { get; set; }
+
         public TextStyle(Brush foreBrush, Brush backgroundBrush, FontStyle fontStyle)
         {
             this.ForeBrush = foreBrush;
@@ -201,17 +206,19 @@ namespace FastColoredTextBoxNS
                                 // draw the rightwards arrow character (http://www.fileformat.info/info/unicode/char/2192/index.htm)
                                 //gr.DrawString("\u2192", f, ForeBrush, x, y, stringFormat);
                                 // or draw an arrow via DrawLine?
-                                using (Pen pen = new Pen(this.TabDrawColor, range.tb.CharHeight / 10F))
+                                if (!this.HiddenTabCharacter)
                                 {
-                                    pen.EndCap = LineCap.ArrowAnchor;
-                                    // add (range.tb.CharWidth/3) because the tab-arrow doesn't need spacing
-                                    gr.DrawLine(pen, 
-                                                x + range.tb.CharWidth/3F, 
-                                                y + (range.tb.CharHeight/2F),
-                                                x + (tabWidth*dx) + range.tb.CharWidth/3F,
-                                                y + (range.tb.CharHeight/2F));
+                                    using (Pen pen = new Pen(this.TabDrawColor, range.tb.CharHeight/10F))
+                                    {
+                                        pen.EndCap = LineCap.ArrowAnchor;
+                                        // add (range.tb.CharWidth/3) because the tab-arrow doesn't need spacing
+                                        gr.DrawLine(pen,
+                                                    x + range.tb.CharWidth/3F,
+                                                    y + (range.tb.CharHeight/2F),
+                                                    x + (tabWidth*dx) + range.tb.CharWidth/3F,
+                                                    y + (range.tb.CharHeight/2F));
+                                    }
                                 }
-                                
                                 x += tabWidth * dx; // tab has variable width
                                 currentSize += tabWidth;
                             }
