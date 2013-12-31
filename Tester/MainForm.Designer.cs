@@ -102,6 +102,8 @@ namespace Tester
             this.button36 = new System.Windows.Forms.Button();
             this.label37 = new System.Windows.Forms.Label();
             this.button37 = new System.Windows.Forms.Button();
+            this.button38 = new System.Windows.Forms.Button();
+            this.label38 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // button1
@@ -817,11 +819,32 @@ namespace Tester
             this.button37.UseVisualStyleBackColor = true;
             this.button37.Click += new System.EventHandler(this.button37_Click);
             // 
+            // button38
+            // 
+            this.button38.Location = new System.Drawing.Point(222, 567);
+            this.button38.Name = "button38";
+            this.button38.Size = new System.Drawing.Size(75, 23);
+            this.button38.TabIndex = 74;
+            this.button38.Text = "Show";
+            this.button38.UseVisualStyleBackColor = true;
+            this.button38.Click += new System.EventHandler(this.button38_Click);
+            // 
+            // label38
+            // 
+            this.label38.AutoSize = true;
+            this.label38.Location = new System.Drawing.Point(114, 567);
+            this.label38.Name = "label38";
+            this.label38.Size = new System.Drawing.Size(102, 13);
+            this.label38.TabIndex = 75;
+            this.label38.Text = "Tab stop characters";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(915, 561);
+            this.ClientSize = new System.Drawing.Size(912, 610);
+            this.Controls.Add(this.label38);
+            this.Controls.Add(this.button38);
             this.Controls.Add(this.label37);
             this.Controls.Add(this.button37);
             this.Controls.Add(this.label36);
@@ -901,6 +924,7 @@ namespace Tester
             this.Text = "MainForm";
             this.DoubleClick += new System.EventHandler(this.MainForm_DoubleClick);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -980,5 +1004,7 @@ namespace Tester
         private System.Windows.Forms.Button button36;
         private System.Windows.Forms.Label label37;
         private System.Windows.Forms.Button button37;
+        private System.Windows.Forms.Button button38;
+        private System.Windows.Forms.Label label38;
     }
 }
