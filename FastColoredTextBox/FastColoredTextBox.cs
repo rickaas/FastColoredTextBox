@@ -46,7 +46,7 @@ namespace FastColoredTextBoxNS
     public partial class FastColoredTextBox : UserControl, ISupportInitialize
     {
         internal const int minLeftIndent = 8;
-        private const int maxBracketSearchIterations = 1000;
+        private const int maxBracketSearchIterations = 2000;
         private const int maxLinesForFolding = 3000;
         private const int minLinesForAccuracy = 100000;
         private const int WM_IME_SETCONTEXT = 0x0281;
