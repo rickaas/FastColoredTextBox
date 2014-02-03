@@ -1176,6 +1176,11 @@
             Fires TextChanged event
             </summary>
         </member>
+        <member name="M:FastColoredTextBoxNS.FastColoredTextBox.ClearFoldingState(FastColoredTextBoxNS.Range)">
+            <summary>
+            Clears folding state for range of text
+            </summary>
+        </member>
         <member name="M:FastColoredTextBoxNS.FastColoredTextBox.OnSelectionChanged">
             <summary>
             Fires SelectionChanged event
@@ -1247,6 +1252,11 @@
             Exapnds folded block
             </summary>
             <param name="iLine">Start line</param>
+        </member>
+        <member name="M:FastColoredTextBoxNS.FastColoredTextBox.AdjustFolding">
+            <summary>
+            Collapse folding blocks using FoldedBlocks dictionary.
+            </summary>
         </member>
         <member name="M:FastColoredTextBoxNS.FastColoredTextBox.ExpandBlock(System.Int32,System.Int32)">
             <summary>
@@ -1334,6 +1344,11 @@
             All changes of text between BeginAutoUndo() and EndAutoUndo() will be canceled in one operation Undo.
             </summary>
         </member>
+        <member name="M:FastColoredTextBoxNS.FastColoredTextBox.HighlightBrackets(System.Char,System.Char,FastColoredTextBoxNS.Range@,FastColoredTextBoxNS.Range@)">
+            <summary>
+            Highlights brackets around caret
+            </summary>
+        </member>
         <member name="M:FastColoredTextBoxNS.FastColoredTextBox.Print(FastColoredTextBoxNS.Range,FastColoredTextBoxNS.PrintDialogSettings)">
             <summary>
             Prints range of text
@@ -1412,6 +1427,18 @@
         <member name="M:FastColoredTextBoxNS.FastColoredTextBox.RestoreScrollsAfterMiddleClickScrollingMode">
             <summary>
             Restore scrolls
+            </summary>
+        </member>
+        <member name="P:FastColoredTextBoxNS.FastColoredTextBox.FoldedBlocks">
+            <summary>
+            Contains UniqueId of start lines of folded blocks
+            </summary>
+            <remarks>This dictionary remembers folding state of blocks.
+            It is needed to restore child folding after user collapsed/expanded top-level folding block.</remarks>
+        </member>
+        <member name="P:FastColoredTextBoxNS.FastColoredTextBox.BracketsHighlightStrategy">
+            <summary>
+            Strategy of search of brackets to highlighting
             </summary>
         </member>
         <member name="P:FastColoredTextBoxNS.FastColoredTextBox.WordWrapAutoIndent">
@@ -2221,6 +2248,11 @@
         <member name="T:FastColoredTextBoxNS.FindEndOfFoldingBlockStrategy">
             <summary>
             Strategy of search of end of folding block
+            </summary>
+        </member>
+        <member name="T:FastColoredTextBoxNS.BracketsHighlightStrategy">
+            <summary>
+            Strategy of search of brackets to highlighting
             </summary>
         </member>
         <member name="T:FastColoredTextBoxNS.ToolTipNeededEventArgs">

@@ -13,25 +13,48 @@ namespace Tester
         public Sandbox()
         {
             InitializeComponent();
+
+            var fctb = new MyFCTB(){Parent = this, Language = Language.CSharp, Dock = DockStyle.Fill};
+        }
+    }
+
+    public class MyFCTB : FastColoredTextBox
+    {
+        private HashSet<int> foldedBlocks = new HashSet<int>();
+
+        protected override void OnTextChanged(TextChangedEventArgs args)
+        {
+            //clear folding state for changed range of text
+            var r = args.ChangedRange.Clone();
+            r.Normalize();
+            for (int iLine = r.Start.iLine; iLine <= r.End.iLine; iLine++)
+                foldedBlocks.Remove(this[iLine].UniqueId);
+
+            base.OnTextChanged(args);
         }
 
-        private void fastColoredTextBox1_Load(object sender, EventArgs e)
+        public override void ExpandFoldedBlock(int iLine)
         {
+            base.ExpandFoldedBlock(iLine);
 
+            foldedBlocks.Remove(this[iLine].UniqueId);//remove folded state for this line
+            AdjustFolding();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void AdjustFolding()
         {
-            var sett = new PrintDialogSettings();
-            fastColoredTextBox1.Print(sett);
+            //collapse folded blocks
+            for(int iLine = 0; iLine<LinesCount;iLine++)
+            if (LineInfos[iLine].VisibleState == VisibleState.Visible)
+            if (foldedBlocks.Contains(this[iLine].UniqueId))
+                CollapseFoldingBlock(iLine);
         }
 
-        private Style s1 = new MarkerStyle(Brushes.Beige);
-
-        private void fastColoredTextBox1_TextChanged(object sender, TextChangedEventArgs e)
+        public override void CollapseFoldingBlock(int iLine)
         {
-            e.ChangedRange.ClearStyle(StyleIndex.All);
-            e.ChangedRange.SetStyle(s1, @"M\d+");
+            base.CollapseFoldingBlock(iLine);
+
+            foldedBlocks.Add(this[iLine].UniqueId);//add folded state for line
         }
     }
 }

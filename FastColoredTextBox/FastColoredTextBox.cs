@@ -206,6 +206,7 @@ namespace FastColoredTextBoxNS
             HotkeysMapping = new HotkeysMapping();
             HotkeysMapping.InitDefault();
             WordWrapAutoIndent = true;
+            FoldedBlocks = new Dictionary<int, int>();
             //
             base.AutoScroll = true;
             timer.Tick += timer_Tick;
@@ -214,6 +215,21 @@ namespace FastColoredTextBoxNS
             middleClickScrollingTimer.Tick += middleClickScrollingTimer_Tick;
         }
 
+        /// <summary>
+        /// Contains UniqueId of start lines of folded blocks
+        /// </summary>
+        /// <remarks>This dictionary remembers folding state of blocks.
+        /// It is needed to restore child folding after user collapsed/expanded top-level folding block.</remarks>
+        [Browsable(false)]
+        public Dictionary<int, int> FoldedBlocks { get; private set; }
+
+        /// <summary>
+        /// Strategy of search of brackets to highlighting
+        /// </summary>
+        [DefaultValue(typeof(BracketsHighlightStrategy), "Strategy1")]
+        [Description("Strategy of search of brackets to highlighting.")]
+        public BracketsHighlightStrategy BracketsHighlightStrategy { get; set; }
+        
         /// <summary>
         /// Automatically shifts secondary wordwrap lines on the shift amount of the first line
         /// </summary>
@@ -5549,6 +5565,7 @@ namespace FastColoredTextBoxNS
             IsChanged = true;
             TextVersion++;
             MarkLinesAsChanged(args.ChangedRange);
+            ClearFoldingState(args.ChangedRange);
             //
             if (wordWrap)
                 RecalcWordWrap(args.ChangedRange.Start.iLine, args.ChangedRange.End.iLine);
@@ -5580,6 +5597,17 @@ namespace FastColoredTextBoxNS
 
             OnVisibleRangeChanged();
         }
+
+        /// <summary>
+        /// Clears folding state for range of text
+        /// </summary>
+        private void ClearFoldingState(Range range)
+        {
+            for (int iLine = range.Start.iLine; iLine <= range.End.iLine; iLine++)
+                if (iLine >= 0 && iLine < lines.Count)
+                    FoldedBlocks.Remove(this[iLine].UniqueId);
+        }
+
 
         private void MarkLinesAsChanged(Range range)
         {
@@ -5830,7 +5858,7 @@ namespace FastColoredTextBoxNS
         /// Exapnds folded block
         /// </summary>
         /// <param name="iLine">Start line</param>
-        public void ExpandFoldedBlock(int iLine)
+        public virtual void ExpandFoldedBlock(int iLine)
         {
             if (iLine < 0 || iLine >= lines.Count)
                 throw new ArgumentOutOfRangeException("Line index out of range");
@@ -5843,12 +5871,28 @@ namespace FastColoredTextBoxNS
             }
 
             ExpandBlock(iLine, end);
+
+            FoldedBlocks.Remove(this[iLine].UniqueId);//remove folded state for this line
+            AdjustFolding();
         }
+
+        /// <summary>
+        /// Collapse folding blocks using FoldedBlocks dictionary.
+        /// </summary>
+        public virtual void AdjustFolding()
+        {
+            //collapse folded blocks
+            for (int iLine = 0; iLine < LinesCount; iLine++)
+                if (LineInfos[iLine].VisibleState == VisibleState.Visible)
+                    if (FoldedBlocks.ContainsKey(this[iLine].UniqueId))
+                        CollapseFoldingBlock(iLine);
+        }
+
 
         /// <summary>
         /// Expand collapsed block
         /// </summary>
-        public void ExpandBlock(int fromLine, int toLine)
+        public virtual void ExpandBlock(int fromLine, int toLine)
         {
             int from = Math.Min(fromLine, toLine);
             int to = Math.Max(fromLine, toLine);
@@ -5894,7 +5938,7 @@ namespace FastColoredTextBoxNS
         /// <summary>
         /// Collapses all folding blocks
         /// </summary>
-        public void CollapseAllFoldingBlocks()
+        public virtual void CollapseAllFoldingBlocks()
         {
             for (int i = 0; i < LinesCount; i++)
                 if (lines.LineHasFoldingStartMarker(i))
@@ -5915,10 +5959,12 @@ namespace FastColoredTextBoxNS
         /// Exapnds all folded blocks
         /// </summary>
         /// <param name="iLine"></param>
-        public void ExpandAllFoldingBlocks()
+        public virtual void ExpandAllFoldingBlocks()
         {
             for (int i = 0; i < LinesCount; i++)
                 SetVisibleState(i, VisibleState.Visible);
+
+            FoldedBlocks.Clear();
 
             OnVisibleRangeChanged();
             Invalidate();
@@ -5929,7 +5975,7 @@ namespace FastColoredTextBoxNS
         /// Collapses folding block
         /// </summary>
         /// <param name="iLine">Start folding line</param>
-        public void CollapseFoldingBlock(int iLine)
+        public virtual void CollapseFoldingBlock(int iLine)
         {
             if (iLine < 0 || iLine >= lines.Count)
                 throw new ArgumentOutOfRangeException("Line index out of range");
@@ -5939,7 +5985,11 @@ namespace FastColoredTextBoxNS
             int i = FindEndOfFoldingBlock(iLine);
             //collapse
             if (i >= 0)
+            {
                 CollapseBlock(iLine, i);
+                var id = this[iLine].UniqueId;
+                FoldedBlocks[id] = id; //add folded state for line
+            }
         }
 
         private int FindEndOfFoldingBlock(int iStartLine)
@@ -6067,7 +6117,7 @@ namespace FastColoredTextBoxNS
         /// <summary>
         /// Collapse text block
         /// </summary>
-        public void CollapseBlock(int fromLine, int toLine)
+        public virtual void CollapseBlock(int fromLine, int toLine)
         {
             int from = Math.Min(fromLine, toLine);
             int to = Math.Max(fromLine, toLine);
@@ -6549,8 +6599,19 @@ namespace FastColoredTextBoxNS
             rightBracketPosition2 = null;
         }
 
-        private void HighlightBrackets(char LeftBracket, char RightBracket, ref Range leftBracketPosition,
-                                       ref Range rightBracketPosition)
+        /// <summary>
+        /// Highlights brackets around caret
+        /// </summary>
+        private void HighlightBrackets(char LeftBracket, char RightBracket, ref Range leftBracketPosition, ref Range rightBracketPosition)
+        {
+            switch(BracketsHighlightStrategy)
+            {
+                case BracketsHighlightStrategy.Strategy1: HighlightBrackets1(LeftBracket, RightBracket, ref leftBracketPosition, ref rightBracketPosition); break;
+                case BracketsHighlightStrategy.Strategy2: HighlightBrackets2(LeftBracket, RightBracket, ref leftBracketPosition, ref rightBracketPosition); break;
+            }
+        }
+
+        private void HighlightBrackets1(char LeftBracket, char RightBracket, ref Range leftBracketPosition, ref Range rightBracketPosition)
         {
             if (!Selection.IsEmpty)
                 return;
@@ -6602,9 +6663,73 @@ namespace FastColoredTextBoxNS
                 Invalidate();
         }
 
+        private void HighlightBrackets2(char LeftBracket, char RightBracket, ref Range leftBracketPosition, ref Range rightBracketPosition)
+        {
+            if (!Selection.IsEmpty)
+                return;
+            if (LinesCount == 0)
+                return;
+            //
+            Range oldLeftBracketPosition = leftBracketPosition;
+            Range oldRightBracketPosition = rightBracketPosition;
+            Range range = Selection.Clone(); //need clone because we will move caret
+
+            bool found = false;
+            int counter = 0;
+            int maxIterations = maxBracketSearchIterations;
+            if (range.CharBeforeStart == RightBracket)
+            {
+                rightBracketPosition = new Range(this, range.Start.iChar - 1, range.Start.iLine, range.Start.iChar, range.Start.iLine);
+                while (range.GoLeftThroughFolded()) //move caret left
+                {
+                    if (range.CharAfterStart == LeftBracket) counter++;
+                    if (range.CharAfterStart == RightBracket) counter--;
+                    if (counter == 0)
+                    {
+                        //highlighting
+                        range.End = new Place(range.Start.iChar + 1, range.Start.iLine);
+                        leftBracketPosition = range;
+                        found = true;
+                        break;
+                    }
+                    //
+                    maxIterations--;
+                    if (maxIterations <= 0) break;
+                }
+            }
+            //
+            range = Selection.Clone(); //need clone because we will move caret
+            counter = 0;
+            maxIterations = maxBracketSearchIterations;
+            if(!found)
+            if (range.CharAfterStart == LeftBracket)
+            {
+                leftBracketPosition = new Range(this, range.Start.iChar, range.Start.iLine, range.Start.iChar + 1, range.Start.iLine);
+                do
+                {
+                    if (range.CharAfterStart == LeftBracket) counter++;
+                    if (range.CharAfterStart == RightBracket) counter--;
+                    if (counter == 0)
+                    {
+                        //highlighting
+                        range.End = new Place(range.Start.iChar + 1, range.Start.iLine);
+                        rightBracketPosition = range;
+                        found = true;
+                        break;
+                    }
+                    //
+                    maxIterations--;
+                    if (maxIterations <= 0) break;
+                } while (range.GoRightThroughFolded()); //move caret right
+            }
+
+            if (oldLeftBracketPosition != leftBracketPosition || oldRightBracketPosition != rightBracketPosition)
+                Invalidate();
+        }
+
         public virtual void OnSyntaxHighlight(TextChangedEventArgs args)
         {
-#if debug
+            #if debug
             Stopwatch sw = Stopwatch.StartNew();
             #endif
 
@@ -7776,6 +7901,15 @@ window.status = ""#print"";
     /// Strategy of search of end of folding block
     /// </summary>
     public enum FindEndOfFoldingBlockStrategy
+    {
+        Strategy1,
+        Strategy2
+    }
+
+    /// <summary>
+    /// Strategy of search of brackets to highlighting
+    /// </summary>
+    public enum BracketsHighlightStrategy
     {
         Strategy1,
         Strategy2
