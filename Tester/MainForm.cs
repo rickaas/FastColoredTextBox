@@ -212,5 +212,10 @@ namespace Tester
         {
             new TabStopsInText().Show();
         }
+
+        private void button39_Click(object sender, EventArgs e)
+        {
+            new BraceComplete().Show();
+        }
     }
 }

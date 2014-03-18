@@ -104,6 +104,8 @@ namespace Tester
             this.button37 = new System.Windows.Forms.Button();
             this.button38 = new System.Windows.Forms.Button();
             this.label38 = new System.Windows.Forms.Label();
+            this.label39 = new System.Windows.Forms.Label();
+            this.button39 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
@@ -838,11 +840,32 @@ namespace Tester
             this.label38.TabIndex = 75;
             this.label38.Text = "Tab stop characters";
             // 
+            // label39
+            // 
+            this.label39.AutoSize = true;
+            this.label39.Location = new System.Drawing.Point(421, 572);
+            this.label39.Name = "label39";
+            this.label39.Size = new System.Drawing.Size(90, 13);
+            this.label39.TabIndex = 76;
+            this.label39.Text = "Brace Completion";
+            // 
+            // button39
+            // 
+            this.button39.Location = new System.Drawing.Point(529, 567);
+            this.button39.Name = "button39";
+            this.button39.Size = new System.Drawing.Size(75, 23);
+            this.button39.TabIndex = 77;
+            this.button39.Text = "Show";
+            this.button39.UseVisualStyleBackColor = true;
+            this.button39.Click += new System.EventHandler(this.button39_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(912, 610);
+            this.Controls.Add(this.button39);
+            this.Controls.Add(this.label39);
             this.Controls.Add(this.label38);
             this.Controls.Add(this.button38);
             this.Controls.Add(this.label37);
@@ -1006,5 +1029,7 @@ namespace Tester
         private System.Windows.Forms.Button button37;
         private System.Windows.Forms.Button button38;
         private System.Windows.Forms.Label label38;
+        private System.Windows.Forms.Label label39;
+        private System.Windows.Forms.Button button39;
     }
 }

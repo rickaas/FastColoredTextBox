@@ -71,6 +71,12 @@
     <Compile Include="BilingualHighlighterSample.Designer.cs">
       <DependentUpon>BilingualHighlighterSample.cs</DependentUpon>
     </Compile>
+    <Compile Include="BraceComplete.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="BraceComplete.Designer.cs">
+      <DependentUpon>BraceComplete.cs</DependentUpon>
+    </Compile>
     <Compile Include="ConsoleSample.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -306,6 +312,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="BilingualHighlighterSample.resx">
       <DependentUpon>BilingualHighlighterSample.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BraceComplete.resx">
+      <DependentUpon>BraceComplete.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ConsoleSample.resx">
       <DependentUpon>ConsoleSample.cs</DependentUpon>

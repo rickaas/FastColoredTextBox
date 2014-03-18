@@ -70,7 +70,12 @@ namespace FastColoredTextBoxNS
 
             if (ts.Count == 0)
                 InsertLine(ts);
-            InsertChar(c, ref deletedChar, ts);
+            // enable to support modifying of InsertedText
+            //foreach (char insertChar in s)
+            //{
+            //    InsertChar(insertChar, ref deletedChar, ts);
+            //}
+            InsertChar(c, ref deletedChar, ts); // only supports inserting a single char
 
             ts.NeedRecalc(new TextSource.TextChangedEventArgs(ts.CurrentTB.Selection.Start.iLine, ts.CurrentTB.Selection.Start.iLine));
             base.Execute();
