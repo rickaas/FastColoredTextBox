@@ -56,9 +56,9 @@ namespace FastColoredTextBoxNS
 
         public readonly List<LineInfo> LineInfos = new List<LineInfo>();
         private readonly Range selection;
-        private readonly Timer timer = new Timer();
-        private readonly Timer timer2 = new Timer();
-        private readonly Timer timer3 = new Timer();
+        private readonly Timer DelayedEventsTimer = new Timer();
+        private readonly Timer DelayedTextChangedTimer = new Timer();
+        private readonly Timer tooltipDelayTimer = new Timer();
         private readonly List<VisualMarker> visibleMarkers = new List<VisualMarker>();
         public int TextHeight;
         internal bool allowInsertRemoveLines = true;
@@ -198,7 +198,7 @@ namespace FastColoredTextBoxNS
             bookmarks = new Bookmarks(this);
             BookmarkColor = Color.PowderBlue;
             ToolTip = new ToolTip();
-            timer3.Interval = 500;
+            tooltipDelayTimer.Interval = 500;
             hints = new Hints(this);
             SelectionHighlightingForLineBreaksEnabled = true;
             textAreaBorder = TextAreaBorderType.None;
@@ -211,9 +211,9 @@ namespace FastColoredTextBoxNS
             AutoCompleteBrackets = true;
             //
             base.AutoScroll = true;
-            timer.Tick += timer_Tick;
-            timer2.Tick += timer2_Tick;
-            timer3.Tick += timer3_Tick;
+            DelayedEventsTimer.Tick += DelayedEventsTimerTick; // fire OnSelectionChangedDelayed and OnVisibleRangeChangedDelayed
+            DelayedTextChangedTimer.Tick += DelayedTextChangedTimerTick; // OnTextChangedDelayed
+            tooltipDelayTimer.Tick += TooltipDelayTimerTick; // show tooltip
             middleClickScrollingTimer.Tick += middleClickScrollingTimer_Tick;
         }
 
@@ -300,8 +300,8 @@ namespace FastColoredTextBoxNS
         [Description("Delay(ms) of ToolTip.")]
         public int ToolTipDelay
         {
-            get { return timer3.Interval; }
-            set { timer3.Interval = value; }
+            get { return tooltipDelayTimer.Interval; }
+            set { tooltipDelayTimer.Interval = value; }
         }
 
         /// <summary>
@@ -943,8 +943,8 @@ namespace FastColoredTextBoxNS
         [Description("Minimal delay(ms) for delayed events (except TextChangedDelayed).")]
         public int DelayedEventsInterval
         {
-            get { return timer.Interval; }
-            set { timer.Interval = value; }
+            get { return DelayedEventsTimer.Interval; }
+            set { DelayedEventsTimer.Interval = value; }
         }
 
         /// <summary>
@@ -955,8 +955,8 @@ namespace FastColoredTextBoxNS
         [Description("Minimal delay(ms) for TextChangedDelayed event.")]
         public int DelayedTextChangedInterval
         {
-            get { return timer2.Interval; }
-            set { timer2.Interval = value; }
+            get { return DelayedTextChangedTimer.Interval; }
+            set { DelayedTextChangedTimer.Interval = value; }
         }
 
         /// <summary>
@@ -1715,9 +1715,9 @@ namespace FastColoredTextBoxNS
                 HintClick(this, new HintClickEventArgs(hint));
         }
 
-        private void timer3_Tick(object sender, EventArgs e)
+        private void TooltipDelayTimerTick(object sender, EventArgs e)
         {
-            timer3.Stop();
+            tooltipDelayTimer.Stop();
             OnToolTip();
         }
 
@@ -1761,7 +1761,7 @@ namespace FastColoredTextBoxNS
             needRecalcFoldingLines = true;
 
             needRiseVisibleRangeChangedDelayed = true;
-            ResetTimer(timer);
+            ResetTimer(DelayedEventsTimer);
             if (VisibleRangeChanged != null)
                 VisibleRangeChanged(this, new EventArgs());
         }
@@ -2190,9 +2190,9 @@ namespace FastColoredTextBoxNS
             m_hImc = ImmGetContext(Handle);
         }
 
-        private void timer2_Tick(object sender, EventArgs e)
+        private void DelayedTextChangedTimerTick(object sender, EventArgs e)
         {
-            timer2.Enabled = false;
+            DelayedTextChangedTimer.Enabled = false;
             if (needRiseTextChangedDelayed)
             {
                 needRiseTextChangedDelayed = false;
@@ -2210,9 +2210,9 @@ namespace FastColoredTextBoxNS
             visibleMarkers.Add(marker);
         }
 
-        private void timer_Tick(object sender, EventArgs e)
+        private void DelayedEventsTimerTick(object sender, EventArgs e)
         {
-            timer.Enabled = false;
+            DelayedEventsTimer.Enabled = false;
             if (needRiseSelectionChangedDelayed)
             {
                 needRiseSelectionChangedDelayed = false;
@@ -5360,7 +5360,7 @@ namespace FastColoredTextBoxNS
             {
                 //restart tooltip timer
                 CancelToolTip();
-                timer3.Start();
+                tooltipDelayTimer.Start();
             }
             lastMouseCoord = e.Location;
 
@@ -5435,7 +5435,7 @@ namespace FastColoredTextBoxNS
 
         private void CancelToolTip()
         {
-            timer3.Stop();
+            tooltipDelayTimer.Stop();
             if (ToolTip != null && !string.IsNullOrEmpty(ToolTip.GetToolTip(this)))
             {
                 ToolTip.Hide(this);
@@ -5711,7 +5711,7 @@ namespace FastColoredTextBoxNS
                 delayedTextChangedRange = delayedTextChangedRange.GetUnionWith(args.ChangedRange);
 
             needRiseTextChangedDelayed = true;
-            ResetTimer(timer2);
+            ResetTimer(DelayedTextChangedTimer);
             //
             OnSyntaxHighlight(args);
             //
@@ -5761,7 +5761,7 @@ namespace FastColoredTextBoxNS
                 HighlightFoldings();
             //
             needRiseSelectionChangedDelayed = true;
-            ResetTimer(timer);
+            ResetTimer(DelayedEventsTimer);
 
             if (SelectionChanged != null)
                 SelectionChanged(this, new EventArgs());
@@ -7055,8 +7055,8 @@ window.status = ""#print"";
             {
                 if (SyntaxHighlighter != null)
                     SyntaxHighlighter.Dispose();
-                timer.Dispose();
-                timer2.Dispose();
+                DelayedEventsTimer.Dispose();
+                DelayedTextChangedTimer.Dispose();
                 middleClickScrollingTimer.Dispose();
 
                 if (findForm != null)
