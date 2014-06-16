@@ -53,6 +53,14 @@
     <Compile Include="AdvancedFindForm.Designer.cs">
       <DependentUpon>AdvancedFindForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="CommandImpl\ClearSelectedCommand.cs" />
+    <Compile Include="CommandImpl\InsertCharCommand.cs" />
+    <Compile Include="CommandImpl\InsertTextCommand.cs" />
+    <Compile Include="CommandImpl\MultiRangeCommand.cs" />
+    <Compile Include="CommandImpl\RemoveLinesCommand.cs" />
+    <Compile Include="CommandImpl\ReplaceMultipleTextCommand.cs" />
+    <Compile Include="CommandImpl\ReplaceTextCommand.cs" />
+    <Compile Include="CommandImpl\SelectCommand.cs" />
     <Compile Include="DocumentMap.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -107,7 +115,6 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="CommandManager.cs" />
-    <Compile Include="Commands.cs" />
     <Compile Include="FindForm.cs">
       <SubType>Form</SubType>
     </Compile>
