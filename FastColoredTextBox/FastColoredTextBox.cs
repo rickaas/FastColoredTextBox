@@ -3563,6 +3563,11 @@ namespace FastColoredTextBoxNS
                         IncreaseIndent();
                     break;
 
+                case FCTBAction.AutoIndentSelection:
+                    if (!Selection.ReadOnly)
+                        DoAutoIndent();
+                    break;
+
                 case FCTBAction.NavigateBackward:
                     NavigateBackward();
                     break;
@@ -6576,6 +6581,12 @@ namespace FastColoredTextBoxNS
             Selection.BeginUpdate();
             lines.Manager.BeginAutoUndoCommands();
             //
+            //when the range ends on the first position of a line and the endline isn't the same as the start line
+            // then that line won't be included in the auto indent block
+            if (r.End.iChar == 0 && r.End.iLine != r.Start.iLine)
+            {
+                r.End = new Place(lines[r.End.iLine - 1].Count, r.End.iLine - 1);
+            }
             for (int i = r.Start.iLine; i <= r.End.iLine; i++)
                 DoAutoIndent(i);
             //

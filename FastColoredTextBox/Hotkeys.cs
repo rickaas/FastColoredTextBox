@@ -187,6 +187,7 @@ namespace FastColoredTextBoxNS
         GoWordRightWithSelection,
         IndentIncrease,
         IndentDecrease,
+        AutoIndentSelection,
         LowerCase,
         MacroExecute,
         MacroRecord,
