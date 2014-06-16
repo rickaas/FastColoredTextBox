@@ -26,6 +26,7 @@ namespace FastColoredTextBoxNS
             this[KEYS.Control | KEYS.F] = FCTBAction.FindDialog;
             this[KEYS.Alt | KEYS.F] = FCTBAction.FindChar;
             this[KEYS.F3] = FCTBAction.FindNext;
+            this[KEYS.Shift | KEYS.F3] = FCTBAction.FindPrevious;
             this[KEYS.Control | KEYS.H] = FCTBAction.ReplaceDialog;
             this[KEYS.Control | KEYS.C] = FCTBAction.Copy;
             this[KEYS.Control | KEYS.Shift | KEYS.C] = FCTBAction.CommentSelected;
@@ -152,6 +153,7 @@ namespace FastColoredTextBoxNS
         FindChar,
         FindDialog,
         FindNext,
+        FindPrevious,
         GoDown,
         GoDownWithSelection,
         GoDown_ColumnSelectionMode,

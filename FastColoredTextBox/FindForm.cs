@@ -5,11 +5,16 @@ using System.Collections.Generic;
 
 namespace FastColoredTextBoxNS
 {
-    public partial class FindForm : Form
+    public partial class FindForm : Form, IFindForm
     {
         bool firstSearch = true;
         Place startPlace;
         FastColoredTextBox tb;
+
+        public TextBox FindTextBox
+        {
+            get { return this.tbFind; }
+        }
 
         public FindForm(FastColoredTextBox tb)
         {
@@ -74,6 +79,11 @@ namespace FastColoredTextBoxNS
             }
         }
 
+        public void FindPrevious(string text)
+        {
+            // not implemented
+        }
+
         private void tbFind_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == '\r')
@@ -125,5 +135,6 @@ namespace FastColoredTextBoxNS
         {
             ResetSerach();
         }
+
     }
 }

@@ -1282,7 +1282,7 @@ namespace FastColoredTextBoxNS
 
 
         [Browsable(false)]
-        public FindForm findForm { get; private set; }
+        public IFindForm findForm { get; private set; }
 
         [Browsable(false)]
         public ReplaceForm replaceForm { get; private set; }
@@ -2319,14 +2319,14 @@ namespace FastColoredTextBoxNS
         public void ShowFindDialog(string findText)
         {
             if (findForm == null)
-                findForm = new FindForm(this);
+                findForm = new AdvancedFindForm(this);
 
             if (findText != null)
-                findForm.tbFind.Text = findText;
+                findForm.FindTextBox.Text = findText;
             else if (!Selection.IsEmpty && Selection.Start.iLine == Selection.End.iLine)
-                findForm.tbFind.Text = Selection.Text;
+                findForm.FindTextBox.Text = Selection.Text;
 
-            findForm.tbFind.SelectAll();
+            findForm.FindTextBox.SelectAll();
             findForm.Show();
         }
 
@@ -3495,10 +3495,16 @@ namespace FastColoredTextBoxNS
                     break;
 
                 case FCTBAction.FindNext:
-                    if (findForm == null || findForm.tbFind.Text == "")
+                    if (findForm == null || findForm.FindTextBox.Text == "")
                         ShowFindDialog();
                     else
-                        findForm.FindNext(findForm.tbFind.Text);
+                        findForm.FindNext(findForm.FindTextBox.Text);
+                    break;
+                case FCTBAction.FindPrevious:
+                    if (findForm == null || findForm.FindTextBox.Text == "")
+                        ShowFindDialog();
+                    else
+                        findForm.FindPrevious(findForm.FindTextBox.Text);
                     break;
 
                 case FCTBAction.ReplaceDialog:
