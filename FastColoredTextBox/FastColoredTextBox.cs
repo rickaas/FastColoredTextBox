@@ -6,9 +6,9 @@
 //
 //  License: GNU Lesser General Public License (LGPLv3)
 //
-//  Email: pavel_torgashov@mail.ru.
+//  Email: pavel_torgashov@ukr.net.
 //
-//  Copyright (C) Pavel Torgashov, 2011-2013. 
+//  Copyright (C) Pavel Torgashov, 2011-2014. 
 
 //#define debug
 
@@ -187,6 +187,7 @@ namespace FastColoredTextBoxNS
             AcceptsReturn = true;
             caretVisible = true;
             CaretColor = Color.Black;
+            WideCaret = false;
             Paddings = new Padding(0, 0, 0, 0);
             PaddingBackColor = Color.Transparent;
             DisabledColor = Color.FromArgb(100, 180, 180, 180);
@@ -207,6 +208,7 @@ namespace FastColoredTextBoxNS
             HotkeysMapping.InitDefault();
             WordWrapAutoIndent = true;
             FoldedBlocks = new Dictionary<int, int>();
+            AutoCompleteBrackets = true;
             //
             base.AutoScroll = true;
             timer.Tick += timer_Tick;
@@ -214,6 +216,21 @@ namespace FastColoredTextBoxNS
             timer3.Tick += timer3_Tick;
             middleClickScrollingTimer.Tick += middleClickScrollingTimer_Tick;
         }
+
+        private char[] autoCompleteBracketsList = { '(', ')', '{', '}', '[', ']', '"', '"', '\'', '\'' };
+
+        public char[] AutoCompleteBracketsList
+        {
+            get { return autoCompleteBracketsList; }
+            set { autoCompleteBracketsList = value; }
+        }
+
+        /// <summary>
+        /// AutoComplete brackets
+        /// </summary>
+        [DefaultValue(true)]
+        [Description("AutoComplete brackets.")]
+        public bool AutoCompleteBrackets { get; set; }
 
         /// <summary>
         /// Contains UniqueId of start lines of folded blocks
@@ -640,6 +657,13 @@ namespace FastColoredTextBoxNS
         [DefaultValue(typeof (Color), "Black")]
         [Description("Color of caret.")]
         public Color CaretColor { get; set; }
+
+        /// <summary>
+        /// Wide caret
+        /// </summary>
+        [DefaultValue(false)]
+        [Description("Wide caret.")]
+        public bool WideCaret { get; set; }
 
         /// <summary>
         /// Color of service lines (folding lines, borders of blocks etc.)
@@ -1326,7 +1350,7 @@ namespace FastColoredTextBoxNS
 
             set
             {
-                if (value == Text)
+                if (value == Text && value != "")
                     return;
 
                 SetAsCurrentTB();
@@ -2618,6 +2642,7 @@ namespace FastColoredTextBoxNS
                     lines.Manager.ExecuteCommand(new ClearSelectedCommand(TextSource));
 
                 //insert virtual spaces
+                if(this.TextSource.Count > 0)
                 if (Selection.IsEmpty && Selection.Start.iChar > GetLineLength(Selection.Start.iLine) && VirtualSpace)
                     InsertVirtualSpaces();
 
@@ -2859,6 +2884,7 @@ namespace FastColoredTextBoxNS
         public void ClearCurrentLine()
         {
             Selection.Expand();
+
             lines.Manager.ExecuteCommand(new ClearSelectedCommand(TextSource));
             if (Selection.Start.iLine == 0)
                 if (!Selection.GoRightThroughFolded()) return;
@@ -2909,7 +2935,7 @@ namespace FastColoredTextBoxNS
             //adjust AutoScrollMinSize
             int minWidth;
             CalcMinAutosizeWidth(out minWidth, ref maxLineLength);
-
+            
             AutoScrollMinSize = new Size(minWidth, TextHeight + Paddings.Top + Paddings.Bottom);
             UpdateScrollbars();
 #if debug
@@ -3198,7 +3224,7 @@ namespace FastColoredTextBoxNS
         }
 
         protected virtual void OnScrollbarsUpdated()
-        {
+        {           
             if (ScrollbarsUpdated != null)
                 ScrollbarsUpdated(this, EventArgs.Empty);
         }
@@ -3371,6 +3397,7 @@ namespace FastColoredTextBoxNS
             }
             else
             {
+                /*  !!!!
                 //space
                 if (a.KeyCode == Keys.Space && (a.Modifiers == Keys.None || a.Modifiers == Keys.Shift))
                 {
@@ -3411,7 +3438,7 @@ namespace FastColoredTextBoxNS
 
                     OnKeyPressed('\b');
                     return false;
-                }
+                }*/
 
                 //
                 if (a.KeyCode == Keys.Alt)
@@ -4112,12 +4139,35 @@ namespace FastColoredTextBoxNS
 
             if (macrosManager != null)
                 macrosManager.ProcessKey(c, modifiers);
-
+            /*  !!!!
             if (c == ' ')
-                return true;
+                return true;*/
 
-            if (c == '\b' && (modifiers & Keys.Alt) != 0)
+            //backspace
+            if (c == '\b' && (modifiers == Keys.None || modifiers == Keys.Shift || (modifiers & Keys.Alt) != 0))
+            {
+                if (ReadOnly || !Enabled)
+                    return false;
+
+                if (OnKeyPressing(c))
+                    return true;
+
+                if (Selection.ReadOnly)
+                    return false;
+
+                if (!Selection.IsEmpty)
+                    ClearSelected();
+                else
+                    if (!Selection.IsReadOnlyLeftChar()) //is not left char readonly?
+                        InsertChar('\b');
+
+                OnKeyPressed('\b');
                 return true;
+            }
+ 
+            /* !!!!
+            if (c == '\b' && (modifiers & Keys.Alt) != 0)
+                return true;*/
 
             if (char.IsControl(c) && c != '\r' && c != '\t')
                 return false;
@@ -4159,7 +4209,11 @@ namespace FastColoredTextBoxNS
                 }
                 //insert char
                 if (!Selection.ReadOnly)
-                    InsertChar(c);
+                {
+                    if (!DoAutocompleteBrackets(c))
+                        InsertChar(c);
+                }
+
                 //do autoindent
                 if (c == '\n' || AutoIndentExistingLines)
                     DoAutoIndentIfNeed();
@@ -4169,6 +4223,57 @@ namespace FastColoredTextBoxNS
             Invalidate();
 
             OnKeyPressed(sourceC);
+
+            return true;
+        }
+
+        private bool DoAutocompleteBrackets(char c)
+        {
+            if (AutoCompleteBrackets)
+            {
+                if (!Selection.ColumnSelectionMode)
+                    for (int i = 1; i < autoCompleteBracketsList.Length; i += 2)
+                        if (c == autoCompleteBracketsList[i] && c == Selection.CharAfterStart)
+                        {
+                            Selection.GoRight();
+                            return true;
+                        }
+
+                for (int i = 0; i < autoCompleteBracketsList.Length; i += 2)
+                    if (c == autoCompleteBracketsList[i])
+                    {
+                        InsertBrackets(autoCompleteBracketsList[i], autoCompleteBracketsList[i + 1]);
+                        return true;
+                    }
+            }
+            return false;
+        }
+
+        private bool InsertBrackets(char left, char right)
+        {
+            if (Selection.ColumnSelectionMode)
+            {
+                var range = Selection.Clone();
+                range.Normalize();
+                Selection.BeginUpdate();
+                BeginAutoUndo();
+                Selection = new Range(this, range.Start.iChar, range.Start.iLine, range.Start.iChar, range.End.iLine) { ColumnSelectionMode = true };
+                InsertChar(left);
+                Selection = new Range(this, range.End.iChar + 1, range.Start.iLine, range.End.iChar + 1, range.End.iLine) { ColumnSelectionMode = true };
+                InsertChar(right);
+                if (range.IsEmpty)
+                    Selection = new Range(this, range.End.iChar + 1, range.Start.iLine, range.End.iChar + 1, range.End.iLine) { ColumnSelectionMode = true };
+                EndAutoUndo();
+                Selection.EndUpdate();
+            }
+            else
+                if (Selection.IsEmpty)
+                {
+                    InsertText(left + "" + right);
+                    Selection.GoLeft();
+                }
+                else
+                    InsertText(left + SelectedText + right);
 
             return true;
         }
@@ -4671,15 +4776,32 @@ namespace FastColoredTextBoxNS
 
             if ((Focused || IsDragDrop) && car.X >= LeftIndent && CaretVisible)
             {
-                int carWidth = IsReplaceMode ? CharWidth : 1;
-                CreateCaret(Handle, 0, carWidth, CharHeight + 1);
-                SetCaretPos(car.X, car.Y);
-                ShowCaret(Handle);
-                using (var pen = new Pen(CaretColor))
-                    e.Graphics.DrawLine(pen, car.X, car.Y, car.X, car.Y + CharHeight);
+                int carWidth = (IsReplaceMode || WideCaret) ? CharWidth : 1;
+                if (WideCaret)
+                {
+                    using (var brush = new SolidBrush(CaretColor))
+                        e.Graphics.FillRectangle(brush, car.X, car.Y, carWidth, CharHeight + 1);
+                }
+                else
+                    using (var pen = new Pen(CaretColor))
+                        e.Graphics.DrawLine(pen, car.X, car.Y, car.X, car.Y + CharHeight);
+
+                var caretRect = new Rectangle(car.X, car.Y, carWidth, charHeight + 1);
+
+                if (prevCaretRect != caretRect)
+                {
+                    CreateCaret(Handle, 0, carWidth, CharHeight + 1);
+                    SetCaretPos(car.X, car.Y);
+                    ShowCaret(Handle);
+                }
+
+                prevCaretRect = caretRect;
             }
             else
+            {
                 HideCaret(Handle);
+                prevCaretRect = Rectangle.Empty;
+            }
 
             //draw disabled mask
             if (!Enabled)
@@ -4706,6 +4828,8 @@ namespace FastColoredTextBoxNS
             //
             base.OnPaint(e);
         }
+
+        private Rectangle prevCaretRect;
 
         private void DrawRecordingHint(Graphics graphics)
         {
@@ -6960,6 +7084,53 @@ window.status = ""#print"";
             if (count > 0)
                 if (LineRemoved != null)
                     LineRemoved(this, new LineRemovedEventArgs(index, count, removedLineIds));
+        }
+
+        /// <summary>
+        /// Open text file
+        /// </summary>
+        public void OpenFile(string fileName, Encoding enc)
+        {
+            var ts = CreateTextSource();
+            try
+            {
+                InitTextSource(ts);
+                Text = File.ReadAllText(fileName, enc);
+                ClearUndo();
+                IsChanged = false;
+                OnVisibleRangeChanged();
+            }
+            catch
+            {
+                InitTextSource(CreateTextSource());
+                lines.InsertLine(0, TextSource.CreateLine());
+                IsChanged = false;
+                throw;
+            }
+            Selection.Start = Place.Empty;
+            DoSelectionVisible();
+        }
+
+        /// <summary>
+        /// Open text file (with automatic encoding detector)
+        /// </summary>
+        public void OpenFile(string fileName)
+        {
+            try
+            {
+                var enc = EncodingDetector.DetectTextFileEncoding(fileName);
+                if (enc != null)
+                    OpenFile(fileName, enc);
+                else
+                    OpenFile(fileName, Encoding.Default);
+            }
+            catch
+            {
+                InitTextSource(CreateTextSource());
+                lines.InsertLine(0, TextSource.CreateLine());
+                IsChanged = false;
+                throw;
+            }
         }
 
         /// <summary>
