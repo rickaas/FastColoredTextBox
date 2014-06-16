@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
 using FastColoredTextBoxNS;
+using FastColoredTextBoxNS.CommandImpl;
 using FastColoredTextBoxNS.EventArgDefs;
 
 namespace Tester
@@ -25,7 +26,7 @@ namespace Tester
         {
             if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                fctb.OpenBindingFile(ofd.FileName, Encoding.UTF8);
+                FileIO.OpenBindingFile(fctb, ofd.FileName, Encoding.UTF8);
                 fctb.IsChanged = false;
                 fctb.ClearUndo();
                 GC.Collect();
@@ -63,19 +64,19 @@ namespace Tester
 
         private void closeFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            fctb.CloseBindingFile();
+            FileIO.CloseBindingFile(fctb);
         }
 
         private void LazyLoadingSample_FormClosing(object sender, FormClosingEventArgs e)
         {
-            fctb.CloseBindingFile();
+            FileIO.CloseBindingFile(fctb);
         }
 
         private void miSave_Click(object sender, EventArgs e)
         {
             if(sfd.ShowDialog() == DialogResult.OK)
             {
-                fctb.SaveToFile(sfd.FileName, Encoding.UTF8);
+                FileIO.SaveToFile(fctb, sfd.FileName, Encoding.UTF8);
             }
         }
 

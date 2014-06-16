@@ -12,6 +12,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Drawing.Drawing2D;
+using FastColoredTextBoxNS.CommandImpl;
 using FastColoredTextBoxNS.EventArgDefs;
 
 namespace Tester
@@ -67,7 +68,7 @@ namespace Tester
                 var tab = new FATabStripItem(fileName!=null?Path.GetFileName(fileName):"[new]", tb);
                 tab.Tag = fileName;
                 if (fileName != null)
-                    tb.OpenFile(fileName);
+                    FileIO.OpenFile(tb, fileName);
                 tb.Tag = new TbInfo();
                 tsFiles.AddTab(tab);
                 tsFiles.SelectedItem = tab;

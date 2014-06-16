@@ -54,6 +54,7 @@
       <DependentUpon>AdvancedFindForm.cs</DependentUpon>
     </Compile>
     <Compile Include="CommandImpl\ClearSelectedCommand.cs" />
+    <Compile Include="CommandImpl\FileIO.cs" />
     <Compile Include="CommandImpl\InsertCharCommand.cs" />
     <Compile Include="CommandImpl\InsertTextCommand.cs" />
     <Compile Include="CommandImpl\MultiRangeCommand.cs" />

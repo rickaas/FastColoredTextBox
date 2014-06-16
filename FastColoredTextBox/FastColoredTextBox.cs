@@ -94,7 +94,7 @@ namespace FastColoredTextBoxNS
         private Color lineNumberColor;
         private uint lineNumberStartValue;
         private int lineSelectFrom;
-        private TextSource lines;
+        internal TextSource lines;
         private IntPtr m_hImc;
         private int maxLineLength;
         private bool mouseIsDrag;
@@ -1993,7 +1993,7 @@ namespace FastColoredTextBoxNS
             return result;
         }
 
-        private TextSource CreateTextSource()
+        internal TextSource CreateTextSource()
         {
             return new TextSource(this);
         }
@@ -2003,7 +2003,7 @@ namespace FastColoredTextBoxNS
             TextSource.CurrentTB = this;
         }
 
-        private void InitTextSource(TextSource ts)
+        internal void InitTextSource(TextSource ts)
         {
             if (lines != null)
             {
@@ -7106,109 +7106,6 @@ window.status = ""#print"";
         }
 
         /// <summary>
-        /// Open text file
-        /// </summary>
-        public void OpenFile(string fileName, Encoding enc)
-        {
-            var ts = CreateTextSource();
-            try
-            {
-                InitTextSource(ts);
-                Text = File.ReadAllText(fileName, enc);
-                ClearUndo();
-                IsChanged = false;
-                OnVisibleRangeChanged();
-            }
-            catch
-            {
-                InitTextSource(CreateTextSource());
-                lines.InsertLine(0, TextSource.CreateLine());
-                IsChanged = false;
-                throw;
-            }
-            Selection.Start = Place.Empty;
-            DoSelectionVisible();
-        }
-
-        /// <summary>
-        /// Open text file (with automatic encoding detector)
-        /// </summary>
-        public void OpenFile(string fileName)
-        {
-            try
-            {
-                var enc = EncodingDetector.DetectTextFileEncoding(fileName);
-                if (enc != null)
-                    OpenFile(fileName, enc);
-                else
-                    OpenFile(fileName, Encoding.Default);
-            }
-            catch
-            {
-                InitTextSource(CreateTextSource());
-                lines.InsertLine(0, TextSource.CreateLine());
-                IsChanged = false;
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Open file binding mode
-        /// </summary>
-        /// <param name="fileName"></param>
-        /// <param name="enc"></param>
-        public void OpenBindingFile(string fileName, Encoding enc)
-        {
-            var fts = new FileTextSource(this);
-            try
-            {
-                InitTextSource(fts);
-                fts.OpenFile(fileName, enc);
-                IsChanged = false;
-                OnVisibleRangeChanged();
-            }
-            catch
-            {
-                fts.CloseFile();
-                InitTextSource(CreateTextSource());
-                lines.InsertLine(0, TextSource.CreateLine());
-                IsChanged = false;
-                throw;
-            }
-            Invalidate();
-        }
-
-        /// <summary>
-        /// Close file binding mode
-        /// </summary>
-        public void CloseBindingFile()
-        {
-            if (lines is FileTextSource)
-            {
-                var fts = lines as FileTextSource;
-                fts.CloseFile();
-
-                InitTextSource(CreateTextSource());
-                lines.InsertLine(0, TextSource.CreateLine());
-                IsChanged = false;
-                Invalidate();
-            }
-        }
-
-        /// <summary>
-        /// Save text to the file
-        /// </summary>
-        /// <param name="fileName"></param>
-        /// <param name="enc"></param>
-        public void SaveToFile(string fileName, Encoding enc)
-        {
-            lines.SaveToFile(fileName, enc);
-            IsChanged = false;
-            OnVisibleRangeChanged();
-            UpdateScrollbars();
-        }
-
-        /// <summary>
         /// Set VisibleState of line
         /// </summary>
         public void SetVisibleState(int iLine, VisibleState state)
@@ -7259,7 +7156,7 @@ window.status = ""#print"";
         public List<int> FindLines(string searchPattern, RegexOptions options)
         {
             var iLines = new List<int>();
-            foreach (Range r in Range.GetRangesByLines(searchPattern, options))
+            foreach (Range r in this.Range.GetRangesByLines(searchPattern, options))
                 iLines.Add(r.Start.iLine);
 
             return iLines;
