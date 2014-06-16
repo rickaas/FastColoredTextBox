@@ -5034,7 +5034,7 @@ namespace FastColoredTextBoxNS
                         // Calculate where previous range ended
                         next = TextSizeCalculator.TextWidth(beforeRangeText, textRange.tb.TabLength) * CharWidth;
                     }
-                    SelectionStyle.Draw(gr, new Point(startX + next, y),
+                    SelectionStyle.Draw(gr, new Point(startX + next, 1 + y),
                                         textRange);
                 }
             }
