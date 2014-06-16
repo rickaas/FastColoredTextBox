@@ -45,7 +45,8 @@ namespace FastColoredTextBoxNS
         private bool columnSelectionMode;
 
         /// <summary>
-        /// Column selection mode
+        /// Column selection mode.
+        /// Set to true to allow a block selection over multiple lines.
         /// </summary>
         public bool ColumnSelectionMode
         {
@@ -1279,6 +1280,10 @@ namespace FastColoredTextBoxNS
                 GoRight(shift);
         }
 
+        /// <summary>
+        /// Goes to the end of the first word
+        /// </summary>
+        /// <param name="shift"></param>
         public void GoWordRight(bool shift)
         {
             ColumnSelectionMode = false;
@@ -1294,16 +1299,16 @@ namespace FastColoredTextBoxNS
             while (IsSpaceChar(range.CharAfterStart))
             {
                 wasSpace = true;
-                range.GoRight(shift);
+                range.GoRight(shift); // skip all spaces
             }
             bool wasIdentifier = false;
             while (IsIdentifierChar(range.CharAfterStart))
             {
                 wasIdentifier = true;
-                range.GoRight(shift);
+                range.GoRight(shift); // skip all identifier characters
             }
             if (!wasIdentifier && (!wasSpace || range.CharAfterStart != '\n'))
-                range.GoRight(shift);
+                range.GoRight(shift); // no identifier found and 
             this.Start = range.Start;
             this.End = range.End;
 
