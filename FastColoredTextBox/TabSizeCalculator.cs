@@ -40,6 +40,14 @@ namespace FastColoredTextBoxNS
             return CharIndexAtPoint(text, tabLength, 1, charPositionOffset);
         }
 
+        /// <summary>
+        /// Calculates the character index given a string and a x-coordinate using the given tabLenght (in characters) and charWidth (in pixels).
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="tabLength">size of a TAB in characters</param>
+        /// <param name="charWidth">size of a single characters in pixels</param>
+        /// <param name="xPos">relative to the start of the string</param>
+        /// <returns></returns>
         public static int CharIndexAtPoint(string text, int tabLength, int charWidth, int xPos)
         {
             if (xPos <= 0) return 0;
@@ -68,7 +76,7 @@ namespace FastColoredTextBoxNS
                 {
                     // we have gone past the character
                     double d = ((double)(drawingWidth - prevDrawingWidth)) / 2.0;
-                    int diff = (int)Math.Round(d);
+                    int diff = (int)Math.Round(d, MidpointRounding.AwayFromZero);
                     //if ((2*diff == charWidth))
                     //{
                     //    // current character is exactly one character wide
@@ -89,6 +97,13 @@ namespace FastColoredTextBoxNS
             return text.Length;
         }
 
+        /// <summary>
+        /// Calculates the width of a tab if the tab was inserted at index preceedingTextLength.
+        /// The preceedingTextLength is measured in characters.
+        /// </summary>
+        /// <param name="preceedingTextLength"></param>
+        /// <param name="tabLength"></param>
+        /// <returns></returns>
         public static int TabWidth(int preceedingTextLength, int tabLength)
         {
             int tabFiller = tabLength - (preceedingTextLength % tabLength);
@@ -96,6 +111,14 @@ namespace FastColoredTextBoxNS
             return tabFiller;
         }
 
+        /// <summary>
+        /// Calculates the width of the given text with the given tabLength.
+        /// In other words, each non-tab character has width 1.
+        /// The width of the tab character depends on the offset.
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="tabLength"></param>
+        /// <returns></returns>
         public static int TextWidth(string text, int tabLength)
         {
             int size = 0;
@@ -113,6 +136,17 @@ namespace FastColoredTextBoxNS
             return size;
         }
 
+        /// <summary>
+        /// Calculates the width of the given text with the given tabLength.
+        /// The preceedingTextLength is the number of characters before the text string.
+        /// 
+        /// In other words, each non-tab character has width 1.
+        /// The width of the tab character depends on the offset.
+        /// </summary>
+        /// <param name="preceedingTextLength"></param>
+        /// <param name="text"></param>
+        /// <param name="tabLength"></param>
+        /// <returns></returns>
         public static int TextWidth(int preceedingTextLength, string text, int tabLength)
         {
             int size = preceedingTextLength;
