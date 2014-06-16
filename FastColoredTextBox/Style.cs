@@ -168,7 +168,7 @@ namespace FastColoredTextBoxNS
                 if (range.tb.ImeAllowed)
                     for (int i = range.Start.iChar; i < range.End.iChar; i++)
                     {
-                        SizeF size = FastColoredTextBox.GetCharSize(f, line[i].c);
+                        SizeF size = CharHelper.GetCharSize(f, line[i].c);
 
                         var gs = gr.Save();
                         float k = size.Width > range.tb.CharWidth + 1 ? range.tb.CharWidth/size.Width : 1;
