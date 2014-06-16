@@ -57,6 +57,17 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="EncodingDetector.cs" />
+    <Compile Include="EnumDefinitions.cs" />
+    <Compile Include="EventArgDefs\AutoIndentEventArgs.cs" />
+    <Compile Include="EventArgDefs\CustomActionEventArgs.cs" />
+    <Compile Include="EventArgDefs\HintClickEventArgs.cs" />
+    <Compile Include="EventArgDefs\LineInsertedEventArgs.cs" />
+    <Compile Include="EventArgDefs\LineRemovedEventArgs.cs" />
+    <Compile Include="EventArgDefs\PaintLineEventArgs.cs" />
+    <Compile Include="EventArgDefs\TextChangedEventArgs.cs" />
+    <Compile Include="EventArgDefs\TextChangingEventArgs.cs" />
+    <Compile Include="EventArgDefs\ToolTipNeededEventArgs.cs" />
+    <Compile Include="EventArgDefs\WordWrapNeededEventArgs.cs" />
     <Compile Include="ExportToHTML.cs" />
     <Compile Include="ExportToRTF.cs" />
     <Compile Include="GoToForm.cs">
@@ -77,6 +88,7 @@
     <Compile Include="MacrosManager.cs" />
     <Compile Include="PlatformType.cs" />
     <Compile Include="Hotkeys.cs" />
+    <Compile Include="PrintDialogSettings.cs" />
     <Compile Include="Ruler.cs">
       <SubType>UserControl</SubType>
     </Compile>

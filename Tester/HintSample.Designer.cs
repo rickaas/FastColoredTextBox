@@ -1,4 +1,6 @@
-﻿namespace Tester
+﻿using FastColoredTextBoxNS.EventArgDefs;
+
+namespace Tester
 {
     partial class HintSample
     {
@@ -143,7 +145,7 @@
             this.fctb.TextAreaBorder = FastColoredTextBoxNS.TextAreaBorderType.Shadow;
             this.fctb.TextAreaBorderColor = System.Drawing.Color.Gray;
             this.fctb.WordWrap = true;
-            this.fctb.HintClick += new System.EventHandler<FastColoredTextBoxNS.HintClickEventArgs>(this.fctb_HintClick);
+            this.fctb.HintClick += new System.EventHandler<HintClickEventArgs>(this.fctb_HintClick);
             // 
             // HintSample
             // 

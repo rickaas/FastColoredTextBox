@@ -4,6 +4,7 @@ using System.Text;
 using System.Collections;
 using System.Drawing;
 using System.IO;
+using FastColoredTextBoxNS.EventArgDefs;
 
 namespace FastColoredTextBoxNS
 {
@@ -33,15 +34,15 @@ namespace FastColoredTextBoxNS
         /// <summary>
         /// Occurs when text was changed
         /// </summary>
-        public event EventHandler<TextChangedEventArgs> TextChanged;
+        public event EventHandler<TextSourceTextChangedEventArgs> TextChanged;
         /// <summary>
         /// Occurs when recalc is needed
         /// </summary>
-        public event EventHandler<TextChangedEventArgs> RecalcNeeded;
+        public event EventHandler<TextSourceTextChangedEventArgs> RecalcNeeded;
         /// <summary>
         /// Occurs when recalc wordwrap is needed
         /// </summary>
-        public event EventHandler<TextChangedEventArgs> RecalcWordWrap;
+        public event EventHandler<TextSourceTextChangedEventArgs> RecalcWordWrap;
         /// <summary>
         /// Occurs before text changing
         /// </summary>
@@ -199,15 +200,15 @@ namespace FastColoredTextBoxNS
         public virtual void OnTextChanged(int fromLine, int toLine)
         {
             if (TextChanged != null)
-                TextChanged(this, new TextChangedEventArgs(Math.Min(fromLine, toLine), Math.Max(fromLine, toLine) ));
+                TextChanged(this, new TextSourceTextChangedEventArgs(Math.Min(fromLine, toLine), Math.Max(fromLine, toLine) ));
         }
 
-        public class TextChangedEventArgs : EventArgs
+        public class TextSourceTextChangedEventArgs : EventArgs
         {
             public int iFromLine;
             public int iToLine;
 
-            public TextChangedEventArgs(int iFromLine, int iToLine)
+            public TextSourceTextChangedEventArgs(int iFromLine, int iToLine)
             {
                 this.iFromLine = iFromLine;
                 this.iToLine = iToLine;
@@ -274,13 +275,13 @@ namespace FastColoredTextBoxNS
                 return false;
         }
 
-        public virtual void NeedRecalc(TextChangedEventArgs args)
+        public virtual void NeedRecalc(TextSourceTextChangedEventArgs args)
         {
             if (RecalcNeeded != null)
                 RecalcNeeded(this, args);
         }
 
-        public virtual void OnRecalcWordWrap(TextChangedEventArgs args)
+        public virtual void OnRecalcWordWrap(TextSourceTextChangedEventArgs args)
         {
             if (RecalcWordWrap != null)
                 RecalcWordWrap(this, args);

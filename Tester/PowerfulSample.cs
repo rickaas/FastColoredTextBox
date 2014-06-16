@@ -11,6 +11,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using FastColoredTextBoxNS.EventArgDefs;
 
 namespace Tester
 {

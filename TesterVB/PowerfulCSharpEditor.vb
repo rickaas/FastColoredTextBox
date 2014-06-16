@@ -10,6 +10,7 @@ Imports System.Linq
 Imports System.Text.RegularExpressions
 Imports System.Threading
 Imports System.Windows.Forms
+Imports FastColoredTextBoxNS.EventArgDefs
 
 '-----------------------------------------------------------------------------------------------------
 ' Note: this sample is deprecated. See project Tester for newest code samples.

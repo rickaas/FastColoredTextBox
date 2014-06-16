@@ -3,6 +3,7 @@ Imports System
 Imports System.ComponentModel
 Imports System.Drawing
 Imports System.Windows.Forms
+Imports FastColoredTextBoxNS.EventArgDefs
 
 Namespace TesterVB
     Public Class TooltipSample
@@ -77,7 +78,7 @@ Namespace TesterVB
 
         End Sub
 
-        Private Sub fctb_ToolTipNeeded(sender As System.Object, e As FastColoredTextBoxNS.ToolTipNeededEventArgs) Handles fctb.ToolTipNeeded
+        Private Sub fctb_ToolTipNeeded(sender As System.Object, e As ToolTipNeededEventArgs) Handles fctb.ToolTipNeeded
             If Not String.IsNullOrEmpty(e.HoveredWord) Then
                 e.ToolTipTitle = e.HoveredWord
                 e.ToolTipText = "This is tooltip for '" + e.HoveredWord & "'"

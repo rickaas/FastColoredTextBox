@@ -1,6 +1,7 @@
 ﻿Imports System.Text.RegularExpressions
 Imports System.IO
 Imports FastColoredTextBoxNS
+Imports FastColoredTextBoxNS.EventArgDefs
 
 
 ''' <summary>
@@ -58,7 +59,7 @@ Public Class PowerfulSample
         FastColoredTextBox1.ClearUndo()
     End Sub
 
-    Private Sub FastColoredTextBox1_TextChanged(ByVal sender As System.Object, ByVal e As FastColoredTextBoxNS.TextChangedEventArgs) Handles FastColoredTextBox1.TextChanged
+    Private Sub FastColoredTextBox1_TextChanged(ByVal sender As System.Object, ByVal e As TextChangedEventArgs) Handles FastColoredTextBox1.TextChanged
         'For sample, we will highlight the syntax of C# manually, although could use built-in highlighter
         If lang = "CSharp" Then
             CSharpSyntaxHighlight(e)

@@ -5,6 +5,7 @@ Imports System.Drawing
 Imports System.Text.RegularExpressions
 Imports System.Windows.Forms
 Imports TesterVB.My
+Imports FastColoredTextBoxNS.EventArgDefs
 
 Namespace TesterVB
     Public Class GifImageDrawingSample

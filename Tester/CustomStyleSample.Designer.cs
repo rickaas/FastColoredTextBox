@@ -1,4 +1,6 @@
-﻿namespace Tester
+﻿using FastColoredTextBoxNS.EventArgDefs;
+
+namespace Tester
 {
     partial class CustomStyleSample
     {
@@ -72,7 +74,7 @@
             this.fctb.TextAreaBorder = FastColoredTextBoxNS.TextAreaBorderType.Shadow;
             this.fctb.WordWrap = true;
             this.fctb.WordWrapMode = FastColoredTextBoxNS.WordWrapMode.WordWrapPreferredWidth;
-            this.fctb.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.fctb_TextChanged);
+            this.fctb.TextChanged += new System.EventHandler<TextChangedEventArgs>(this.fctb_TextChanged);
             // 
             // CustomStyleSample
             // 

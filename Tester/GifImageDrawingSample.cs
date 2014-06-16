@@ -10,6 +10,7 @@ using FastColoredTextBoxNS;
 using System.Text.RegularExpressions;
 using System.Drawing.Imaging;
 using System.Timers;
+using FastColoredTextBoxNS.EventArgDefs;
 
 namespace Tester
 {
@@ -35,7 +36,7 @@ namespace Tester
             fctb.OnTextChanged();
         }
 
-        private void fctb_TextChanged(object sender, FastColoredTextBoxNS.TextChangedEventArgs e)
+        private void fctb_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (style == null) return;
             e.ChangedRange.ClearStyle(StyleIndex.All);

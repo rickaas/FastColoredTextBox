@@ -3,6 +3,7 @@ Imports System
 Imports System.ComponentModel
 Imports System.Drawing
 Imports System.Windows.Forms
+Imports FastColoredTextBoxNS.EventArgDefs
 
 Namespace TesterVB
     Public Class SimplestCodeFoldingSample

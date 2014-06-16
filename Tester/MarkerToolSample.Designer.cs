@@ -1,4 +1,6 @@
-﻿namespace Tester
+﻿using FastColoredTextBoxNS.EventArgDefs;
+
+namespace Tester
 {
     partial class MarkerToolSample
     {
@@ -130,7 +132,7 @@
             this.fctb.WordWrap = true;
             this.fctb.SelectionChangedDelayed += new System.EventHandler(this.fctb_SelectionChangedDelayed);
             this.fctb.VisualMarkerClick += new System.EventHandler<FastColoredTextBoxNS.VisualMarkerEventArgs>(this.fctb_VisualMarkerClick);
-            this.fctb.PaintLine += new System.EventHandler<FastColoredTextBoxNS.PaintLineEventArgs>(this.fctb_PaintLine);
+            this.fctb.PaintLine += new System.EventHandler<PaintLineEventArgs>(this.fctb_PaintLine);
             this.fctb.Resize += new System.EventHandler(this.fctb_Resize);
             // 
             // MarkerToolSample

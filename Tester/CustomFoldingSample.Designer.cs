@@ -1,4 +1,6 @@
-﻿namespace Tester
+﻿using FastColoredTextBoxNS.EventArgDefs;
+
+namespace Tester
 {
     partial class CustomFoldingSample
     {
@@ -69,8 +71,8 @@
             this.fctb.TabIndex = 3;
             this.fctb.Text = resources.GetString("fctb.Text");
             this.fctb.Zoom = 100;
-            this.fctb.TextChangedDelayed += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.fctb_TextChangedDelayed);
-            this.fctb.AutoIndentNeeded += new System.EventHandler<FastColoredTextBoxNS.AutoIndentEventArgs>(this.fctb_AutoIndentNeeded);
+            this.fctb.TextChangedDelayed += new System.EventHandler<TextChangedEventArgs>(this.fctb_TextChangedDelayed);
+            this.fctb.AutoIndentNeeded += new System.EventHandler<AutoIndentEventArgs>(this.fctb_AutoIndentNeeded);
             // 
             // CustomFoldingSample
             // 

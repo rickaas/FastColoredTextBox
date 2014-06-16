@@ -1,6 +1,7 @@
 ﻿using System.Windows.Forms;
 using FastColoredTextBoxNS;
 using System.Text.RegularExpressions;
+using FastColoredTextBoxNS.EventArgDefs;
 
 namespace Tester
 {

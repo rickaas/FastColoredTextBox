@@ -1,4 +1,6 @@
-﻿namespace Tester
+﻿using FastColoredTextBoxNS.EventArgDefs;
+
+namespace Tester
 {
     partial class SimplestSyntaxHighlightingSample
     {
@@ -64,7 +66,7 @@
             this.fctb.Text = "<li>Article\r\n<a href=\\\"#_comments\\\">Ask a Question about this article</a></li>\r\n<" +
     "li class=\\\"heading\\\">Quick Answers</li>\r\n<li><a href=\\\"/Questions/ask.aspx\\\">Ask" +
     " a Question</a></li>\r\n";
-            this.fctb.TextChanged += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.fctb_TextChanged);
+            this.fctb.TextChanged += new System.EventHandler<TextChangedEventArgs>(this.fctb_TextChanged);
             // 
             // SimplestSyntaxHighlightingSample
             // 

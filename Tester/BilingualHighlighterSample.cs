@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using FastColoredTextBoxNS;
+using FastColoredTextBoxNS.EventArgDefs;
 
 namespace Tester
 {

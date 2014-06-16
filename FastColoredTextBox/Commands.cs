@@ -48,7 +48,7 @@ namespace FastColoredTextBoxNS
                     break;
             }
 
-            ts.NeedRecalc(new TextSource.TextChangedEventArgs(sel.Start.iLine, sel.Start.iLine));
+            ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(sel.Start.iLine, sel.Start.iLine));
 
             base.Undo();
         }
@@ -77,7 +77,7 @@ namespace FastColoredTextBoxNS
             //}
             InsertChar(c, ref deletedChar, ts); // only supports inserting a single char
 
-            ts.NeedRecalc(new TextSource.TextChangedEventArgs(ts.CurrentTB.Selection.Start.iLine, ts.CurrentTB.Selection.Start.iLine));
+            ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(ts.CurrentTB.Selection.Start.iLine, ts.CurrentTB.Selection.Start.iLine));
             base.Execute();
         }
 
@@ -155,7 +155,7 @@ namespace FastColoredTextBoxNS
                 BreakLines(tb.Selection.Start.iLine, tb.Selection.Start.iChar, ts);
 
             tb.Selection.Start = new Place(0, tb.Selection.Start.iLine + 1);
-            ts.NeedRecalc(new TextSource.TextChangedEventArgs(0, 1));
+            ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(0, 1));
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace FastColoredTextBoxNS
                 ts.RemoveLine(i + 1);
             }
             tb.Selection.Start = new Place(pos, i);
-            ts.NeedRecalc(new TextSource.TextChangedEventArgs(0, 1));
+            ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(0, 1));
         }
 
         internal static void BreakLines(int iLine, int pos, TextSource ts)
@@ -257,7 +257,7 @@ namespace FastColoredTextBoxNS
                 tb.ExpandBlock(tb.Selection.Start.iLine);
                 foreach (char c in insertedText)
                     InsertCharCommand.InsertChar(c, ref cc, ts);
-                ts.NeedRecalc(new TextSource.TextChangedEventArgs(0, 1));
+                ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(0, 1));
             }
             finally {
                 tb.Selection.EndUpdate();
@@ -326,7 +326,7 @@ namespace FastColoredTextBoxNS
             if (ranges.Count > 0)
                 ts.OnTextChanged(ranges[0].Start.iLine, ranges[ranges.Count - 1].End.iLine);
 
-            ts.NeedRecalc(new TextSource.TextChangedEventArgs(0, 1));
+            ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(0, 1));
         }
 
         /// <summary>
@@ -354,7 +354,7 @@ namespace FastColoredTextBoxNS
                 ts.OnTextChanged(ranges[0].Start.iLine, ranges[ranges.Count - 1].End.iLine);
             tb.EndUpdate();
             tb.Selection.EndUpdate();
-            ts.NeedRecalc(new TextSource.TextChangedEventArgs(0, 1));
+            ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(0, 1));
 
             lastSel = new RangeInfo(tb.Selection);
         }
@@ -460,7 +460,7 @@ namespace FastColoredTextBoxNS
             //
             tb.Selection.Start = new Place(fromChar, fromLine);
             //
-            ts.NeedRecalc(new TextSource.TextChangedEventArgs(fromLine, toLine));
+            ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(fromLine, toLine));
         }
 
         public override UndoableCommand Clone()
@@ -525,7 +525,7 @@ namespace FastColoredTextBoxNS
             }
             tb.Selection.EndUpdate();
 
-            ts.NeedRecalc(new TextSource.TextChangedEventArgs(0, 1));
+            ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(0, 1));
         }
 
         /// <summary>
@@ -549,7 +549,7 @@ namespace FastColoredTextBoxNS
                 ts.OnTextChanged(ranges[i].ReplacedRange.Start.iLine, ranges[i].ReplacedRange.End.iLine);
             }
             tb.Selection.EndUpdate();
-            ts.NeedRecalc(new TextSource.TextChangedEventArgs(0, 1));
+            ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(0, 1));
 
             lastSel = new RangeInfo(tb.Selection);
         }
@@ -619,7 +619,7 @@ namespace FastColoredTextBoxNS
             //tb.EndUpdate();
             tb.Selection.EndUpdate();
 
-            ts.NeedRecalc(new TextSource.TextChangedEventArgs(0, 1));
+            ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(0, 1));
         }
 
         /// <summary>
@@ -643,7 +643,7 @@ namespace FastColoredTextBoxNS
             }
             tb.Selection.Start = new Place(0, 0);
             tb.Selection.EndUpdate();
-            ts.NeedRecalc(new TextSource.TextChangedEventArgs(0, 1));
+            ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(0, 1));
 
             lastSel = new RangeInfo(tb.Selection);
         }

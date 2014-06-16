@@ -1,8 +1,9 @@
 ﻿Imports System.Text.RegularExpressions
+Imports FastColoredTextBoxNS.EventArgDefs
 
 Public Class AutoIndentSample
 
-    Private Sub fastColoredTextBox1_AutoIndentNeeded(ByVal sender As System.Object, ByVal e As FastColoredTextBoxNS.AutoIndentEventArgs) Handles fastColoredTextBox1.AutoIndentNeeded
+    Private Sub fastColoredTextBox1_AutoIndentNeeded(ByVal sender As System.Object, ByVal e As AutoIndentEventArgs) Handles fastColoredTextBox1.AutoIndentNeeded
         ' if current line is "begin" then next
         ' line shift to right
         If e.LineText.Trim() = "begin" Then

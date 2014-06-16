@@ -2,6 +2,7 @@
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using FastColoredTextBoxNS;
+using FastColoredTextBoxNS.EventArgDefs;
 
 namespace Tester
 {
@@ -15,7 +16,7 @@ namespace Tester
             InitializeComponent();
         }
 
-        private void fctb_TextChanged(object sender, FastColoredTextBoxNS.TextChangedEventArgs e)
+        private void fctb_TextChanged(object sender, TextChangedEventArgs e)
         {
             //clear previous highlighting
             e.ChangedRange.ClearStyle(brownStyle);

@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
 using FastColoredTextBoxNS;
+using FastColoredTextBoxNS.EventArgDefs;
 
 namespace Tester
 {

@@ -4,6 +4,7 @@ Imports System.ComponentModel
 Imports System.Drawing
 Imports System.Drawing.Drawing2D
 Imports System.Windows.Forms
+Imports FastColoredTextBoxNS.EventArgDefs
 
 Namespace TesterVB
     Public Class MarkerToolSample

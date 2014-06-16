@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using FastColoredTextBoxNS;
+using FastColoredTextBoxNS.EventArgDefs;
 
 namespace Tester
 {
@@ -119,9 +120,9 @@ namespace Tester
             for (int i = 0; i < linesCount; i++)
                 LoadLineFromSourceString(i);
 
-            NeedRecalc(new TextChangedEventArgs(0, linesCount - 1));
+            NeedRecalc(new TextSourceTextChangedEventArgs(0, linesCount - 1));
             if (CurrentTB.WordWrap)
-                OnRecalcWordWrap(new TextChangedEventArgs(0, linesCount - 1));
+                OnRecalcWordWrap(new TextSourceTextChangedEventArgs(0, linesCount - 1));
         }
 
         public override void ClearIsChanged()
@@ -164,7 +165,7 @@ namespace Tester
             base.lines[i] = line;
 
             if (CurrentTB.WordWrap)
-                OnRecalcWordWrap(new TextChangedEventArgs(i, i));
+                OnRecalcWordWrap(new TextSourceTextChangedEventArgs(i, i));
         }
 
         public override void InsertLine(int index, Line line)

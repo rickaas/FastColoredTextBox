@@ -1,4 +1,6 @@
-﻿namespace Tester
+﻿using FastColoredTextBoxNS.EventArgDefs;
+
+namespace Tester
 {
     partial class HyperlinkSample
     {
@@ -49,7 +51,7 @@
             this.fctb.TabIndex = 0;
             this.fctb.Text = "some text \r\nsome text http://google.com?q=FastColoredTextBox some text\r\n\r\n(see al" +
     "so PredefinedStylesSample)";
-            this.fctb.TextChangedDelayed += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.fctb_TextChangedDelayed);
+            this.fctb.TextChangedDelayed += new System.EventHandler<TextChangedEventArgs>(this.fctb_TextChangedDelayed);
             this.fctb.MouseDown += new System.Windows.Forms.MouseEventHandler(this.fctb_MouseDown);
             this.fctb.MouseMove += new System.Windows.Forms.MouseEventHandler(this.fctb_MouseMove);
             // 

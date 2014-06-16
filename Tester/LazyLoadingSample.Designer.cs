@@ -1,4 +1,6 @@
-﻿namespace Tester
+﻿using FastColoredTextBoxNS.EventArgDefs;
+
+namespace Tester
 {
     partial class LazyLoadingSample
     {
@@ -171,7 +173,7 @@
     "d large file (approx. 50mb). \r\nThen bind file to the control in menu File/Bind t" +
     "o file.";
             this.fctb.Zoom = 100;
-            this.fctb.TextChangedDelayed += new System.EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(this.fctb_TextChangedDelayed);
+            this.fctb.TextChangedDelayed += new System.EventHandler<TextChangedEventArgs>(this.fctb_TextChangedDelayed);
             this.fctb.VisibleRangeChangedDelayed += new System.EventHandler(this.fctb_VisibleRangeChangedDelayed);
             // 
             // LazyLoadingSample
