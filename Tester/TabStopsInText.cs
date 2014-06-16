@@ -13,6 +13,17 @@ namespace Tester
 {
     public partial class TabStopsInText : Form
     {
+        private static string CreateText()
+        {
+            string[] lines = new[]
+                {
+                    "a\tvv\tbbb\txxxx\tuuuu",
+                    "1234____1234____1234____uuuu",
+                    "h\tii\tzzz\tyyyy\tuuuu",
+                };
+            return String.Join("\n", lines);
+        }
+
         public TabStopsInText()
         {
             InitializeComponent();
@@ -22,7 +33,7 @@ namespace Tester
             this.fastColoredTextBox1.DefaultStyle.HiddenTabCharacter = true;
             this.fastColoredTextBox1.DefaultStyle.TabDrawColor = Color.Gold;
             this.fastColoredTextBox1.SelectionStyle.SpecialTabDraw = true;
-            this.fastColoredTextBox1.Text = "a\tvv\tbbb\txxxx\n1234____1234____1234\nh\tii\tzzz\tyyyy";
+            this.fastColoredTextBox1.Text = CreateText();
         }
 
         public class TabCharStyle : TextStyle
