@@ -76,6 +76,7 @@
     <Compile Include="DocumentMap.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="DoDragDropHelper.cs" />
     <Compile Include="EncodingDetector.cs" />
     <Compile Include="EnumDefinitions.cs" />
     <Compile Include="EventArgDefs\AutoIndentEventArgs.cs" />

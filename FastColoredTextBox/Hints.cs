@@ -290,36 +290,47 @@ namespace FastColoredTextBoxNS
         /// Inner control
         /// </summary>
         public Control InnerControl { get; set; }
+
         /// <summary>
         /// Docking (allows None and Fill only)
         /// </summary>
         public DockStyle Dock { get; set; }
+
         /// <summary>
         /// Width of hint (if Dock is None)
         /// </summary>
         public int Width { get { return HostPanel.Width; } set { HostPanel.Width = value; } }
+
         /// <summary>
         /// Height of hint
         /// </summary>
         public int Height { get { return HostPanel.Height; } set { HostPanel.Height = value; } }
+
         /// <summary>
         /// Host panel
         /// </summary>
         public UnfocusablePanel HostPanel { get; private set; }
 
         internal int TopPadding { get; set; }
+
         /// <summary>
         /// Tag
         /// </summary>
         public object Tag { get; set; }
+
         /// <summary>
         /// Cursor
         /// </summary>
-        public Cursor Cursor { get { return HostPanel.Cursor; } set { HostPanel.Cursor = value; } }
+        public Cursor Cursor
+        {
+            get { return HostPanel.Cursor; } 
+            set { HostPanel.Cursor = value; }
+        }
+
         /// <summary>
         /// Inlining. If True then hint will moves apart text.
         /// </summary>
-        public bool Inline{get; set;}
+        public bool Inline{ get; private set; }
 
         /// <summary>
         /// Scroll textbox to the hint
@@ -386,7 +397,7 @@ namespace FastColoredTextBoxNS
         {
         }
 
-        protected virtual void Init()
+        private void Init()
         {
             HostPanel = new UnfocusablePanel();
             HostPanel.Click += OnClick;
