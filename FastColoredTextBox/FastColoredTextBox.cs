@@ -82,7 +82,7 @@ namespace FastColoredTextBoxNS
         private Color indentBackColor;
         private bool isChanged;
         private bool isLineSelect;
-        private bool isReplaceMode;
+        public bool isReplaceMode;
         private Language language;
         private Keys lastModifiers;
         private Point lastMouseCoord;
@@ -120,13 +120,15 @@ namespace FastColoredTextBoxNS
         private int startFoldingLine = -1;
         private int updating;
         private Range updatingRange;
-        private Range visibleRange;
+        internal Range visibleRange; // FIXME: quick
         private bool wordWrap;
         private WordWrapMode wordWrapMode = WordWrapMode.WordWrapControlWidth;
         private int reservedCountOfLineNumberChars = 1;
         private int zoom = 100;
         private Size localAutoScrollMinSize;
- 
+
+        private FCTBActionHandler FCTBActionHandler;
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -217,6 +219,8 @@ namespace FastColoredTextBoxNS
             DelayedTextChangedTimer.Tick += DelayedTextChangedTimerTick; // OnTextChangedDelayed
             tooltipDelayTimer.Tick += TooltipDelayTimerTick; // show tooltip
             middleClickScrollingTimer.Tick += middleClickScrollingTimer_Tick;
+
+            this.FCTBActionHandler = new FCTBActionHandler(this);
         }
 
         private char[] autoCompleteBracketsList = { '(', ')', '{', '}', '[', ']', '"', '"', '\'', '\'' };
@@ -2809,7 +2813,7 @@ namespace FastColoredTextBoxNS
             OnScroll(se, true);
         }
 
-        private void InsertChar(char c)
+        public void InsertChar(char c)
         {
             lines.Manager.BeginAutoUndoCommands();
             try
@@ -3279,8 +3283,10 @@ namespace FastColoredTextBoxNS
                 lastModifiers &= ~Keys.Control;
         }
 
-
-        bool findCharMode;
+        /// <summary>
+        /// When true the next OnKeyPressing event will be ignored and handled by this.FindChar(...)
+        /// </summary>
+        public bool findCharMode;
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
@@ -3344,7 +3350,7 @@ namespace FastColoredTextBoxNS
             if (HotkeysMapping.ContainsKey(keyData))
             {
                 var act = HotkeysMapping[keyData];
-                DoAction(act);
+                this.FCTBActionHandler.DoAction(act);
                 if (scrollActions.ContainsKey(act))
                     return true;
             }
@@ -3414,392 +3420,9 @@ namespace FastColoredTextBoxNS
             return false;
         }
 
-        private void DoAction(FCTBAction action)
-        {
-            switch (action)
-            {
-                case FCTBAction.ZoomIn:
-                    ChangeFontSize(2);
-                    break;
-                case FCTBAction.ZoomOut:
-                    ChangeFontSize(-2);
-                    break;
-                case FCTBAction.ZoomNormal:
-                    RestoreFontSize();
-                    break;
-                case FCTBAction.ScrollDown:
-                    DoScrollVertical(1, -1);
-                    break;
 
-                case FCTBAction.ScrollUp:
-                    DoScrollVertical(1, 1);
-                    break;
 
-                case FCTBAction.GoToDialog:
-                    ShowGoToDialog();
-                    break;
-
-                case FCTBAction.FindDialog:
-                    ShowFindDialog();
-                    break;
-
-                case FCTBAction.FindChar:
-                    findCharMode = true;
-                    break;
-
-                case FCTBAction.FindNext:
-                    if (findForm == null || findForm.FindTextBox.Text == "")
-                        ShowFindDialog();
-                    else
-                        findForm.FindNext(findForm.FindTextBox.Text);
-                    break;
-                case FCTBAction.FindPrevious:
-                    if (findForm == null || findForm.FindTextBox.Text == "")
-                        ShowFindDialog();
-                    else
-                        findForm.FindPrevious(findForm.FindTextBox.Text);
-                    break;
-
-                case FCTBAction.ReplaceDialog:
-                    ShowReplaceDialog();
-                    break;
-
-                case FCTBAction.Copy:
-                    Copy();
-                    break;
-
-                case FCTBAction.CommentSelected:
-                    CommentSelected();
-                    break;
-
-                case FCTBAction.Cut:
-                    if (!Selection.ReadOnly)
-                        Cut();
-                    break;
-
-                case FCTBAction.Paste:
-                    if (!Selection.ReadOnly)
-                        Paste();
-                    break;
-
-                case FCTBAction.SelectAll:
-                    Selection.SelectAll();
-                    break;
-
-                case FCTBAction.Undo:
-                    if (!ReadOnly)
-                        Undo();
-                    break;
-
-                case FCTBAction.Redo:
-                    if (!ReadOnly)
-                        Redo();
-                    break;
-
-                case FCTBAction.LowerCase:
-                    if (!Selection.ReadOnly)
-                        LowerCase();
-                    break;
-
-                case FCTBAction.UpperCase:
-                    if (!Selection.ReadOnly)
-                        UpperCase();
-                    break;
-
-                case FCTBAction.IndentDecrease:
-                    if (!Selection.ReadOnly)
-                        DecreaseIndent();
-                    break;
-
-                case FCTBAction.IndentIncrease:
-                    if (!Selection.ReadOnly)
-                        IncreaseIndent();
-                    break;
-
-                case FCTBAction.AutoIndentSelection:
-                    if (!Selection.ReadOnly)
-                        DoAutoIndent();
-                    break;
-
-                case FCTBAction.NavigateBackward:
-                    NavigateBackward();
-                    break;
-
-                case FCTBAction.NavigateForward:
-                    NavigateForward();
-                    break;
-
-                case FCTBAction.UnbookmarkLine:
-                    UnbookmarkLine(Selection.Start.iLine);
-                    break;
-
-                case FCTBAction.BookmarkLine:
-                    BookmarkLine(Selection.Start.iLine);
-                    break;
-
-                case FCTBAction.GoNextBookmark:
-                    GotoNextBookmark(Selection.Start.iLine);
-                    break;
-
-                case FCTBAction.GoPrevBookmark:
-                    GotoPrevBookmark(Selection.Start.iLine);
-                    break;
-
-                case FCTBAction.ClearWordLeft:
-                    if (OnKeyPressing('\b')) //KeyPress event processed key
-                        break;
-                    if (!Selection.ReadOnly)
-                    {
-                        if (!Selection.IsEmpty)
-                            ClearSelected();
-                        Selection.GoWordLeft(true);
-                        if (!Selection.ReadOnly)
-                            ClearSelected();
-                    }
-                    OnKeyPressed('\b');
-                    break;
-
-                case FCTBAction.ReplaceMode:
-                    if (!ReadOnly)
-                        isReplaceMode = !isReplaceMode;
-                    break;
-
-                case FCTBAction.DeleteCharRight:
-                    if (!Selection.ReadOnly)
-                    {
-                        if (OnKeyPressing((char) 0xff)) //KeyPress event processed key
-                            break;
-                        if (!Selection.IsEmpty)
-                            ClearSelected();
-                        else
-                        {
-                            //if line contains only spaces then delete line
-                            if (this[Selection.Start.iLine].StartSpacesCount == this[Selection.Start.iLine].Count)
-                                RemoveSpacesAfterCaret();
-
-                            if (!Selection.IsReadOnlyRightChar())
-                                if (Selection.GoRightThroughFolded())
-                                {
-                                    int iLine = Selection.Start.iLine;
-
-                                    InsertChar('\b');
-
-                                    //if removed \n then trim spaces
-                                    if (iLine != Selection.Start.iLine && AutoIndent)
-                                        if (Selection.Start.iChar > 0)
-                                            RemoveSpacesAfterCaret();
-                                }
-                        }
-                        OnKeyPressed((char) 0xff);
-                    }
-                    break;
-
-                case FCTBAction.ClearWordRight:
-                    if (OnKeyPressing((char) 0xff)) //KeyPress event processed key
-                        break;
-                    if (!Selection.ReadOnly)
-                    {
-                        if (!Selection.IsEmpty)
-                            ClearSelected();
-                        Selection.GoWordRight(true);
-                        if (!Selection.ReadOnly)
-                            ClearSelected();
-                    }
-                    OnKeyPressed((char) 0xff);
-                    break;
-
-                case FCTBAction.GoWordLeft:
-                    Selection.GoWordLeft(false);
-                    break;
-
-                case FCTBAction.GoWordLeftWithSelection:
-                    Selection.GoWordLeft(true);
-                    break;
-
-                case FCTBAction.GoLeft:
-                    Selection.GoLeft(false);
-                    break;
-
-                case FCTBAction.GoLeftWithSelection:
-                    Selection.GoLeft(true);
-                    break;
-
-                case FCTBAction.GoLeft_ColumnSelectionMode:
-                    CheckAndChangeSelectionType();
-                    if (Selection.ColumnSelectionMode)
-                        Selection.GoLeft_ColumnSelectionMode();
-                    Invalidate();
-                    break;
-
-                case FCTBAction.GoWordRight:
-                    Selection.GoWordRight(false);
-                    break;
-
-                case FCTBAction.GoWordRightWithSelection:
-                    Selection.GoWordRight(true);
-                    break;
-
-                case FCTBAction.GoRight:
-                    Selection.GoRight(false);
-                    break;
-
-                case FCTBAction.GoRightWithSelection:
-                    Selection.GoRight(true);
-                    break;
-
-                case FCTBAction.GoRight_ColumnSelectionMode:
-                    CheckAndChangeSelectionType();
-                    if (Selection.ColumnSelectionMode)
-                        Selection.GoRight_ColumnSelectionMode();
-                    Invalidate();
-                    break;
-
-                case FCTBAction.GoUp:
-                    Selection.GoUp(false);
-                    ScrollLeft();
-                    break;
-
-                case FCTBAction.GoUpWithSelection:
-                    Selection.GoUp(true);
-                    ScrollLeft();
-                    break;
-
-                case FCTBAction.GoUp_ColumnSelectionMode:
-                    CheckAndChangeSelectionType();
-                    if (Selection.ColumnSelectionMode)
-                        Selection.GoUp_ColumnSelectionMode();
-                    Invalidate();
-                    break;
-
-                case FCTBAction.MoveSelectedLinesUp:
-                    if (!Selection.ColumnSelectionMode)
-                        MoveSelectedLinesUp();
-                    break;
-
-                case FCTBAction.GoDown:
-                    Selection.GoDown(false);
-                    ScrollLeft();
-                    break;
-
-                case FCTBAction.GoDownWithSelection:
-                    Selection.GoDown(true);
-                    ScrollLeft();
-                    break;
-
-                case FCTBAction.GoDown_ColumnSelectionMode:
-                    CheckAndChangeSelectionType();
-                    if (Selection.ColumnSelectionMode)
-                        Selection.GoDown_ColumnSelectionMode();
-                    Invalidate();
-                    break;
-
-                case FCTBAction.MoveSelectedLinesDown:
-                    if (!Selection.ColumnSelectionMode)
-                        MoveSelectedLinesDown();
-                    break;
-                case FCTBAction.GoPageUp:
-                    Selection.GoPageUp(false);
-                    ScrollLeft();
-                    break;
-
-                case FCTBAction.GoPageUpWithSelection:
-                    Selection.GoPageUp(true);
-                    ScrollLeft();
-                    break;
-
-                case FCTBAction.GoPageDown:
-                    Selection.GoPageDown(false);
-                    ScrollLeft();
-                    break;
-
-                case FCTBAction.GoPageDownWithSelection:
-                    Selection.GoPageDown(true);
-                    ScrollLeft();
-                    break;
-
-                case FCTBAction.GoFirstLine:
-                    Selection.GoFirst(false);
-                    break;
-
-                case FCTBAction.GoFirstLineWithSelection:
-                    Selection.GoFirst(true);
-                    break;
-
-                case FCTBAction.GoHome:
-                    GoHome(false);
-                    ScrollLeft();
-                    break;
-
-                case FCTBAction.GoHomeWithSelection:
-                    GoHome(true);
-                    ScrollLeft();
-                    break;
-
-                case FCTBAction.GoLastLine:
-                    Selection.GoLast(false);
-                    break;
-
-                case FCTBAction.GoLastLineWithSelection:
-                    Selection.GoLast(true);
-                    break;
-
-                case FCTBAction.GoEnd:
-                    Selection.GoEnd(false);
-                    break;
-
-                case FCTBAction.GoEndWithSelection:
-                    Selection.GoEnd(true);
-                    break;
-
-                case FCTBAction.ClearHints:
-                    ClearHints();
-                    if(MacrosManager != null)
-                        MacrosManager.IsRecording = false;
-                    break;
-
-                case FCTBAction.MacroRecord:
-                    if(MacrosManager != null)
-                    {
-                        if (MacrosManager.AllowMacroRecordingByUser)
-                            MacrosManager.IsRecording = !MacrosManager.IsRecording;
-                        if (MacrosManager.IsRecording)
-                            MacrosManager.ClearMacros();
-                    }
-                    break;
-
-                case FCTBAction.MacroExecute:
-                    if (MacrosManager != null)
-                    {
-                        MacrosManager.IsRecording = false;
-                        MacrosManager.ExecuteMacros();
-                    }
-                    break;
-                case FCTBAction.CustomAction1 :
-                case FCTBAction.CustomAction2 :
-                case FCTBAction.CustomAction3 :
-                case FCTBAction.CustomAction4 :
-                case FCTBAction.CustomAction5 :
-                case FCTBAction.CustomAction6 :
-                case FCTBAction.CustomAction7 :
-                case FCTBAction.CustomAction8 :
-                case FCTBAction.CustomAction9 :
-                case FCTBAction.CustomAction10:
-                case FCTBAction.CustomAction11:
-                case FCTBAction.CustomAction12:
-                case FCTBAction.CustomAction13:
-                case FCTBAction.CustomAction14:
-                case FCTBAction.CustomAction15:
-                case FCTBAction.CustomAction16:
-                case FCTBAction.CustomAction17:
-                case FCTBAction.CustomAction18:
-                case FCTBAction.CustomAction19:
-                case FCTBAction.CustomAction20:
-                    OnCustomAction(new CustomActionEventArgs(action));
-                    break;
-            }
-        }
-
-        protected virtual void OnCustomAction(CustomActionEventArgs e)
+        public virtual void OnCustomAction(CustomActionEventArgs e)
         {
             if (CustomAction != null)
                 CustomAction(this, e);
@@ -3807,7 +3430,7 @@ namespace FastColoredTextBoxNS
 
         Font originalFont;
 
-        private void RestoreFontSize()
+        public void RestoreFontSize()
         {
             Zoom = 100;
         }
@@ -3963,7 +3586,7 @@ namespace FastColoredTextBoxNS
                 Selection = prevSelection;
         }
 
-        private void GoHome(bool shift)
+        public void GoHome(bool shift)
         {
             Selection.BeginUpdate();
             try
@@ -4052,10 +3675,11 @@ namespace FastColoredTextBoxNS
                 KeyPressing(this, args);
         }
 
-        private bool OnKeyPressing(char c)
+        public bool OnKeyPressing(char c)
         {
             if (findCharMode)
             {
+                // suppress OnKeyPressing event
                 findCharMode = false;
                 FindChar(c);
                 return true;
@@ -4279,7 +3903,7 @@ namespace FastColoredTextBoxNS
             }
         }
 
-        private void RemoveSpacesAfterCaret()
+        public void RemoveSpacesAfterCaret()
         {
             if (!Selection.IsEmpty)
                 return;
@@ -4881,41 +4505,41 @@ namespace FastColoredTextBoxNS
         protected virtual void DrawFoldingLines(PaintEventArgs e, int startLine, int endLine)
         {
             e.Graphics.SmoothingMode = SmoothingMode.None;
-            using (var pen = new Pen(Color.FromArgb(200, ServiceLinesColor)) {DashStyle = DashStyle.Dot})
-                foreach (var iLine in foldingPairs)
+            using (var pen = new Pen(Color.FromArgb(200, this.ServiceLinesColor)) {DashStyle = DashStyle.Dot})
+                foreach (var iLine in this.foldingPairs)
                     if (iLine.Key < endLine && iLine.Value > startLine)
                     {
-                        Line line = lines[iLine.Key];
-                        int y = LineInfos[iLine.Key].startY - VerticalScroll.Value + CharHeight;
-                        y += y%2;
+                        Line line = this.lines[iLine.Key];
+                        int y = this.LineInfos[iLine.Key].startY - this.VerticalScroll.Value + this.CharHeight;
+                        y += y % 2;
 
                         int y2;
 
-                        if (iLine.Value >= LinesCount)
-                            y2 = LineInfos[LinesCount - 1].startY + CharHeight - VerticalScroll.Value;
-                        else if (LineInfos[iLine.Value].VisibleState == VisibleState.Visible)
+                        if (iLine.Value >= this.LinesCount)
+                            y2 = this.LineInfos[LinesCount - 1].startY + this.CharHeight - this.VerticalScroll.Value;
+                        else if (this.LineInfos[iLine.Value].VisibleState == VisibleState.Visible)
                         {
                             int d = 0;
                             int spaceCount = line.StartSpacesCount;
-                            if (lines[iLine.Value].Count <= spaceCount || lines[iLine.Value][spaceCount].c == ' ')
+                            if (this.lines[iLine.Value].Count <= spaceCount || this.lines[iLine.Value][spaceCount].c == ' ')
                                 d = CharHeight;
-                            y2 = LineInfos[iLine.Value].startY - VerticalScroll.Value + d;
+                            y2 = this.LineInfos[iLine.Value].startY - this.VerticalScroll.Value + d;
                         }
                         else
                             continue;
 
-                        int x = LeftIndent + Paddings.Left + line.StartSpacesCount*CharWidth - HorizontalScroll.Value;
-                        if (x >= LeftIndent + Paddings.Left)
+                        int x = this.LeftIndent + Paddings.Left + line.StartSpacesCount * this.CharWidth - this.HorizontalScroll.Value;
+                        if (x >= this.LeftIndent + this.Paddings.Left)
                             e.Graphics.DrawLine(pen, x, y >= 0 ? y : 0, x,
-                                                y2 < ClientSize.Height ? y2 : ClientSize.Height);
+                                                y2 < this.ClientSize.Height ? y2 : this.ClientSize.Height);
                     }
         }
 
         private void DrawLineChars(Graphics gr, int firstChar, int lastChar, int iLine, int iWordWrapLine, int startX,
                                    int y)
         {
-            Line line = lines[iLine];
-            LineInfo lineInfo = LineInfos[iLine];
+            Line line = this.lines[iLine];
+            LineInfo lineInfo = this.LineInfos[iLine];
             int from = lineInfo.GetWordWrapStringStartPosition(iWordWrapLine);
             int to = lineInfo.GetWordWrapStringFinishPosition(iWordWrapLine, line);
 
@@ -4927,7 +4551,7 @@ namespace FastColoredTextBoxNS
             if (lineInfo.VisibleState == VisibleState.StartOfHiddenBlock)
             {
                 //rendering by FoldedBlockStyle
-                FoldedBlockStyle.Draw(gr, new Point(startX + firstChar*CharWidth, y),
+                this.FoldedBlockStyle.Draw(gr, new Point(startX + firstChar * this.CharWidth, y),
                                       new Range(this, from + firstChar, iLine, from + lastChar + 1, iLine));
             }
             else
@@ -4941,30 +4565,30 @@ namespace FastColoredTextBoxNS
                     StyleIndex style = line[from + iChar].style;
                     if (currentStyleIndex != style)
                     {
-                        FlushRendering(gr, currentStyleIndex,
-                                       new Point(startX + (iLastFlushedChar + 1)*CharWidth, y),
+                        this.FlushRendering(gr, currentStyleIndex,
+                                       new Point(startX + (iLastFlushedChar + 1) * this.CharWidth, y),
                                        new Range(this, from + iLastFlushedChar + 1, iLine, from + iChar, iLine));
                         iLastFlushedChar = iChar - 1;
                         currentStyleIndex = style;
                     }
                 }
-                FlushRendering(gr, currentStyleIndex, new Point(startX + (iLastFlushedChar + 1)*CharWidth, y),
+                this.FlushRendering(gr, currentStyleIndex, new Point(startX + (iLastFlushedChar + 1) * this.CharWidth, y),
                                new Range(this, from + iLastFlushedChar + 1, iLine, from + lastChar + 1, iLine));
             }
 
             //draw selection
-            if (SelectionHighlightingForLineBreaksEnabled  && iWordWrapLine == lineInfo.WordWrapStringsCount - 1) lastChar++;//draw selection for CR
+            if (this.SelectionHighlightingForLineBreaksEnabled && iWordWrapLine == lineInfo.WordWrapStringsCount - 1) lastChar++;//draw selection for CR
             if (!Selection.IsEmpty && lastChar >= firstChar)
             {
                 gr.SmoothingMode = SmoothingMode.None;
                 var textRange = new Range(this, from + firstChar, iLine, from + lastChar + 1, iLine);
-                textRange = Selection.GetIntersectionWith(textRange);
-                if (textRange != null && SelectionStyle != null)
+                textRange = this.Selection.GetIntersectionWith(textRange);
+                if (textRange != null && this.SelectionStyle != null)
                 {
                     int next;
                     if (this.ConvertTabToSpaces)
                     {
-                        next = (textRange.Start.iChar - from) * CharWidth;
+                        next = (textRange.Start.iChar - from) * this.CharWidth;
                     }
                     else
                     {
@@ -4973,7 +4597,7 @@ namespace FastColoredTextBoxNS
                         // Calculate where previous range ended
                         next = TextSizeCalculator.TextWidth(beforeRangeText, textRange.tb.TabLength) * CharWidth;
                     }
-                    SelectionStyle.Draw(gr, new Point(startX + next, 1 + y),
+                    this.SelectionStyle.Draw(gr, new Point(startX + next, 1 + y),
                                         textRange);
                 }
             }
@@ -5132,7 +4756,11 @@ namespace FastColoredTextBoxNS
             return;
         }
 
-        private void CheckAndChangeSelectionType()
+        /// <summary>
+        /// When ALT is pressed and wordwrap is off => ColumnSelectionMode = true.
+        /// Else ColumnSelectionMode = false.
+        /// </summary>
+        public void CheckAndChangeSelectionType()
         {
             //change selection type to ColumnSelectionMode
             if ((ModifierKeys & Keys.Alt) != 0 && !WordWrap)
@@ -5171,7 +4799,7 @@ namespace FastColoredTextBoxNS
             DeactivateMiddleClickScrollingMode();
         }
 
-        private void DoScrollVertical(int countLines, int direction)
+        public void DoScrollVertical(int countLines, int direction)
         {
             int numberOfVisibleLines = ClientSize.Height / CharHeight;
 
@@ -6848,143 +6476,13 @@ namespace FastColoredTextBoxNS
             ResumeLayout(false);
         }
 
-        /// <summary>
-        /// Prints range of text
-        /// </summary>
-        public virtual void Print(Range range, PrintDialogSettings settings)
+        internal void CallVisibleRangeHandlers()
         {
-            //prepare export with wordwrapping
-            var exporter = new ExportToHTML();
-            exporter.UseBr = true;
-            exporter.UseForwardNbsp = true;
-            exporter.UseNbsp = true;
-            exporter.UseStyleTag = false;
-            exporter.IncludeLineNumbers = settings.IncludeLineNumbers;
-
-            if (range == null)
-                range = Range;
-
-            if (range.Text == string.Empty)
-                return;
-
-            //change visible range
-            visibleRange = range;
-            try
-            {
-                //call handlers for VisibleRange
-                if (VisibleRangeChanged != null)
-                    VisibleRangeChanged(this, new EventArgs());
-                if (VisibleRangeChangedDelayed != null)
-                    VisibleRangeChangedDelayed(this, new EventArgs());
-            }
-            finally
-            {
-                //restore visible range
-                visibleRange = null;
-            }
-
-            //generate HTML
-            string HTML = exporter.GetHtml(range);
-            HTML = "<META HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=UTF-8\"><head><title>" +
-                   PrepareHtmlText(settings.Title) + "</title></head>" + HTML +"<br>"+ SelectHTMLRangeScript();
-            string tempFile = Path.GetTempPath() + "fctb.html";
-            File.WriteAllText(tempFile, HTML);
-
-            //clear wb page setup settings
-            SetPageSetupSettings(settings);
-
-            //create wb
-            var wb = new WebBrowser();
-            wb.Tag = settings;
-            wb.Visible = false;
-            wb.Location = new Point(-1000, -1000);
-            wb.Parent = this;
-            wb.StatusTextChanged += wb_StatusTextChanged;
-            wb.Navigate(tempFile);
-        }
-
-        protected virtual string PrepareHtmlText(string s)
-        {
-            return s.Replace("<", "&lt;").Replace(">", "&gt;").Replace("&", "&amp;");
-        }
-
-        private void wb_StatusTextChanged(object sender, EventArgs e)
-        {
-            var wb = sender as WebBrowser;
-            if (wb.StatusText.Contains("#print"))
-            {
-                var settings = wb.Tag as PrintDialogSettings;
-                try
-                {
-                    //show print dialog
-                    if (settings.ShowPrintPreviewDialog)
-                        wb.ShowPrintPreviewDialog();
-                    else
-                    {
-                        if (settings.ShowPageSetupDialog)
-                            wb.ShowPageSetupDialog();
-
-                        if (settings.ShowPrintDialog)
-                            wb.ShowPrintDialog();
-                        else
-                            wb.Print();
-                    }
-                }
-                finally
-                {
-                    //destroy webbrowser
-                    wb.Parent = null;
-                    wb.Dispose();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Prints all text
-        /// </summary>
-        public void Print(PrintDialogSettings settings)
-        {
-            Print(Range, settings);
-        }
-
-        /// <summary>
-        /// Prints all text, without any dialog windows
-        /// </summary>
-        public void Print()
-        {
-            Print(Range,
-                  new PrintDialogSettings
-                      {ShowPageSetupDialog = false, ShowPrintDialog = false, ShowPrintPreviewDialog = false});
-        }
-
-        private string SelectHTMLRangeScript()
-        {
-            Range sel = Selection.Clone();
-            sel.Normalize();
-            int start = PlaceToPosition(sel.Start) - sel.Start.iLine;
-            int len = sel.Text.Length - (sel.End.iLine - sel.Start.iLine);
-            return string.Format(
-                @"<script type=""text/javascript"">
-try{{
-    var sel = document.selection;
-    var rng = sel.createRange();
-    rng.moveStart(""character"", {0});
-    rng.moveEnd(""character"", {1});
-    rng.select();
-}}catch(ex){{}}
-window.status = ""#print"";
-</script>",
-                start, len);
-        }
-
-        private static void SetPageSetupSettings(PrintDialogSettings settings)
-        {
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Internet Explorer\PageSetup", true);
-            if (key != null)
-            {
-                key.SetValue("footer", settings.Footer);
-                key.SetValue("header", settings.Header);
-            }
+            //call handlers for VisibleRange
+            if (VisibleRangeChanged != null)
+                VisibleRangeChanged(this, new EventArgs());
+            if (VisibleRangeChangedDelayed != null)
+                VisibleRangeChangedDelayed(this, new EventArgs());
         }
 
         protected override void Dispose(bool disposing)
@@ -7059,23 +6557,6 @@ window.status = ""#print"";
         public VisibleState GetVisibleState(int iLine)
         {
             return LineInfos[iLine].VisibleState;
-        }
-
-        /// <summary>
-        /// Shows Goto dialog form
-        /// </summary>
-        public void ShowGoToDialog()
-        {
-            var form = new GoToForm();
-            form.TotalLineCount = LinesCount;
-            form.SelectedLineNumber = Selection.Start.iLine + 1;
-
-            if (form.ShowDialog() == DialogResult.OK)
-            {
-                int line = Math.Min(LinesCount - 1, Math.Max(0, form.SelectedLineNumber - 1));
-                Selection = new Range(this, 0, line, 0, line);
-                DoSelectionVisible();
-            }
         }
 
         /// <summary>

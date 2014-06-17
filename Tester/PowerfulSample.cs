@@ -11,6 +11,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using FastColoredTextBoxNS.CommandImpl;
 using FastColoredTextBoxNS.EventArgDefs;
 
 namespace Tester
@@ -331,7 +332,7 @@ namespace Tester
 
         private void miPrint_Click(object sender, EventArgs e)
         {
-            fctb.Print(new PrintDialogSettings() { ShowPrintPreviewDialog = true });
+            PrintHelper.Print(fctb, new PrintDialogSettings() { ShowPrintPreviewDialog = true });
         }
 
         Random rnd = new Random();

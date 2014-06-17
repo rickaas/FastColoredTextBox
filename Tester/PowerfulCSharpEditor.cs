@@ -481,7 +481,7 @@ namespace Tester
                 settings.Title = tsFiles.SelectedItem.Title;
                 settings.Header = "&b&w&b";
                 settings.Footer = "&b&p";
-                CurrentTB.Print(settings);
+                PrintHelper.Print(this.CurrentTB, settings);
             }
         }
 
