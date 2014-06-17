@@ -86,8 +86,9 @@
     <Compile Include="EventArgDefs\TextChangingEventArgs.cs" />
     <Compile Include="EventArgDefs\ToolTipNeededEventArgs.cs" />
     <Compile Include="EventArgDefs\WordWrapNeededEventArgs.cs" />
-    <Compile Include="ExportToHTML.cs" />
-    <Compile Include="ExportToRTF.cs" />
+    <Compile Include="Exporting\ExportToHTML.cs" />
+    <Compile Include="Exporting\ExportToRTF.cs" />
+    <Compile Include="Exporting\ExportUtil.cs" />
     <Compile Include="Folding.cs" />
     <Compile Include="GoToForm.cs">
       <SubType>Form</SubType>

@@ -1427,36 +1427,7 @@ namespace FastColoredTextBoxNS
             }
         }
 
-        /// <summary>
-        /// Gets colored text as HTML
-        /// </summary>
-        /// <remarks>For more flexibility you can use ExportToHTML class also</remarks>
-        [Browsable(false)]
-        public string Html
-        {
-            get
-            {
-                var exporter = new ExportToHTML();
-                exporter.UseNbsp = false;
-                exporter.UseStyleTag = false;
-                exporter.UseBr = false;
-                return "<pre>" + exporter.GetHtml(this) + "</pre>";
-            }
-        }
 
-        /// <summary>
-        /// Gets colored text as RTF
-        /// </summary>
-        /// <remarks>For more flexibility you can use ExportToRTF class also</remarks>
-        [Browsable(false)]
-        public string Rtf
-        {
-            get
-            {
-                var exporter = new ExportToRTF();
-                return exporter.GetRtf(this);
-            }
-        }
 
         /// <summary>
         /// Text of current selection

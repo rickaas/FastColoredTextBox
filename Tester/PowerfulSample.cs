@@ -13,6 +13,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using FastColoredTextBoxNS.CommandImpl;
 using FastColoredTextBoxNS.EventArgDefs;
+using FastColoredTextBoxNS.Exporting;
 
 namespace Tester
 {
@@ -181,7 +182,7 @@ namespace Tester
 
                 if (sfd.FilterIndex == 1)
                 {
-                    html = fctb.Html;
+                    html = ExportUtil.GetHtml(fctb);
                 }
                 if (sfd.FilterIndex == 2)
                 {
@@ -384,7 +385,7 @@ namespace Tester
             sfd.Filter = "RTF|*.rtf";
             if (sfd.ShowDialog() == DialogResult.OK)
             {
-                string rtf = fctb.Rtf;
+                string rtf = ExportUtil.GetRtf(fctb);
                 File.WriteAllText(sfd.FileName, rtf);
             }
         }
