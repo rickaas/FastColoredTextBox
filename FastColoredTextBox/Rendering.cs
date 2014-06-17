@@ -175,7 +175,7 @@ namespace FastColoredTextBoxNS
 
         internal static void PaintHintBrackets(Graphics gr, FastColoredTextBox textbox)
         {
-            foreach (Hint hint in textbox.hints)
+            foreach (Hint hint in textbox.Hints)
             {
                 Range r = hint.Range.Clone();
                 r.Normalize();
@@ -229,7 +229,7 @@ namespace FastColoredTextBoxNS
 
             //create dictionary of bookmarks
             var bookmarksByLineIndex = new Dictionary<int, Bookmark>();
-            foreach (Bookmark item in textbox.bookmarks)
+            foreach (Bookmark item in textbox.Bookmarks)
             {
                 bookmarksByLineIndex[item.LineIndex] = item;
             }

@@ -59,12 +59,14 @@
     <Compile Include="AdvancedFindForm.Designer.cs">
       <DependentUpon>AdvancedFindForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="CommandImpl\BookmarkCommands.cs" />
     <Compile Include="CommandImpl\ClearSelectedCommand.cs" />
     <Compile Include="CommandImpl\EditorCommands.cs" />
     <Compile Include="CommandImpl\FCTBActionHandler.cs" />
     <Compile Include="CommandImpl\FileIO.cs" />
     <Compile Include="CommandImpl\InsertCharCommand.cs" />
     <Compile Include="CommandImpl\InsertTextCommand.cs" />
+    <Compile Include="CommandImpl\MoveCommands.cs" />
     <Compile Include="CommandImpl\MultiRangeCommand.cs" />
     <Compile Include="CommandImpl\PrintHelper.cs" />
     <Compile Include="CommandImpl\RemoveLinesCommand.cs" />
@@ -96,6 +98,7 @@
     <Compile Include="GoToForm.designer.cs">
       <DependentUpon>GoToForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Highlighting.cs" />
     <Compile Include="Hints.cs" />
     <Compile Include="HotkeysEditorForm.cs">
       <SubType>Form</SubType>
@@ -151,6 +154,7 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="VisualMarker.cs" />
+    <Compile Include="WindowsRegistry.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="AdvancedFindForm.resx">

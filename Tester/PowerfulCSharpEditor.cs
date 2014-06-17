@@ -410,12 +410,12 @@ namespace Tester
 
         private void cutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CurrentTB.Cut();
+            EditorCommands.Cut(this.CurrentTB);
         }
 
         private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CurrentTB.Copy();
+            EditorCommands.Copy(this.CurrentTB);
         }
 
         private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -512,12 +512,12 @@ namespace Tester
 
         private void findToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CurrentTB.ShowFindDialog();
+            EditorCommands.ShowFindDialog(this.CurrentTB);
         }
 
         private void replaceToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CurrentTB.ShowReplaceDialog();
+            EditorCommands.ShowReplaceDialog(this.CurrentTB);
         }
 
         private void PowerfulCSharpEditor_FormClosing(object sender, FormClosingEventArgs e)
@@ -855,14 +855,14 @@ namespace Tester
         {
             if(CurrentTB == null) 
                 return;
-            CurrentTB.BookmarkLine(CurrentTB.Selection.Start.iLine);
+            BookmarkCommands.BookmarkLine(this.CurrentTB, CurrentTB.Selection.Start.iLine);
         }
 
         private void bookmarkMinusButton_Click(object sender, EventArgs e)
         {
             if (CurrentTB == null)
                 return;
-            CurrentTB.UnbookmarkLine(CurrentTB.Selection.Start.iLine);
+            BookmarkCommands.UnbookmarkLine(this.CurrentTB, CurrentTB.Selection.Start.iLine);
         }
 
         private void gotoButton_DropDownOpening(object sender, EventArgs e)

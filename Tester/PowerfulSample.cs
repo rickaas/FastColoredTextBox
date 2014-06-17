@@ -90,12 +90,12 @@ namespace Tester
 
         private void findToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            fctb.ShowFindDialog();
+            EditorCommands.ShowFindDialog(fctb);
         }
 
         private void replaceToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            fctb.ShowReplaceDialog();
+            EditorCommands.ShowReplaceDialog(fctb);
         }
 
         private void miLanguage_DropDownOpening(object sender, EventArgs e)

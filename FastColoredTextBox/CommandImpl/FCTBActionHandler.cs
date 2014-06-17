@@ -43,7 +43,7 @@ namespace FastColoredTextBoxNS.CommandImpl
                     break;
 
                 case FCTBAction.FindDialog:
-                    this.textbox.ShowFindDialog();
+                    EditorCommands.ShowFindDialog(this.textbox);
                     break;
 
                 case FCTBAction.FindChar:
@@ -52,32 +52,32 @@ namespace FastColoredTextBoxNS.CommandImpl
 
                 case FCTBAction.FindNext:
                     if (this.textbox.findForm == null || this.textbox.findForm.FindTextBox.Text == "")
-                        this.textbox.ShowFindDialog();
+                        EditorCommands.ShowFindDialog(this.textbox);
                     else
                         this.textbox.findForm.FindNext(this.textbox.findForm.FindTextBox.Text);
                     break;
                 case FCTBAction.FindPrevious:
                     if (this.textbox.findForm == null || this.textbox.findForm.FindTextBox.Text == "")
-                        this.textbox.ShowFindDialog();
+                        EditorCommands.ShowFindDialog(this.textbox);
                     else
                         this.textbox.findForm.FindPrevious(this.textbox.findForm.FindTextBox.Text);
                     break;
 
                 case FCTBAction.ReplaceDialog:
-                    this.textbox.ShowReplaceDialog();
+                    EditorCommands.ShowReplaceDialog(this.textbox);
                     break;
 
                 case FCTBAction.Copy:
-                    this.textbox.Copy();
+                    EditorCommands.Copy(this.textbox);
                     break;
 
                 case FCTBAction.CommentSelected:
-                    this.textbox.CommentSelected();
+                    EditorCommands.CommentSelected(this.textbox);
                     break;
 
                 case FCTBAction.Cut:
                     if (!this.textbox.Selection.ReadOnly)
-                        this.textbox.Cut();
+                        EditorCommands.Cut(this.textbox);
                     break;
 
                 case FCTBAction.Paste:
@@ -101,12 +101,12 @@ namespace FastColoredTextBoxNS.CommandImpl
 
                 case FCTBAction.LowerCase:
                     if (!this.textbox.Selection.ReadOnly)
-                        this.textbox.LowerCase();
+                        EditorCommands.LowerCase(this.textbox);
                     break;
 
                 case FCTBAction.UpperCase:
                     if (!this.textbox.Selection.ReadOnly)
-                        this.textbox.UpperCase();
+                        EditorCommands.UpperCase(this.textbox);
                     break;
 
                 case FCTBAction.IndentDecrease:
@@ -133,19 +133,19 @@ namespace FastColoredTextBoxNS.CommandImpl
                     break;
 
                 case FCTBAction.UnbookmarkLine:
-                    this.textbox.UnbookmarkLine(this.textbox.Selection.Start.iLine);
+                    BookmarkCommands.UnbookmarkLine(this.textbox, this.textbox.Selection.Start.iLine);
                     break;
 
                 case FCTBAction.BookmarkLine:
-                    this.textbox.BookmarkLine(this.textbox.Selection.Start.iLine);
+                    BookmarkCommands.BookmarkLine(this.textbox, this.textbox.Selection.Start.iLine);
                     break;
 
                 case FCTBAction.GoNextBookmark:
-                    this.textbox.GotoNextBookmark(this.textbox.Selection.Start.iLine);
+                    BookmarkCommands.GotoNextBookmark(this.textbox, this.textbox.Selection.Start.iLine);
                     break;
 
                 case FCTBAction.GoPrevBookmark:
-                    this.textbox.GotoPrevBookmark(this.textbox.Selection.Start.iLine);
+                    BookmarkCommands.GotoPrevBookmark(this.textbox, this.textbox.Selection.Start.iLine);
                     break;
 
                 case FCTBAction.ClearWordLeft:
@@ -276,7 +276,7 @@ namespace FastColoredTextBoxNS.CommandImpl
 
                 case FCTBAction.MoveSelectedLinesUp:
                     if (!this.textbox.Selection.ColumnSelectionMode)
-                        this.textbox.MoveSelectedLinesUp();
+                        MoveCommands.MoveSelectedLinesUp(this.textbox);
                     break;
 
                 case FCTBAction.GoDown:
@@ -298,7 +298,7 @@ namespace FastColoredTextBoxNS.CommandImpl
 
                 case FCTBAction.MoveSelectedLinesDown:
                     if (!this.textbox.Selection.ColumnSelectionMode)
-                        this.textbox.MoveSelectedLinesDown();
+                        MoveCommands.MoveSelectedLinesDown(this.textbox);
                     break;
                 case FCTBAction.GoPageUp:
                     this.textbox.Selection.GoPageUp(false);
@@ -355,7 +355,7 @@ namespace FastColoredTextBoxNS.CommandImpl
                     break;
 
                 case FCTBAction.ClearHints:
-                    this.textbox.ClearHints();
+                    this.textbox.Hints.Clear();
                     if (this.textbox.MacrosManager != null)
                         this.textbox.MacrosManager.IsRecording = false;
                     break;

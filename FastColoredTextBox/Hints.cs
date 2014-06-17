@@ -14,8 +14,8 @@ namespace FastColoredTextBoxNS
     /// </summary>
     public class Hints : ICollection<Hint>, IDisposable
     {
-        FastColoredTextBox tb;
-        List<Hint> items = new List<Hint>();
+        readonly FastColoredTextBox tb;
+        readonly List<Hint> items = new List<Hint>();
 
         public Hints(FastColoredTextBox tb)
         {
@@ -150,6 +150,63 @@ namespace FastColoredTextBoxNS
             tb.Select();
             tb.ActiveControl = null;
             tb.Invalidate();
+        }
+
+        /// <summary>
+        /// Add and shows the hint
+        /// </summary>
+        /// <param name="range">Linked range</param>
+        /// <param name="innerControl">Inner control</param>
+        public Hint AddHint(Range range, Control innerControl)
+        {
+            return AddHint(range, innerControl, true, true, true);
+        }
+
+        /// <summary>
+        /// Add and shows simple text hint
+        /// </summary>
+        /// <param name="range">Linked range</param>
+        /// <param name="text">Text of simple hint</param>
+        /// <param name="scrollToHint">Scrolls textbox to the hint</param>
+        /// <param name="inline">Inlining. If True then hint will moves apart text</param>
+        /// <param name="dock">Docking. If True then hint will fill whole line</param>
+        public Hint AddHint(Range range, string text, bool scrollToHint, bool inline, bool dock)
+        {
+            var hint = new Hint(range, text, inline, dock);
+            this.Add(hint);
+            if (scrollToHint)
+                hint.DoVisible();
+
+            return hint;
+        }
+
+        /// <summary>
+        /// Add and shows simple text hint
+        /// </summary>
+        /// <param name="range">Linked range</param>
+        /// <param name="text">Text of simple hint</param>
+        public Hint AddHint(Range range, string text)
+        {
+            return AddHint(range, text, true, true, true);
+        }
+
+        /// <summary>
+        /// Add and shows the hint
+        /// </summary>
+        /// <param name="range">Linked range</param>
+        /// <param name="innerControl">Inner control</param>
+        /// <param name="scrollToHint">Scrolls textbox to the hint</param>
+        /// <param name="inline">Inlining. If True then hint will moves apart text</param>
+        /// <param name="dock">Docking. If True then hint will fill whole line</param>
+        public Hint AddHint(Range range, Control innerControl, bool scrollToHint, bool inline,
+                                    bool dock)
+        {
+            var hint = new Hint(range, innerControl, inline, dock);
+            this.Add(hint);
+            if (scrollToHint)
+                hint.DoVisible();
+
+            return hint;
         }
 
         /// <summary>
