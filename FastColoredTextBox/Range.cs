@@ -121,7 +121,7 @@ namespace FastColoredTextBoxNS
             Place newEnd = r1.End < r2.End ? r1.End : r2.End;
             if (newEnd < newStart) 
                 return new Range(tb, start, start);
-            return tb.GetRange(newStart, newEnd);
+            return RangeUtil.GetRange(tb, newStart, newEnd);
         }
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace FastColoredTextBoxNS
             Place newStart = r1.Start < r2.Start ? r1.Start : r2.Start;
             Place newEnd = r1.End > r2.End ? r1.End : r2.End;
 
-            return tb.GetRange(newStart, newEnd);
+            return RangeUtil.GetRange(tb, newStart, newEnd);
         }
 
         /// <summary>

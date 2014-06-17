@@ -100,10 +100,10 @@ namespace FastColoredTextBoxNS
         private bool mouseIsDrag;
         private bool mouseIsDragDrop;
         private bool multiline;
-        private bool needRecalc;
+        internal bool needRecalc;
         private bool needRecalcWordWrap;
         private Point needRecalcWordWrapInterval;
-        private bool needRecalcFoldingLines;
+        internal bool needRecalcFoldingLines;
         private bool needRiseSelectionChangedDelayed;
         private bool needRiseTextChangedDelayed;
         private bool needRiseVisibleRangeChangedDelayed;
@@ -1131,7 +1131,7 @@ namespace FastColoredTextBoxNS
             {
                 if (visibleRange != null)
                     return visibleRange;
-                return GetRange(
+                return RangeUtil.GetRange(this,
                     PointToPlace(new Point(LeftIndent, 0)),
                     PointToPlace(new Point(ClientSize.Width, ClientSize.Height))
                     );
@@ -1435,8 +1435,8 @@ namespace FastColoredTextBoxNS
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int SelectionStart
         {
-            get { return Math.Min(PlaceToPosition(Selection.Start), PlaceToPosition(Selection.End)); }
-            set { Selection.Start = PositionToPlace(value); }
+            get { return Math.Min(TextSourceUtil.PlaceToPosition(this.lines, Selection.Start), TextSourceUtil.PlaceToPosition(this.lines, Selection.End)); }
+            set { Selection.Start = TextSourceUtil.PositionToPlace(this.lines, value); }
         }
 
         /// <summary>
@@ -1446,11 +1446,11 @@ namespace FastColoredTextBoxNS
         [DefaultValue(0)]
         public int SelectionLength
         {
-            get { return Math.Abs(PlaceToPosition(Selection.Start) - PlaceToPosition(Selection.End)); }
+            get { return Math.Abs(TextSourceUtil.PlaceToPosition(this.lines, Selection.Start) - TextSourceUtil.PlaceToPosition(this.lines, Selection.End)); }
             set
             {
                 if (value > 0)
-                    Selection.End = PositionToPlace(SelectionStart + value);
+                    Selection.End = TextSourceUtil.PositionToPlace(this.lines, SelectionStart + value);
             }
         }
 
@@ -2879,7 +2879,7 @@ namespace FastColoredTextBoxNS
             Invalidate();
         }
 
-        private void Recalc()
+        internal void Recalc()
         {
             if (!needRecalc)
                 return;
@@ -4094,62 +4094,6 @@ namespace FastColoredTextBoxNS
         }
 
         /// <summary>
-        /// Draws text to given Graphics
-        /// </summary>
-        /// <param name="gr"></param>
-        /// <param name="start">Start place of drawing text</param>
-        /// <param name="size">Size of drawing</param>
-        public void DrawText(Graphics gr, Place start, Size size)
-        {
-            if (needRecalc)
-                Recalc();
-
-            if (needRecalcFoldingLines)
-                RecalcFoldingLines();
-
-            var startPoint = PlaceToPoint(start);
-            var startY = startPoint.Y + VerticalScroll.Value;
-            var startX = startPoint.X + HorizontalScroll.Value - LeftIndent - Paddings.Left;
-            int firstChar = start.iChar;
-            int lastChar = (startX + size.Width) / CharWidth;
-
-            var startLine = start.iLine;
-            //draw text
-            for (int iLine = startLine; iLine < lines.Count; iLine++)
-            {
-                Line line = lines[iLine];
-                LineInfo lineInfo = LineInfos[iLine];
-                //
-                if (lineInfo.startY > startY + size.Height)
-                    break;
-                if (lineInfo.startY + lineInfo.WordWrapStringsCount * CharHeight < startY)
-                    continue;
-                if (lineInfo.VisibleState == VisibleState.Hidden)
-                    continue;
-
-                int y = lineInfo.startY - startY;
-                //
-                gr.SmoothingMode = SmoothingMode.None;
-                //draw line background
-                if (lineInfo.VisibleState == VisibleState.Visible)
-                    if (line.BackgroundBrush != null)
-                        gr.FillRectangle(line.BackgroundBrush, new Rectangle(0, y, size.Width, CharHeight * lineInfo.WordWrapStringsCount));
-                //
-                gr.SmoothingMode = SmoothingMode.AntiAlias;
-
-                //draw wordwrap strings of line
-                for (int iWordWrapLine = 0; iWordWrapLine < lineInfo.WordWrapStringsCount; iWordWrapLine++)
-                {
-                    y = lineInfo.startY + iWordWrapLine * CharHeight - startY;
-                    //indent 
-                    var indent = iWordWrapLine == 0 ? 0 : lineInfo.wordWrapIndent * CharWidth;
-                    //draw chars
-                    Rendering.DrawLineChars(gr, this, firstChar, lastChar, iLine, iWordWrapLine, -startX + indent, y);
-                }
-            }
-        }
-
-        /// <summary>
         /// Draw control
         /// </summary>
         protected override void OnPaint(PaintEventArgs e)
@@ -4284,35 +4228,6 @@ namespace FastColoredTextBoxNS
         }
 
         internal Rectangle prevCaretRect;
-
-
-
-
-
-        internal void FlushRendering(Graphics gr, StyleIndex styleIndex, Point pos, Range range)
-        {
-            if (range.End > range.Start)
-            {
-                int mask = 1;
-                bool hasTextStyle = false;
-                for (int i = 0; i < Styles.Length; i++)
-                {
-                    if (Styles[i] != null && ((int) styleIndex & mask) != 0)
-                    {
-                        Style style = Styles[i];
-                        bool isTextStyle = style is TextStyle;
-                        if (!hasTextStyle || !isTextStyle || AllowSeveralTextStyleDrawing)
-                            //cancelling secondary rendering by TextStyle
-                            style.Draw(gr, pos, range); //rendering
-                        hasTextStyle |= isTextStyle;
-                    }
-                    mask = mask << 1;
-                }
-                //draw by default renderer
-                if (!hasTextStyle)
-                    DefaultStyle.Draw(gr, pos, range);
-            }
-        }
 
         protected override void OnEnter(EventArgs e)
         {
@@ -4611,7 +4526,7 @@ namespace FastColoredTextBoxNS
 
             if (lastMouseCoord != e.Location)
             {
-                //restart tooltip timer
+                //restart tooltip timer because mouse position changed
                 CancelToolTip();
                 tooltipDelayTimer.Start();
             }
@@ -4838,7 +4753,7 @@ namespace FastColoredTextBoxNS
         /// <returns>Position</returns>
         public int PointToPosition(Point point)
         {
-            return PlaceToPosition(PointToPlace(point));
+            return TextSourceUtil.PlaceToPosition(this.lines, PointToPlace(point));
         }
 
         /// <summary>
@@ -5059,7 +4974,7 @@ namespace FastColoredTextBoxNS
             if (startFoldingLine >= 0)
             {
                 //find end of block
-                endFoldingLine = FindEndOfFoldingBlock(startFoldingLine, maxLinesForFolding);
+                endFoldingLine = Folding.FindEndOfFoldingBlock(this.lines, startFoldingLine, maxLinesForFolding, this.FindEndOfFoldingBlockStrategy);
                 if (endFoldingLine == startFoldingLine)
                     endFoldingLine = -1;
             }
@@ -5089,57 +5004,16 @@ namespace FastColoredTextBoxNS
             Invalidate();
         }
 
-        /// <summary>
-        /// Gets absolute text position from line and char position
-        /// </summary>
-        /// <param name="point">Line and char position</param>
-        /// <returns>Point of char</returns>
-        public int PlaceToPosition(Place point)
-        {
-            if (point.iLine < 0 || point.iLine >= lines.Count ||
-                point.iChar >= lines[point.iLine].Count + Environment.NewLine.Length)
-                return -1;
 
-            int result = 0;
-            for (int i = 0; i < point.iLine; i++)
-                result += lines[i].Count + Environment.NewLine.Length;
-            result += point.iChar;
 
-            return result;
-        }
 
-        /// <summary>
-        /// Gets line and char position from absolute text position
-        /// </summary>
-        public Place PositionToPlace(int pos)
-        {
-            if (pos < 0)
-                return new Place(0, 0);
-
-            for (int i = 0; i < lines.Count; i++)
-            {
-                int lineLength = lines[i].Count + Environment.NewLine.Length;
-                if (pos < lines[i].Count)
-                    return new Place(pos, i);
-                if (pos < lineLength)
-                    return new Place(lines[i].Count, i);
-
-                pos -= lineLength;
-            }
-
-            if (lines.Count > 0)
-                return new Place(lines[lines.Count - 1].Count, lines.Count - 1);
-            else
-                return new Place(0, 0);
-            //throw new ArgumentOutOfRangeException("Position out of range");
-        }
 
         /// <summary>
         /// Gets absolute char position from char position
         /// </summary>
         public Point PositionToPoint(int pos)
         {
-            return PlaceToPoint(PositionToPlace(pos));
+            return PlaceToPoint(TextSourceUtil.PositionToPlace(this.lines, pos));
         }
 
         /// <summary>
@@ -5169,59 +5043,6 @@ namespace FastColoredTextBoxNS
             x = LeftIndent + Paddings.Left + x - HorizontalScroll.Value;
 
             return new Point(x, y);
-        }
-
-        /// <summary>
-        /// Get range of text
-        /// </summary>
-        /// <param name="fromPos">Absolute start position</param>
-        /// <param name="toPos">Absolute finish position</param>
-        /// <returns>Range</returns>
-        public Range GetRange(int fromPos, int toPos)
-        {
-            var sel = new Range(this);
-            sel.Start = PositionToPlace(fromPos);
-            sel.End = PositionToPlace(toPos);
-            return sel;
-        }
-
-        /// <summary>
-        /// Get range of text
-        /// </summary>
-        /// <param name="fromPlace">Line and char position</param>
-        /// <param name="toPlace">Line and char position</param>
-        /// <returns>Range</returns>
-        public Range GetRange(Place fromPlace, Place toPlace)
-        {
-            return new Range(this, fromPlace, toPlace);
-        }
-
-        /// <summary>
-        /// Finds ranges for given regex pattern
-        /// </summary>
-        /// <param name="regexPattern">Regex pattern</param>
-        /// <returns>Enumeration of ranges</returns>
-        public IEnumerable<Range> GetRanges(string regexPattern)
-        {
-            var range = new Range(this);
-            range.SelectAll();
-            //
-            foreach (Range r in range.GetRanges(regexPattern, RegexOptions.None))
-                yield return r;
-        }
-
-        /// <summary>
-        /// Finds ranges for given regex pattern
-        /// </summary>
-        /// <param name="regexPattern">Regex pattern</param>
-        /// <returns>Enumeration of ranges</returns>
-        public IEnumerable<Range> GetRanges(string regexPattern, RegexOptions options)
-        {
-            var range = new Range(this);
-            range.SelectAll();
-            //
-            foreach (Range r in range.GetRanges(regexPattern, options))
-                yield return r;
         }
 
         /// <summary>
@@ -5379,61 +5200,7 @@ namespace FastColoredTextBoxNS
 
         private int FindEndOfFoldingBlock(int iStartLine)
         {
-            return FindEndOfFoldingBlock(iStartLine, int.MaxValue);
-        }
-
-        protected virtual int FindEndOfFoldingBlock(int iStartLine, int maxLines)
-        {
-            //find end of block
-            int i;
-            string marker = lines[iStartLine].FoldingStartMarker;
-            var stack = new Stack<string>();
-
-            switch (FindEndOfFoldingBlockStrategy)
-            {
-                case FindEndOfFoldingBlockStrategy.Strategy1:
-                    for (i = iStartLine /*+1*/; i < LinesCount; i++)
-                    {
-                        if (lines.LineHasFoldingStartMarker(i))
-                            stack.Push(lines[i].FoldingStartMarker);
-
-                        if (lines.LineHasFoldingEndMarker(i))
-                        {
-                            string m = lines[i].FoldingEndMarker;
-                            while (stack.Count > 0 && stack.Pop() != m) ;
-                            if (stack.Count == 0)
-                                return i;
-                        }
-
-                        maxLines--;
-                        if (maxLines < 0)
-                            return i;
-                    }
-                    break;
-
-                case FindEndOfFoldingBlockStrategy.Strategy2:
-                    for (i = iStartLine /*+1*/; i < LinesCount; i++)
-                    {
-                        if (lines.LineHasFoldingEndMarker(i))
-                        {
-                            string m = lines[i].FoldingEndMarker;
-                            while (stack.Count > 0 && stack.Pop() != m) ;
-                            if (stack.Count == 0)
-                                return i;
-                        }
-
-                        if (lines.LineHasFoldingStartMarker(i))
-                            stack.Push(lines[i].FoldingStartMarker);
-
-                        maxLines--;
-                        if (maxLines < 0)
-                            return i;
-                    }
-                    break;
-            }
-
-            //return -1;
-            return LinesCount - 1;
+            return Folding.FindEndOfFoldingBlock(lines, iStartLine, int.MaxValue, this.FindEndOfFoldingBlockStrategy);
         }
 
         /// <summary>
@@ -5456,7 +5223,7 @@ namespace FastColoredTextBoxNS
             return null;
         }
 
-        protected virtual void RecalcFoldingLines()
+        internal virtual void RecalcFoldingLines()
         {
             if (!needRecalcFoldingLines)
                 return;
@@ -6527,8 +6294,8 @@ namespace FastColoredTextBoxNS
 
                     // Correct selection
                     Range dR = (draggedRange.End > draggedRange.Start)  // dragged selection
-                        ? this.GetRange(draggedRange.Start, draggedRange.End)
-                        : this.GetRange(draggedRange.End, draggedRange.Start);
+                        ? RangeUtil.GetRange(this, draggedRange.Start, draggedRange.End)
+                        : RangeUtil.GetRange(this, draggedRange.End, draggedRange.Start);
                     Place tP = place; // targetPlace
                     int tS_S_Line;  // targetSelection.Start.iLine
                     int tS_S_Char;  // targetSelection.Start.iChar

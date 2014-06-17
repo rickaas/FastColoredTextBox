@@ -388,7 +388,7 @@ namespace FastColoredTextBoxNS
                     if (currentStyleIndex != style)
                     {
                         // flush rendering when the style changed
-                        textbox.FlushRendering(gr, currentStyleIndex,
+                        FlushRendering(gr, textbox, currentStyleIndex,
                                        new Point(startX + (iLastFlushedChar + 1) * textbox.CharWidth, y),
                                        new Range(textbox, from + iLastFlushedChar + 1, iLine, from + iChar, iLine));
                         iLastFlushedChar = iChar - 1;
@@ -396,7 +396,7 @@ namespace FastColoredTextBoxNS
                     }
                 }
                 // flush the remainder of the text
-                textbox.FlushRendering(gr, currentStyleIndex, new Point(startX + (iLastFlushedChar + 1) * textbox.CharWidth, y),
+                FlushRendering(gr, textbox, currentStyleIndex, new Point(startX + (iLastFlushedChar + 1) * textbox.CharWidth, y),
                                new Range(textbox, from + iLastFlushedChar + 1, iLine, from + lastChar + 1, iLine));
             }
 
@@ -439,6 +439,88 @@ namespace FastColoredTextBoxNS
             {
                 textbox.BracketsStyle2.Draw(graphics, textbox.PlaceToPoint(textbox.leftBracketPosition2.Start), textbox.leftBracketPosition2);
                 textbox.BracketsStyle2.Draw(graphics, textbox.PlaceToPoint(textbox.rightBracketPosition2.Start), textbox.rightBracketPosition2);
+            }
+        }
+
+        internal static void FlushRendering(Graphics gr, FastColoredTextBox textbox, StyleIndex styleIndex, Point pos, Range range)
+        {
+            if (range.End > range.Start)
+            {
+                int mask = 1;
+                bool hasTextStyle = false;
+                for (int i = 0; i < textbox.Styles.Length; i++)
+                {
+                    if (textbox.Styles[i] != null && ((int)styleIndex & mask) != 0)
+                    {
+                        Style style = textbox.Styles[i];
+                        bool isTextStyle = style is TextStyle;
+                        if (!hasTextStyle || !isTextStyle || textbox.AllowSeveralTextStyleDrawing)
+                            //cancelling secondary rendering by TextStyle
+                            style.Draw(gr, pos, range); //rendering
+                        hasTextStyle |= isTextStyle;
+                    }
+                    mask = mask << 1;
+                }
+                //draw by default renderer
+                if (!hasTextStyle)
+                    textbox.DefaultStyle.Draw(gr, pos, range);
+            }
+        }
+
+        /// <summary>
+        /// Draws text to given Graphics
+        /// </summary>
+        /// <param name="gr"></param>
+        /// <param name="start">Start place of drawing text</param>
+        /// <param name="size">Size of drawing</param>
+        public static void DrawText(Graphics gr, FastColoredTextBox textbox, Place start, Size size)
+        {
+            if (textbox.needRecalc)
+                textbox.Recalc();
+
+            if (textbox.needRecalcFoldingLines)
+                textbox.RecalcFoldingLines();
+
+            var startPoint = textbox.PlaceToPoint(start);
+            var startY = startPoint.Y + textbox.VerticalScroll.Value;
+            var startX = startPoint.X + textbox.HorizontalScroll.Value - textbox.LeftIndent - textbox.Paddings.Left;
+            // determine range of characters that we can draw
+            int firstChar = start.iChar;
+            int lastChar = (startX + size.Width) / textbox.CharWidth;
+
+            var startLine = start.iLine;
+            //draw text
+            for (int iLine = startLine; iLine < textbox.lines.Count; iLine++)
+            {
+                Line line = textbox.lines[iLine];
+                LineInfo lineInfo = textbox.LineInfos[iLine];
+                //
+                if (lineInfo.startY > startY + size.Height)
+                    break;
+                if (lineInfo.startY + lineInfo.WordWrapStringsCount * textbox.CharHeight < startY)
+                    continue;
+                if (lineInfo.VisibleState == VisibleState.Hidden)
+                    continue;
+
+                int y = lineInfo.startY - startY;
+                //
+                gr.SmoothingMode = SmoothingMode.None;
+                //draw line background
+                if (lineInfo.VisibleState == VisibleState.Visible)
+                    if (line.BackgroundBrush != null)
+                        gr.FillRectangle(line.BackgroundBrush, new Rectangle(0, y, size.Width, textbox.CharHeight * lineInfo.WordWrapStringsCount));
+                //
+                gr.SmoothingMode = SmoothingMode.AntiAlias;
+
+                //draw wordwrap strings of line
+                for (int iWordWrapLine = 0; iWordWrapLine < lineInfo.WordWrapStringsCount; iWordWrapLine++)
+                {
+                    y = lineInfo.startY + iWordWrapLine * textbox.CharHeight - startY;
+                    //indent 
+                    var indent = iWordWrapLine == 0 ? 0 : lineInfo.wordWrapIndent * textbox.CharWidth;
+                    //draw chars
+                    Rendering.DrawLineChars(gr, textbox, firstChar, lastChar, iLine, iWordWrapLine, -startX + indent, y);
+                }
             }
         }
     }

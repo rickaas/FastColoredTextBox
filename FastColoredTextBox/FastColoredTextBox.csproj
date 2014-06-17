@@ -82,6 +82,7 @@
     <Compile Include="EventArgDefs\WordWrapNeededEventArgs.cs" />
     <Compile Include="ExportToHTML.cs" />
     <Compile Include="ExportToRTF.cs" />
+    <Compile Include="Folding.cs" />
     <Compile Include="GoToForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -102,6 +103,7 @@
     <Compile Include="PlatformType.cs" />
     <Compile Include="Hotkeys.cs" />
     <Compile Include="PrintDialogSettings.cs" />
+    <Compile Include="RangeUtil.cs" />
     <Compile Include="Rendering.cs" />
     <Compile Include="Ruler.cs">
       <SubType>UserControl</SubType>
@@ -135,6 +137,7 @@
     <Compile Include="Style.cs" />
     <Compile Include="TabSizeCalculator.cs" />
     <Compile Include="TextSource.cs" />
+    <Compile Include="TextSourceUtil.cs" />
     <Compile Include="TypeDescriptor.cs" />
     <Compile Include="FileTextSource.cs" />
     <Compile Include="UnfocusablePanel.cs">

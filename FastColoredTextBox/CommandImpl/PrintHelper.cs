@@ -19,7 +19,7 @@ namespace FastColoredTextBoxNS.CommandImpl
         {
             Range sel = textbox.Selection.Clone();
             sel.Normalize();
-            int start = textbox.PlaceToPosition(sel.Start) - sel.Start.iLine;
+            int start = TextSourceUtil.PlaceToPosition(textbox.lines, sel.Start) - sel.Start.iLine;
             int len = sel.Text.Length - (sel.End.iLine - sel.Start.iLine);
             return string.Format(
                 @"<script type=""text/javascript"">

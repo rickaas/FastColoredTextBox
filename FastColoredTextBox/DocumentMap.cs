@@ -163,7 +163,7 @@ namespace FastColoredTextBoxNS
             e.Graphics.ScaleTransform(zoom, zoom);
             //draw text
             var size = new SizeF(ClientSize.Width / zoom, ClientSize.Height / zoom);
-            target.DrawText(e.Graphics, startPlace, size.ToSize());
+            Rendering.DrawText(e.Graphics, target, startPlace, size.ToSize());
 
             //draw visible rect
             var p0 = target.PlaceToPoint(startPlace);

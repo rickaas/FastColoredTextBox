@@ -15,7 +15,7 @@ namespace Tester
         private void button2_Click(object sender, EventArgs e)
         {
             fctb.Hints.Clear();
-            foreach (var r in fctb.GetRanges(tbFind.Text))
+            foreach (var r in RangeUtil.GetRanges(fctb, tbFind.Text))
             {
                 Hint hint;
                 if(cbSimple.Checked)

@@ -46,7 +46,7 @@ namespace Tester
             var p = fctb.PointToPlace(e.Location);
             if (CharIsHyperlink(p))
             {
-                var url = fctb.GetRange(p, p).GetFragment(@"[\S]").Text;
+                var url = RangeUtil.GetRange(fctb, p, p).GetFragment(@"[\S]").Text;
                 Process.Start(url);
             }
         }
