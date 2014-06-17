@@ -107,7 +107,7 @@ namespace Tester
             //check link style
             if (lastPlace != emptyPlace)
             {
-                var styles = GetStylesOfChar(lastPlace);
+                var styles = this.TextSource.GetStylesOfChar(lastPlace);
                 if (styles.Contains(linkStyle) || styles.Contains(visitedLinkStyle))
                     Cursor = Cursors.Hand;
             }

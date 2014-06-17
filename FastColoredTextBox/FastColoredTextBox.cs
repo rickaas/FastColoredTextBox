@@ -1428,15 +1428,6 @@ namespace FastColoredTextBoxNS
         }
 
         /// <summary>
-        /// Text lines
-        /// </summary>
-        [Browsable(false)]
-        public IList<string> Lines
-        {
-            get { return lines.GetLines(); }
-        }
-
-        /// <summary>
         /// Gets colored text as HTML
         /// </summary>
         /// <remarks>For more flexibility you can use ExportToHTML class also</remarks>
@@ -2023,29 +2014,6 @@ namespace FastColoredTextBoxNS
         public event EventHandler<WordWrapNeededEventArgs> WordWrapNeeded;
 
 
-        /// <summary>
-        /// Returns list of styles of given place
-        /// </summary>
-        public List<Style> GetStylesOfChar(Place place)
-        {
-            var result = new List<Style>();
-            if (place.iLine < LinesCount && place.iChar < this[place.iLine].Count)
-            {
-#if Styles32
-                var s = (uint) this[place].style;
-                for (int i = 0; i < 32; i++)
-                    if ((s & ((uint) 1) << i) != 0)
-                        result.Add(Styles[i]);
-#else
-                var s = (ushort)this[place].style;
-                for (int i = 0; i < 16; i++)
-                    if ((s & ((ushort) 1) << i) != 0)
-                        result.Add(Styles[i]);
-#endif
-            }
-
-            return result;
-        }
 
         internal TextSource CreateTextSource()
         {
@@ -2121,23 +2089,7 @@ namespace FastColoredTextBoxNS
         /// <summary>
         /// Call this method if the recalc of the position of lines is needed.
         /// </summary>
-        public void NeedRecalc()
-        {
-            NeedRecalc(false);
-        }
-
-        /// <summary>
-        /// Call this method if the recalc of the position of lines is needed.
-        /// </summary>
-        public void NeedRecalc(bool forced)
-        {
-            NeedRecalc(forced, false);
-        }
-
-        /// <summary>
-        /// Call this method if the recalc of the position of lines is needed.
-        /// </summary>
-        public void NeedRecalc(bool forced, bool wordWrapRecalc)
+        public void NeedRecalc(bool forced = false, bool wordWrapRecalc = false)
         {
             needRecalc = true;
 
@@ -6025,12 +5977,7 @@ namespace FastColoredTextBoxNS
                 PaintLine(this, e);
         }
 
-        internal void OnLineInserted(int index)
-        {
-            OnLineInserted(index, 1);
-        }
-
-        internal void OnLineInserted(int index, int count)
+        internal void OnLineInserted(int index, int count = 1)
         {
             if (LineInserted != null)
                 LineInserted(this, new LineInsertedEventArgs(index, count));
