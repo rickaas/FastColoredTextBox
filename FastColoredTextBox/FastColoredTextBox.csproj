@@ -102,6 +102,7 @@
     <Compile Include="PlatformType.cs" />
     <Compile Include="Hotkeys.cs" />
     <Compile Include="PrintDialogSettings.cs" />
+    <Compile Include="Rendering.cs" />
     <Compile Include="Ruler.cs">
       <SubType>UserControl</SubType>
     </Compile>

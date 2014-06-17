@@ -61,11 +61,11 @@ namespace FastColoredTextBoxNS
         private readonly Timer DelayedEventsTimer = new Timer();
         private readonly Timer DelayedTextChangedTimer = new Timer();
         private readonly Timer tooltipDelayTimer = new Timer();
-        private readonly List<VisualMarker> visibleMarkers = new List<VisualMarker>();
+        internal readonly List<VisualMarker> visibleMarkers = new List<VisualMarker>();
         public int TextHeight;
         internal bool allowInsertRemoveLines = true;
         private Brush backBrush;
-        private BaseBookmarks bookmarks;
+        internal BaseBookmarks bookmarks;
         private bool caretVisible;
         private Color changedLineColor;
         private int charHeight;
@@ -75,10 +75,10 @@ namespace FastColoredTextBoxNS
         private string descriptionFile;
         private int endFoldingLine = -1;
         private Color foldingIndicatorColor;
-        protected Dictionary<int, int> foldingPairs = new Dictionary<int, int>();
+        internal Dictionary<int, int> foldingPairs = new Dictionary<int, int>();
         private bool handledChar;
         private bool highlightFoldingIndicator;
-        private Hints hints;
+        internal Hints hints;
         private Color indentBackColor;
         private bool isChanged;
         private bool isLineSelect;
@@ -87,12 +87,12 @@ namespace FastColoredTextBoxNS
         private Keys lastModifiers;
         private Point lastMouseCoord;
         private DateTime lastNavigatedDateTime;
-        private Range leftBracketPosition;
-        private Range leftBracketPosition2;
+        internal Range leftBracketPosition;
+        internal Range leftBracketPosition2;
         private int leftPadding;
         private int lineInterval;
         private Color lineNumberColor;
-        private uint lineNumberStartValue;
+        internal uint lineNumberStartValue;
         private int lineSelectFrom;
         internal TextSource lines;
         private IntPtr m_hImc;
@@ -109,8 +109,8 @@ namespace FastColoredTextBoxNS
         private bool needRiseVisibleRangeChangedDelayed;
         private Color paddingBackColor;
         private int preferredLineWidth;
-        private Range rightBracketPosition;
-        private Range rightBracketPosition2;
+        internal Range rightBracketPosition;
+        internal Range rightBracketPosition2;
         private bool scrollBars;
         private Color selectionColor;
         private Color serviceLinesColor;
@@ -1575,7 +1575,7 @@ namespace FastColoredTextBoxNS
             get { return lines.Manager.RedoEnabled; }
         }
 
-        private int LeftIndentLine
+        public int LeftIndentLine
         {
             get { return LeftIndent - minLeftIndent/2 - 3; }
         }
@@ -4144,7 +4144,7 @@ namespace FastColoredTextBoxNS
                     //indent 
                     var indent = iWordWrapLine == 0 ? 0 : lineInfo.wordWrapIndent * CharWidth;
                     //draw chars
-                    DrawLineChars(gr, firstChar, lastChar, iLine, iWordWrapLine, -startX + indent, y);
+                    Rendering.DrawLineChars(gr, this, firstChar, lastChar, iLine, iWordWrapLine, -startX + indent, y);
                 }
             }
         }
@@ -4166,33 +4166,27 @@ namespace FastColoredTextBoxNS
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             //
             var servicePen = new Pen(ServiceLinesColor);
-            Brush changedLineBrush = new SolidBrush(ChangedLineColor);
+            
             Brush indentBrush = new SolidBrush(IndentBackColor);
             Brush paddingBrush = new SolidBrush(PaddingBackColor);
-            Brush currentLineBrush =
-                new SolidBrush(Color.FromArgb(CurrentLineColor.A == 255 ? 50 : CurrentLineColor.A, CurrentLineColor));
+            
             //draw padding area
+            Rendering.RenderPadding(e.Graphics, this, paddingBrush);
+            
             var textAreaRect = TextAreaRect;
-            //top
-            e.Graphics.FillRectangle(paddingBrush, 0, -VerticalScroll.Value, ClientSize.Width, Math.Max(0, Paddings.Top - 1));
-            //bottom
-            e.Graphics.FillRectangle(paddingBrush, 0, textAreaRect.Bottom, ClientSize.Width,ClientSize.Height);
-            //right
-            e.Graphics.FillRectangle(paddingBrush, textAreaRect.Right, 0, ClientSize.Width, ClientSize.Height);
-            //left
-            e.Graphics.FillRectangle(paddingBrush, LeftIndentLine, 0, LeftIndent - LeftIndentLine - 1, ClientSize.Height);
-            if (HorizontalScroll.Value <= Paddings.Left)
-                e.Graphics.FillRectangle(paddingBrush, LeftIndent - HorizontalScroll.Value - 2, 0,
-                                         Math.Max(0, Paddings.Left - 1), ClientSize.Height);
+
             //
             int leftTextIndent = Math.Max(LeftIndent, LeftIndent + Paddings.Left - HorizontalScroll.Value);
             int textWidth = textAreaRect.Width;
             //draw indent area
             e.Graphics.FillRectangle(indentBrush, 0, 0, LeftIndentLine, ClientSize.Height);
             if (LeftIndent > minLeftIndent)
+            {
                 e.Graphics.DrawLine(servicePen, LeftIndentLine, 0, LeftIndentLine, ClientSize.Height);
+            }
             //draw preferred line width
             if (PreferredLineWidth > 0)
+            {
                 e.Graphics.DrawLine(servicePen,
                                     new Point(
                                         LeftIndent + Paddings.Left + PreferredLineWidth*CharWidth -
@@ -4200,133 +4194,45 @@ namespace FastColoredTextBoxNS
                                     new Point(
                                         LeftIndent + Paddings.Left + PreferredLineWidth*CharWidth -
                                         HorizontalScroll.Value + 1, textAreaRect.Bottom - 1));
-
-            //draw text area border
-            DrawTextAreaBorder(e.Graphics);
-            //
-            int firstChar = (Math.Max(0, HorizontalScroll.Value - Paddings.Left))/CharWidth;
-            int lastChar = (HorizontalScroll.Value + ClientSize.Width)/CharWidth;
-            //
-            var x = LeftIndent + Paddings.Left - HorizontalScroll.Value;
-            if (x < LeftIndent)
-                firstChar++;
-            //create dictionary of bookmarks
-            var bookmarksByLineIndex = new Dictionary<int, Bookmark>();
-            foreach (Bookmark item in bookmarks)
-                bookmarksByLineIndex[item.LineIndex] = item;
-            //
-            int startLine = YtoLineIndex(VerticalScroll.Value);
-            int iLine;
-            //draw text
-            for (iLine = startLine; iLine < lines.Count; iLine++)
-            {
-                Line line = lines[iLine];
-                LineInfo lineInfo = LineInfos[iLine];
-                //
-                if (lineInfo.startY > VerticalScroll.Value + ClientSize.Height)
-                    break;
-                if (lineInfo.startY + lineInfo.WordWrapStringsCount*CharHeight < VerticalScroll.Value)
-                    continue;
-                if (lineInfo.VisibleState == VisibleState.Hidden)
-                    continue;
-
-                int y = lineInfo.startY - VerticalScroll.Value;
-                //
-                e.Graphics.SmoothingMode = SmoothingMode.None;
-                //draw line background
-                if (lineInfo.VisibleState == VisibleState.Visible)
-                    if (line.BackgroundBrush != null)
-                        e.Graphics.FillRectangle(line.BackgroundBrush,
-                                                 new Rectangle(textAreaRect.Left, y, textAreaRect.Width,
-                                                               CharHeight*lineInfo.WordWrapStringsCount));
-                //draw current line background
-                if (CurrentLineColor != Color.Transparent && iLine == Selection.Start.iLine)
-                    if (Selection.IsEmpty)
-                        e.Graphics.FillRectangle(currentLineBrush,
-                                                 new Rectangle(textAreaRect.Left, y, textAreaRect.Width, CharHeight));
-                //draw changed line marker
-                if (ChangedLineColor != Color.Transparent && line.IsChanged)
-                    e.Graphics.FillRectangle(changedLineBrush,
-                                             new RectangleF(-10, y, LeftIndent - minLeftIndent - 2 + 10, CharHeight + 1));
-                //
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                //
-                //draw bookmark
-                if (bookmarksByLineIndex.ContainsKey(iLine))
-                    bookmarksByLineIndex[iLine].Paint(e.Graphics,
-                                                      new Rectangle(LeftIndent, y, Width,
-                                                                    CharHeight*lineInfo.WordWrapStringsCount));
-                //OnPaintLine event
-                if (lineInfo.VisibleState == VisibleState.Visible)
-                    OnPaintLine(new PaintLineEventArgs(iLine,
-                                                       new Rectangle(LeftIndent, y, Width,
-                                                                     CharHeight*lineInfo.WordWrapStringsCount),
-                                                       e.Graphics, e.ClipRectangle));
-                //draw line number
-                if (ShowLineNumbers)
-                    using (var lineNumberBrush = new SolidBrush(LineNumberColor))
-                        e.Graphics.DrawString((iLine + lineNumberStartValue).ToString(), Font, lineNumberBrush,
-                                              new RectangleF(-10, y, LeftIndent - minLeftIndent - 2 + 10, CharHeight),
-                                              new StringFormat(StringFormatFlags.DirectionRightToLeft));
-                //create markers
-                if (lineInfo.VisibleState == VisibleState.StartOfHiddenBlock)
-                    visibleMarkers.Add(new ExpandFoldingMarker(iLine,
-                                                               new Rectangle(LeftIndentLine - 4, y + CharHeight/2 - 3, 8,
-                                                                             8)));
-                if (!string.IsNullOrEmpty(line.FoldingStartMarker) && lineInfo.VisibleState == VisibleState.Visible &&
-                    string.IsNullOrEmpty(line.FoldingEndMarker))
-                    visibleMarkers.Add(new CollapseFoldingMarker(iLine,
-                                                                 new Rectangle(LeftIndentLine - 4, y + CharHeight/2 - 3,
-                                                                               8, 8)));
-                if (lineInfo.VisibleState == VisibleState.Visible && !string.IsNullOrEmpty(line.FoldingEndMarker) &&
-                    string.IsNullOrEmpty(line.FoldingStartMarker))
-                    e.Graphics.DrawLine(servicePen, LeftIndentLine, y + CharHeight*lineInfo.WordWrapStringsCount - 1,
-                                        LeftIndentLine + 4, y + CharHeight*lineInfo.WordWrapStringsCount - 1);
-                //draw wordwrap strings of line
-                for (int iWordWrapLine = 0; iWordWrapLine < lineInfo.WordWrapStringsCount; iWordWrapLine++)
-                {
-                    y = lineInfo.startY + iWordWrapLine*CharHeight - VerticalScroll.Value;
-                    //indent
-                    var indent = iWordWrapLine == 0 ? 0 : lineInfo.wordWrapIndent * CharWidth;
-                    //draw chars
-                    DrawLineChars(e.Graphics, firstChar, lastChar, iLine, iWordWrapLine, x + indent, y);
-                }
             }
+            //draw text area border
+            Rendering.DrawTextAreaBorder(e.Graphics, this);
+            //
 
-            int endLine = iLine - 1;
+            int endLine = Rendering.DrawLines(e, this, servicePen);
+
+            // y-coordinate to line index
+            int startLine = this.YtoLineIndex(this.VerticalScroll.Value);
 
             //draw folding lines
             if (ShowFoldingLines)
-                DrawFoldingLines(e, startLine, endLine);
+                Rendering.DrawFoldingLines(e, this, startLine, endLine);
 
             //draw column selection
             if (Selection.ColumnSelectionMode)
+            {
                 if (SelectionStyle.BackgroundBrush is SolidBrush)
                 {
                     Color color = ((SolidBrush) SelectionStyle.BackgroundBrush).Color;
                     Point p1 = PlaceToPoint(Selection.Start);
                     Point p2 = PlaceToPoint(Selection.End);
                     using (var pen = new Pen(color))
+                    {
                         e.Graphics.DrawRectangle(pen,
                                                  Rectangle.FromLTRB(Math.Min(p1.X, p2.X) - 1, Math.Min(p1.Y, p2.Y),
                                                                     Math.Max(p1.X, p2.X),
                                                                     Math.Max(p1.Y, p2.Y) + CharHeight));
+                    }
                 }
+            }
             //draw brackets highlighting
-            if (BracketsStyle != null && leftBracketPosition != null && rightBracketPosition != null)
-            {
-                BracketsStyle.Draw(e.Graphics, PlaceToPoint(leftBracketPosition.Start), leftBracketPosition);
-                BracketsStyle.Draw(e.Graphics, PlaceToPoint(rightBracketPosition.Start), rightBracketPosition);
-            }
-            if (BracketsStyle2 != null && leftBracketPosition2 != null && rightBracketPosition2 != null)
-            {
-                BracketsStyle2.Draw(e.Graphics, PlaceToPoint(leftBracketPosition2.Start), leftBracketPosition2);
-                BracketsStyle2.Draw(e.Graphics, PlaceToPoint(rightBracketPosition2.Start), rightBracketPosition2);
-            }
+            Rendering.DrawBracketsHighlighting(e.Graphics, this);
+
             //
             e.Graphics.SmoothingMode = SmoothingMode.None;
             //draw folding indicator
             if ((startFoldingLine >= 0 || endFoldingLine >= 0) && Selection.Start == Selection.End)
+            {
                 if (endFoldingLine < LineInfos.Count)
                 {
                     //folding indicator
@@ -4338,44 +4244,18 @@ namespace FastColoredTextBoxNS
                                            : TextHeight + CharHeight) - VerticalScroll.Value + CharHeight;
 
                     using (var indicatorPen = new Pen(Color.FromArgb(100, FoldingIndicatorColor), 4))
+                    {
                         e.Graphics.DrawLine(indicatorPen, LeftIndent - 5, startFoldingY, LeftIndent - 5, endFoldingY);
+                    }
                 }
+            }
             //draw hint's brackets
-            PaintHintBrackets(e.Graphics);
+            Rendering.PaintHintBrackets(e.Graphics, this);
             //draw markers
             foreach (VisualMarker m in visibleMarkers)
                 m.Draw(e.Graphics, servicePen);
             //draw caret
-            Point car = PlaceToPoint(Selection.Start);
-
-            if ((Focused || IsDragDrop) && car.X >= LeftIndent && CaretVisible)
-            {
-                int carWidth = (IsReplaceMode || WideCaret) ? CharWidth : 1;
-                if (WideCaret)
-                {
-                    using (var brush = new SolidBrush(CaretColor))
-                        e.Graphics.FillRectangle(brush, car.X, car.Y, carWidth, CharHeight + 1);
-                }
-                else
-                    using (var pen = new Pen(CaretColor))
-                        e.Graphics.DrawLine(pen, car.X, car.Y, car.X, car.Y + CharHeight);
-
-                var caretRect = new Rectangle(car.X, car.Y, carWidth, charHeight + 1);
-
-                if (prevCaretRect != caretRect)
-                {
-                    NativeMethods.CreateCaret(Handle, 0, carWidth, CharHeight + 1);
-                    NativeMethods.SetCaretPos(car.X, car.Y);
-                    NativeMethods.ShowCaret(Handle);
-                }
-
-                prevCaretRect = caretRect;
-            }
-            else
-            {
-                NativeMethods.HideCaret(Handle);
-                prevCaretRect = Rectangle.Empty;
-            }
+            Rendering.DrawCaret(e.Graphics, this);
 
             //draw disabled mask
             if (!Enabled)
@@ -4383,16 +4263,16 @@ namespace FastColoredTextBoxNS
                     e.Graphics.FillRectangle(brush, ClientRectangle);
 
             if (MacrosManager.IsRecording)
-                DrawRecordingHint(e.Graphics);
+                Rendering.DrawRecordingHint(e.Graphics, this);
 
             if (middleClickScrollingActivated)
                 DrawMiddleClickScrolling(e.Graphics);
 
             //dispose resources
             servicePen.Dispose();
-            changedLineBrush.Dispose();
+            
             indentBrush.Dispose();
-            currentLineBrush.Dispose();
+            
             paddingBrush.Dispose();
             //
 #if debug
@@ -4403,207 +4283,13 @@ namespace FastColoredTextBoxNS
             base.OnPaint(e);
         }
 
-        private Rectangle prevCaretRect;
+        internal Rectangle prevCaretRect;
 
-        private void DrawRecordingHint(Graphics graphics)
-        {
-            const int w = 75;
-            const int h = 13;
-            var rect = new Rectangle(ClientRectangle.Right - w, ClientRectangle.Bottom - h, w, h);
-            var iconRect = new Rectangle(-h/2 + 3, -h/2 + 3, h - 7, h - 7);
-            var state = graphics.Save();
-            graphics.SmoothingMode = SmoothingMode.HighQuality;
-            graphics.TranslateTransform(rect.Left + h/2, rect.Top + h/2);
-            var ts = new TimeSpan(DateTime.Now.Ticks);
-            graphics.RotateTransform(180 * (DateTime.Now.Millisecond/1000f));
-            using (var pen = new Pen(Color.Red, 2))
-            {
-                graphics.DrawArc(pen, iconRect, 0, 90);
-                graphics.DrawArc(pen, iconRect, 180, 90);
-            }
-            graphics.DrawEllipse(Pens.Red, iconRect);
-            graphics.Restore(state);
-            using (var font = new Font(FontFamily.GenericSansSerif, 8f))
-                graphics.DrawString("Recording...", font, Brushes.Red, new PointF(rect.Left + h, rect.Top));
-            System.Threading.Timer tm = null;
-            tm = new System.Threading.Timer(
-                (o) => {
-                    Invalidate(rect);
-                    tm.Dispose();
-                }, null, 200, System.Threading.Timeout.Infinite);
-        }
 
-        private void DrawTextAreaBorder(Graphics graphics)
-        {
-            if (TextAreaBorder == TextAreaBorderType.None)
-                return;
 
-            var rect = TextAreaRect;
 
-            if (TextAreaBorder == TextAreaBorderType.Shadow)
-            {
-                const int shadowSize = 4;
-                var rBottom = new Rectangle(rect.Left + shadowSize, rect.Bottom, rect.Width - shadowSize, shadowSize);
-                var rCorner = new Rectangle(rect.Right, rect.Bottom, shadowSize, shadowSize);
-                var rRight = new Rectangle(rect.Right, rect.Top + shadowSize, shadowSize, rect.Height - shadowSize);
 
-                using (var brush = new SolidBrush(Color.FromArgb(80, TextAreaBorderColor)))
-                {
-                    graphics.FillRectangle(brush, rBottom);
-                    graphics.FillRectangle(brush, rRight);
-                    graphics.FillRectangle(brush, rCorner);
-                }
-            }
-
-            using(Pen pen = new Pen(TextAreaBorderColor))
-                graphics.DrawRectangle(pen, rect);
-        }
-
-        private void PaintHintBrackets(Graphics gr)
-        {
-            foreach (Hint hint in hints)
-            {
-                Range r = hint.Range.Clone();
-                r.Normalize();
-                Point p1 = PlaceToPoint(r.Start);
-                Point p2 = PlaceToPoint(r.End);
-                if (GetVisibleState(r.Start.iLine) != VisibleState.Visible ||
-                    GetVisibleState(r.End.iLine) != VisibleState.Visible)
-                    continue;
-
-                using (var pen = new Pen(hint.BorderColor))
-                {
-                    pen.DashStyle = DashStyle.Dash;
-                    if (r.IsEmpty)
-                    {
-                        p1.Offset(1, -1);
-                        gr.DrawLines(pen, new[] {p1, new Point(p1.X, p1.Y + charHeight + 2)});
-                    }
-                    else
-                    {
-                        p1.Offset(-1, -1);
-                        p2.Offset(1, -1);
-                        gr.DrawLines(pen,
-                                     new[]
-                                         {
-                                             new Point(p1.X + CharWidth/2, p1.Y), p1,
-                                             new Point(p1.X, p1.Y + charHeight + 2),
-                                             new Point(p1.X + CharWidth/2, p1.Y + charHeight + 2)
-                                         });
-                        gr.DrawLines(pen,
-                                     new[]
-                                         {
-                                             new Point(p2.X - CharWidth/2, p2.Y), p2,
-                                             new Point(p2.X, p2.Y + charHeight + 2),
-                                             new Point(p2.X - CharWidth/2, p2.Y + charHeight + 2)
-                                         });
-                    }
-                }
-            }
-        }
-
-        protected virtual void DrawFoldingLines(PaintEventArgs e, int startLine, int endLine)
-        {
-            e.Graphics.SmoothingMode = SmoothingMode.None;
-            using (var pen = new Pen(Color.FromArgb(200, this.ServiceLinesColor)) {DashStyle = DashStyle.Dot})
-                foreach (var iLine in this.foldingPairs)
-                    if (iLine.Key < endLine && iLine.Value > startLine)
-                    {
-                        Line line = this.lines[iLine.Key];
-                        int y = this.LineInfos[iLine.Key].startY - this.VerticalScroll.Value + this.CharHeight;
-                        y += y % 2;
-
-                        int y2;
-
-                        if (iLine.Value >= this.LinesCount)
-                            y2 = this.LineInfos[LinesCount - 1].startY + this.CharHeight - this.VerticalScroll.Value;
-                        else if (this.LineInfos[iLine.Value].VisibleState == VisibleState.Visible)
-                        {
-                            int d = 0;
-                            int spaceCount = line.StartSpacesCount;
-                            if (this.lines[iLine.Value].Count <= spaceCount || this.lines[iLine.Value][spaceCount].c == ' ')
-                                d = CharHeight;
-                            y2 = this.LineInfos[iLine.Value].startY - this.VerticalScroll.Value + d;
-                        }
-                        else
-                            continue;
-
-                        int x = this.LeftIndent + Paddings.Left + line.StartSpacesCount * this.CharWidth - this.HorizontalScroll.Value;
-                        if (x >= this.LeftIndent + this.Paddings.Left)
-                            e.Graphics.DrawLine(pen, x, y >= 0 ? y : 0, x,
-                                                y2 < this.ClientSize.Height ? y2 : this.ClientSize.Height);
-                    }
-        }
-
-        private void DrawLineChars(Graphics gr, int firstChar, int lastChar, int iLine, int iWordWrapLine, int startX,
-                                   int y)
-        {
-            Line line = this.lines[iLine];
-            LineInfo lineInfo = this.LineInfos[iLine];
-            int from = lineInfo.GetWordWrapStringStartPosition(iWordWrapLine);
-            int to = lineInfo.GetWordWrapStringFinishPosition(iWordWrapLine, line);
-
-            lastChar = Math.Min(to - from, lastChar);
-
-            gr.SmoothingMode = SmoothingMode.AntiAlias;
-
-            //folded block ?
-            if (lineInfo.VisibleState == VisibleState.StartOfHiddenBlock)
-            {
-                //rendering by FoldedBlockStyle
-                this.FoldedBlockStyle.Draw(gr, new Point(startX + firstChar * this.CharWidth, y),
-                                      new Range(this, from + firstChar, iLine, from + lastChar + 1, iLine));
-            }
-            else
-            {
-                //render by custom styles
-                StyleIndex currentStyleIndex = StyleIndex.None;
-                int iLastFlushedChar = firstChar - 1;
-
-                for (int iChar = firstChar; iChar <= lastChar; iChar++)
-                {
-                    StyleIndex style = line[from + iChar].style;
-                    if (currentStyleIndex != style)
-                    {
-                        this.FlushRendering(gr, currentStyleIndex,
-                                       new Point(startX + (iLastFlushedChar + 1) * this.CharWidth, y),
-                                       new Range(this, from + iLastFlushedChar + 1, iLine, from + iChar, iLine));
-                        iLastFlushedChar = iChar - 1;
-                        currentStyleIndex = style;
-                    }
-                }
-                this.FlushRendering(gr, currentStyleIndex, new Point(startX + (iLastFlushedChar + 1) * this.CharWidth, y),
-                               new Range(this, from + iLastFlushedChar + 1, iLine, from + lastChar + 1, iLine));
-            }
-
-            //draw selection
-            if (this.SelectionHighlightingForLineBreaksEnabled && iWordWrapLine == lineInfo.WordWrapStringsCount - 1) lastChar++;//draw selection for CR
-            if (!Selection.IsEmpty && lastChar >= firstChar)
-            {
-                gr.SmoothingMode = SmoothingMode.None;
-                var textRange = new Range(this, from + firstChar, iLine, from + lastChar + 1, iLine);
-                textRange = this.Selection.GetIntersectionWith(textRange);
-                if (textRange != null && this.SelectionStyle != null)
-                {
-                    int next;
-                    if (this.ConvertTabToSpaces)
-                    {
-                        next = (textRange.Start.iChar - from) * this.CharWidth;
-                    }
-                    else
-                    {
-                        var llll = textRange.tb[textRange.Start.iLine]; // text on the line
-                        string beforeRangeText = llll.Text.Substring(0, textRange.Start.iChar); // all text before the range
-                        // Calculate where previous range ended
-                        next = TextSizeCalculator.TextWidth(beforeRangeText, textRange.tb.TabLength) * CharWidth;
-                    }
-                    this.SelectionStyle.Draw(gr, new Point(startX + next, 1 + y),
-                                        textRange);
-                }
-            }
-        }
-
-        private void FlushRendering(Graphics gr, StyleIndex styleIndex, Point pos, Range range)
+        internal void FlushRendering(Graphics gr, StyleIndex styleIndex, Point pos, Range range)
         {
             if (range.End > range.Start)
             {
@@ -5045,7 +4731,7 @@ namespace FastColoredTextBoxNS
             Selection = new Range(this, toX, p.iLine, fromX, p.iLine);
         }
 
-        private int YtoLineIndex(int y)
+        public int YtoLineIndex(int y)
         {
             int i = LineInfos.BinarySearch(new LineInfo(-10), new LineYComparer(y));
             i = i < 0 ? -i - 2 : i;
@@ -6516,7 +6202,7 @@ namespace FastColoredTextBoxNS
             }
         }
 
-        protected virtual void OnPaintLine(PaintLineEventArgs e)
+        internal virtual void OnPaintLine(PaintLineEventArgs e)
         {
             if (PaintLine != null)
                 PaintLine(this, e);
@@ -6610,7 +6296,7 @@ namespace FastColoredTextBoxNS
 
         #region Drag and drop
 
-        private bool IsDragDrop { get; set; }
+        internal bool IsDragDrop { get; set; }
 
 
         protected override void OnDragEnter(DragEventArgs e)
