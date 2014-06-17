@@ -41,10 +41,14 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AutocompleteItem.cs" />
     <Compile Include="AutocompleteMenu.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Autocompletion\AutocompleteItem.cs" />
+    <Compile Include="Autocompletion\CompareResult.cs" />
+    <Compile Include="Autocompletion\MethodAutocompleteItem.cs" />
+    <Compile Include="Autocompletion\SnippetAutocompleteItem.cs" />
+    <Compile Include="Autocompletion\SuggestItem.cs" />
     <Compile Include="Bookmarking\Bookmark.cs" />
     <Compile Include="Bookmarking\BaseBookmarks.cs" />
     <Compile Include="Bookmarking\Bookmarks.cs" />
