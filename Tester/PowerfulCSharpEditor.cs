@@ -12,6 +12,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Drawing.Drawing2D;
+using FastColoredTextBoxNS.Bookmarking;
 using FastColoredTextBoxNS.CommandImpl;
 using FastColoredTextBoxNS.EventArgDefs;
 

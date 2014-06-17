@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Text;
 using System.Windows.Forms;
+using FastColoredTextBoxNS.Bookmarking;
 using FastColoredTextBoxNS.EventArgDefs;
 
 namespace FastColoredTextBoxNS
@@ -286,7 +287,7 @@ namespace FastColoredTextBoxNS
                 {
                     graphics.FillRectangle(changedLineBrush,
                                            new RectangleF(-10, y,
-                                                          textbox.LeftIndent - FastColoredTextBox.minLeftIndent - 2 + 10,
+                                                          textbox.LeftIndent - FastColoredTextBox.MIN_LEFT_INDENT - 2 + 10,
                                                           textbox.CharHeight + 1));
                 }
                 //
@@ -314,7 +315,7 @@ namespace FastColoredTextBoxNS
                     using (var lineNumberBrush = new SolidBrush(textbox.LineNumberColor))
                     {
                         graphics.DrawString((iLine + textbox.lineNumberStartValue).ToString(), textbox.Font, lineNumberBrush,
-                                              new RectangleF(-10, y, textbox.LeftIndent - FastColoredTextBox.minLeftIndent - 2 + 10, textbox.CharHeight),
+                                              new RectangleF(-10, y, textbox.LeftIndent - FastColoredTextBox.MIN_LEFT_INDENT - 2 + 10, textbox.CharHeight),
                                               new StringFormat(StringFormatFlags.DirectionRightToLeft));
                     }
                 }

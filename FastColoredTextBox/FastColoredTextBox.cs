@@ -35,6 +35,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
+using FastColoredTextBoxNS.Bookmarking;
 using FastColoredTextBoxNS.CommandImpl;
 using FastColoredTextBoxNS.EventArgDefs;
 using Microsoft.Win32;
@@ -47,10 +48,11 @@ namespace FastColoredTextBoxNS
     /// </summary>
     public partial class FastColoredTextBox : UserControl, ISupportInitialize
     {
-        internal const int minLeftIndent = 8;
-        private const int maxBracketSearchIterations = 2000;
-        private const int maxLinesForFolding = 3000;
-        private const int minLinesForAccuracy = 100000;
+        internal const int MIN_LEFT_INDENT = 8;
+        private const int MAX_BRACKET_SEARCH_ITERATIONS = 2000;
+        private const int MAX_LINES_FOR_FOLDING = 3000;
+        private const int MIN_LINES_FOR_ACCURACY = 100000;
+
         private const int WM_IME_SETCONTEXT = 0x0281;
         private const int WM_HSCROLL = 0x114;
         private const int WM_VSCROLL = 0x115;
@@ -58,76 +60,120 @@ namespace FastColoredTextBoxNS
 
         public readonly List<LineInfo> LineInfos = new List<LineInfo>();
         private readonly Range selection;
-        private readonly Timer DelayedEventsTimer = new Timer();
-        private readonly Timer DelayedTextChangedTimer = new Timer();
+
+        private readonly Timer delayedEventsTimer = new Timer();
+        private readonly Timer delayedTextChangedTimer = new Timer();
         private readonly Timer tooltipDelayTimer = new Timer();
+
+        // updated by Rendering.DrawLines(...) and this.AddVisualMarker(...)
         internal readonly List<VisualMarker> visibleMarkers = new List<VisualMarker>();
+
         public int TextHeight;
+
         internal bool allowInsertRemoveLines = true;
+
+        // drawing
         private Brush backBrush;
-        internal BaseBookmarks bookmarks;
-        private bool caretVisible;
+
+        // colors
         private Color changedLineColor;
-        private int charHeight;
         private Color currentLineColor;
+        private Color foldingIndicatorColor;
+        private Color indentBackColor;
+        private Color lineNumberColor;
+        private Color paddingBackColor;
+        private Color selectionColor;
+        private Color serviceLinesColor;
+
+
+        // references to other objects
+        internal TextSource lines;
+        internal BaseBookmarks bookmarks;
+        internal Hints hints;
+        private Language language;
+        private FastColoredTextBox sourceTextBox;
+
+
+        
+        
+        private int charHeight;
+        
         private Cursor defaultCursor;
         private Range delayedTextChangedRange;
         private string descriptionFile;
+
         private int endFoldingLine = -1;
-        private Color foldingIndicatorColor;
-        internal Dictionary<int, int> foldingPairs = new Dictionary<int, int>();
+        
+        internal readonly Dictionary<int, int> foldingPairs = new Dictionary<int, int>();
+
         private bool handledChar;
         private bool highlightFoldingIndicator;
-        internal Hints hints;
-        private Color indentBackColor;
+        
+        
         private bool isChanged;
         private bool isLineSelect;
         public bool isReplaceMode;
-        private Language language;
+        
+
         private Keys lastModifiers;
         private Point lastMouseCoord;
+
         private DateTime lastNavigatedDateTime;
+
         internal Range leftBracketPosition;
         internal Range leftBracketPosition2;
+
         private int leftPadding;
         private int lineInterval;
-        private Color lineNumberColor;
+
+        
         internal uint lineNumberStartValue;
+
         private int lineSelectFrom;
-        internal TextSource lines;
+
+        
+
         private IntPtr m_hImc;
         private int maxLineLength;
         private bool mouseIsDrag;
         private bool mouseIsDragDrop;
+
         private bool multiline;
+
         internal bool needRecalc;
         private bool needRecalcWordWrap;
         private Point needRecalcWordWrapInterval;
         internal bool needRecalcFoldingLines;
+
         private bool needRiseSelectionChangedDelayed;
         private bool needRiseTextChangedDelayed;
         private bool needRiseVisibleRangeChangedDelayed;
-        private Color paddingBackColor;
+
         private int preferredLineWidth;
         internal Range rightBracketPosition;
         internal Range rightBracketPosition2;
         private bool scrollBars;
-        private Color selectionColor;
-        private Color serviceLinesColor;
+
+
         private bool showFoldingLines;
         private bool showLineNumbers;
-        private FastColoredTextBox sourceTextBox;
+        
         private int startFoldingLine = -1;
         private int updating;
         private Range updatingRange;
-        internal Range visibleRange; // FIXME: quick
+        internal Range visibleRange;
+
         private bool wordWrap;
+
         private WordWrapMode wordWrapMode = WordWrapMode.WordWrapControlWidth;
+
         private int reservedCountOfLineNumberChars = 1;
+
         private int zoom = 100;
+
         private Size localAutoScrollMinSize;
 
-        private FCTBActionHandler FCTBActionHandler;
+        private readonly FCTBActionHandler FCTBActionHandler;
 
         /// <summary>
         /// Constructor
@@ -215,8 +261,8 @@ namespace FastColoredTextBoxNS
             AutoCompleteBrackets = true;
             //
             base.AutoScroll = true;
-            DelayedEventsTimer.Tick += DelayedEventsTimerTick; // fire OnSelectionChangedDelayed and OnVisibleRangeChangedDelayed
-            DelayedTextChangedTimer.Tick += DelayedTextChangedTimerTick; // OnTextChangedDelayed
+            delayedEventsTimer.Tick += DelayedEventsTimerTick; // fire OnSelectionChangedDelayed and OnVisibleRangeChangedDelayed
+            delayedTextChangedTimer.Tick += DelayedTextChangedTimerTick; // OnTextChangedDelayed
             tooltipDelayTimer.Tick += TooltipDelayTimerTick; // show tooltip
             middleClickScrollingTimer.Tick += middleClickScrollingTimer_Tick;
 
@@ -267,7 +313,8 @@ namespace FastColoredTextBoxNS
         [Description("Indent of secondary wordwrap lines (in chars).")]
         public int WordWrapIndent { get; set; }
 
-        MacrosManager macrosManager;
+        private readonly MacrosManager macrosManager;
+
         /// <summary>
         /// MacrosManager records, stores and executes the macroses
         /// </summary>
@@ -371,6 +418,9 @@ namespace FastColoredTextBoxNS
         [DefaultValue(false)]
         [Description("Indicates if tabs are converted to spaces.")]
         public bool ConvertTabToSpaces { get; set; }
+
+
+        private bool caretVisible;
 
         /// <summary>
         /// Shows or hides the caret
@@ -949,8 +999,8 @@ namespace FastColoredTextBoxNS
         [Description("Minimal delay(ms) for delayed events (except TextChangedDelayed).")]
         public int DelayedEventsInterval
         {
-            get { return DelayedEventsTimer.Interval; }
-            set { DelayedEventsTimer.Interval = value; }
+            get { return delayedEventsTimer.Interval; }
+            set { delayedEventsTimer.Interval = value; }
         }
 
         /// <summary>
@@ -961,8 +1011,8 @@ namespace FastColoredTextBoxNS
         [Description("Minimal delay(ms) for TextChangedDelayed event.")]
         public int DelayedTextChangedInterval
         {
-            get { return DelayedTextChangedTimer.Interval; }
-            set { DelayedTextChangedTimer.Interval = value; }
+            get { return delayedTextChangedTimer.Interval; }
+            set { delayedTextChangedTimer.Interval = value; }
         }
 
         /// <summary>
@@ -1577,7 +1627,7 @@ namespace FastColoredTextBoxNS
 
         public int LeftIndentLine
         {
-            get { return LeftIndent - minLeftIndent/2 - 3; }
+            get { return LeftIndent - MIN_LEFT_INDENT/2 - 3; }
         }
 
         /// <summary>
@@ -1767,7 +1817,7 @@ namespace FastColoredTextBoxNS
             needRecalcFoldingLines = true;
 
             needRiseVisibleRangeChangedDelayed = true;
-            ResetTimer(DelayedEventsTimer);
+            ResetTimer(delayedEventsTimer);
             if (VisibleRangeChanged != null)
                 VisibleRangeChanged(this, new EventArgs());
         }
@@ -2062,7 +2112,7 @@ namespace FastColoredTextBoxNS
 
         private void ts_RecalcNeeded(object sender, TextSource.TextSourceTextChangedEventArgs e)
         {
-            if (e.iFromLine == e.iToLine && !WordWrap && lines.Count > minLinesForAccuracy)
+            if (e.iFromLine == e.iToLine && !WordWrap && lines.Count > MIN_LINES_FOR_ACCURACY)
                 RecalcScrollByOneLine(e.iFromLine);
             else
                 needRecalc = true;
@@ -2198,7 +2248,7 @@ namespace FastColoredTextBoxNS
 
         private void DelayedTextChangedTimerTick(object sender, EventArgs e)
         {
-            DelayedTextChangedTimer.Enabled = false;
+            delayedTextChangedTimer.Enabled = false;
             if (needRiseTextChangedDelayed)
             {
                 needRiseTextChangedDelayed = false;
@@ -2218,7 +2268,7 @@ namespace FastColoredTextBoxNS
 
         private void DelayedEventsTimerTick(object sender, EventArgs e)
         {
-            DelayedEventsTimer.Enabled = false;
+            delayedEventsTimer.Enabled = false;
             if (needRiseSelectionChangedDelayed)
             {
                 needRiseSelectionChangedDelayed = false;
@@ -2901,7 +2951,7 @@ namespace FastColoredTextBoxNS
             if (Created)
             {
                 if (ShowLineNumbers)
-                    LeftIndent += charsForLineNumber*CharWidth + minLeftIndent + 1;
+                    LeftIndent += charsForLineNumber*CharWidth + MIN_LEFT_INDENT + 1;
 
                 //calc wordwrapping
                 if (needRecalcWordWrap)
@@ -4124,7 +4174,7 @@ namespace FastColoredTextBoxNS
             int textWidth = textAreaRect.Width;
             //draw indent area
             e.Graphics.FillRectangle(indentBrush, 0, 0, LeftIndentLine, ClientSize.Height);
-            if (LeftIndent > minLeftIndent)
+            if (LeftIndent > MIN_LEFT_INDENT)
             {
                 e.Graphics.DrawLine(servicePen, LeftIndentLine, 0, LeftIndentLine, ClientSize.Height);
             }
@@ -4879,7 +4929,7 @@ namespace FastColoredTextBoxNS
                 delayedTextChangedRange = delayedTextChangedRange.GetUnionWith(args.ChangedRange);
 
             needRiseTextChangedDelayed = true;
-            ResetTimer(DelayedTextChangedTimer);
+            ResetTimer(delayedTextChangedTimer);
             //
             OnSyntaxHighlight(args);
             //
@@ -4929,7 +4979,7 @@ namespace FastColoredTextBoxNS
                 HighlightFoldings();
             //
             needRiseSelectionChangedDelayed = true;
-            ResetTimer(DelayedEventsTimer);
+            ResetTimer(delayedEventsTimer);
 
             if (SelectionChanged != null)
                 SelectionChanged(this, new EventArgs());
@@ -4951,7 +5001,7 @@ namespace FastColoredTextBoxNS
             startFoldingLine = -1;
             endFoldingLine = -1;
             int counter = 0;
-            for (int i = Selection.Start.iLine; i >= Math.Max(Selection.Start.iLine - maxLinesForFolding, 0); i--)
+            for (int i = Selection.Start.iLine; i >= Math.Max(Selection.Start.iLine - MAX_LINES_FOR_FOLDING, 0); i--)
             {
                 bool hasStartMarker = lines.LineHasFoldingStartMarker(i);
                 bool hasEndMarker = lines.LineHasFoldingEndMarker(i);
@@ -4974,7 +5024,7 @@ namespace FastColoredTextBoxNS
             if (startFoldingLine >= 0)
             {
                 //find end of block
-                endFoldingLine = Folding.FindEndOfFoldingBlock(this.lines, startFoldingLine, maxLinesForFolding, this.FindEndOfFoldingBlockStrategy);
+                endFoldingLine = Folding.FindEndOfFoldingBlock(this.lines, startFoldingLine, MAX_LINES_FOR_FOLDING, this.FindEndOfFoldingBlockStrategy);
                 if (endFoldingLine == startFoldingLine)
                     endFoldingLine = -1;
             }
@@ -5234,8 +5284,8 @@ namespace FastColoredTextBoxNS
             foldingPairs.Clear();
             //
             Range range = VisibleRange;
-            int startLine = Math.Max(range.Start.iLine - maxLinesForFolding, 0);
-            int endLine = Math.Min(range.End.iLine + maxLinesForFolding, Math.Max(range.End.iLine, LinesCount - 1));
+            int startLine = Math.Max(range.Start.iLine - MAX_LINES_FOR_FOLDING, 0);
+            int endLine = Math.Min(range.End.iLine + MAX_LINES_FOR_FOLDING, Math.Max(range.End.iLine, LinesCount - 1));
             var stack = new Stack<int>();
             for (int i = startLine; i <= endLine; i++)
             {
@@ -5780,7 +5830,7 @@ namespace FastColoredTextBoxNS
             Range oldRightBracketPosition = rightBracketPosition;
             Range range = Selection.Clone(); //need clone because we will move caret
             int counter = 0;
-            int maxIterations = maxBracketSearchIterations;
+            int maxIterations = MAX_BRACKET_SEARCH_ITERATIONS;
             while (range.GoLeftThroughFolded()) //move caret left
             {
                 if (range.CharAfterStart == LeftBracket) counter++;
@@ -5799,7 +5849,7 @@ namespace FastColoredTextBoxNS
             //
             range = Selection.Clone(); //need clone because we will move caret
             counter = 0;
-            maxIterations = maxBracketSearchIterations;
+            maxIterations = MAX_BRACKET_SEARCH_ITERATIONS;
             do
             {
                 if (range.CharAfterStart == LeftBracket) counter++;
@@ -5834,7 +5884,7 @@ namespace FastColoredTextBoxNS
 
             bool found = false;
             int counter = 0;
-            int maxIterations = maxBracketSearchIterations;
+            int maxIterations = MAX_BRACKET_SEARCH_ITERATIONS;
             if (range.CharBeforeStart == RightBracket)
             {
                 rightBracketPosition = new Range(this, range.Start.iChar - 1, range.Start.iLine, range.Start.iChar, range.Start.iLine);
@@ -5858,7 +5908,7 @@ namespace FastColoredTextBoxNS
             //
             range = Selection.Clone(); //need clone because we will move caret
             counter = 0;
-            maxIterations = maxBracketSearchIterations;
+            maxIterations = MAX_BRACKET_SEARCH_ITERATIONS;
             if(!found)
             if (range.CharAfterStart == LeftBracket)
             {
@@ -5945,8 +5995,8 @@ namespace FastColoredTextBoxNS
             {
                 if (SyntaxHighlighter != null)
                     SyntaxHighlighter.Dispose();
-                DelayedEventsTimer.Dispose();
-                DelayedTextChangedTimer.Dispose();
+                delayedEventsTimer.Dispose();
+                delayedTextChangedTimer.Dispose();
                 middleClickScrollingTimer.Dispose();
 
                 if (findForm != null)

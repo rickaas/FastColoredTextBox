@@ -45,7 +45,9 @@
     <Compile Include="AutocompleteMenu.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Bookmarks.cs" />
+    <Compile Include="Bookmarking\Bookmark.cs" />
+    <Compile Include="Bookmarking\BaseBookmarks.cs" />
+    <Compile Include="Bookmarking\Bookmarks.cs" />
     <Compile Include="Char.cs" />
     <Compile Include="AdvancedFindForm.cs">
       <SubType>Form</SubType>
