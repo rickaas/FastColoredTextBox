@@ -68,7 +68,11 @@ namespace FastColoredTextBoxNS
         // updated by Rendering.DrawLines(...) and this.AddVisualMarker(...)
         internal readonly List<VisualMarker> visibleMarkers = new List<VisualMarker>();
 
-        public int TextHeight;
+        /// <summary>
+        /// TextHeight is calculated in RecalcMaxLineLength.
+        /// It loops over all LineInfos sums the values of (lineInfo.WordWrapStringsCount*charHeight + lineInfo.bottomPadding);
+        /// </summary>
+        public int TextHeight { get; private set; }
 
         internal bool allowInsertRemoveLines = true;
 
@@ -641,7 +645,7 @@ namespace FastColoredTextBoxNS
             {
                 int rightPaddingStartX = LeftIndent + maxLineLength * CharWidth + Paddings.Left + 1;
                 rightPaddingStartX = Math.Max(ClientSize.Width - Paddings.Right, rightPaddingStartX);
-                int bottomPaddingStartY = TextHeight + Paddings.Top;
+                int bottomPaddingStartY = this.TextHeight + this.Paddings.Top;
                 bottomPaddingStartY = Math.Max(ClientSize.Height - Paddings.Bottom, bottomPaddingStartY);
                 var top = Math.Max(0, Paddings.Top - 1) - VerticalScroll.Value;
                 var left = LeftIndent - HorizontalScroll.Value - 2 + Math.Max(0, Paddings.Left - 1);
@@ -2255,7 +2259,7 @@ namespace FastColoredTextBoxNS
         public int GetLineLength(int iLine)
         {
             if (iLine < 0 || iLine >= lines.Count)
-                throw new ArgumentOutOfRangeException("Line index out of range");
+                throw new ArgumentOutOfRangeException("iLine", "Line index out of range");
 
             return lines[iLine].Count;
         }
@@ -2267,7 +2271,7 @@ namespace FastColoredTextBoxNS
         public Range GetLine(int iLine)
         {
             if (iLine < 0 || iLine >= lines.Count)
-                throw new ArgumentOutOfRangeException("Line index out of range");
+                throw new ArgumentOutOfRangeException("iLine", "Line index out of range");
 
             var sel = new Range(this);
             sel.Start = new Place(0, iLine);
@@ -2697,15 +2701,13 @@ namespace FastColoredTextBoxNS
                 needRecalc = true;
 
             //calc max line length and count of wordWrapLines
-            TextHeight = 0;
-
-            maxLineLength = RecalcMaxLineLength();
+            this.maxLineLength = RecalcMaxLineLength();
 
             //adjust AutoScrollMinSize
             int minWidth;
-            CalcMinAutosizeWidth(out minWidth, ref maxLineLength);
+            CalcMinAutosizeWidth(out minWidth, ref this.maxLineLength);
             
-            AutoScrollMinSize = new Size(minWidth, TextHeight + Paddings.Top + Paddings.Bottom);
+            AutoScrollMinSize = new Size(minWidth, this.TextHeight + Paddings.Top + Paddings.Bottom);
             UpdateScrollbars();
 #if debug
             sw.Stop();
@@ -2713,23 +2715,23 @@ namespace FastColoredTextBoxNS
 #endif
         }
 
-        private void CalcMinAutosizeWidth(out int minWidth, ref int maxLineLength)
+        private void CalcMinAutosizeWidth(out int minWidth, ref int _maxLineLength)
         {
             //adjust AutoScrollMinSize
-            minWidth = LeftIndent + (maxLineLength)*CharWidth + 2 + Paddings.Left + Paddings.Right;
+            minWidth = LeftIndent + _maxLineLength*CharWidth + 2 + Paddings.Left + Paddings.Right;
             if (wordWrap)
                 switch (WordWrapMode)
                 {
                     case WordWrapMode.WordWrapControlWidth:
                     case WordWrapMode.CharWrapControlWidth:
-                        maxLineLength = Math.Min(maxLineLength,
+                        _maxLineLength = Math.Min(_maxLineLength,
                                                  (ClientSize.Width - LeftIndent - Paddings.Left - Paddings.Right)/
                                                  CharWidth);
                         minWidth = 0;
                         break;
                     case WordWrapMode.WordWrapPreferredWidth:
                     case WordWrapMode.CharWrapPreferredWidth:
-                        maxLineLength = Math.Min(maxLineLength, PreferredLineWidth);
+                        _maxLineLength = Math.Min(_maxLineLength, PreferredLineWidth);
                         minWidth = LeftIndent + PreferredLineWidth*CharWidth + 2 + Paddings.Left + Paddings.Right;
                         break;
                 }
@@ -2740,12 +2742,12 @@ namespace FastColoredTextBoxNS
             if (iLine >= lines.Count)
                 return;
 
-            int maxLineLength = lines[iLine].Count;
-            if (this.maxLineLength < maxLineLength && !WordWrap)
-                this.maxLineLength = maxLineLength;
+            int _maxLineLength = lines[iLine].Count;
+            if (this.maxLineLength < _maxLineLength && !WordWrap)
+                this.maxLineLength = _maxLineLength;
 
             int minWidth;
-            CalcMinAutosizeWidth(out minWidth, ref maxLineLength);
+            CalcMinAutosizeWidth(out minWidth, ref _maxLineLength);
 
             if (AutoScrollMinSize.Width < minWidth)
                 AutoScrollMinSize = new Size(minWidth, AutoScrollMinSize.Height);
@@ -2753,27 +2755,31 @@ namespace FastColoredTextBoxNS
 
         private int RecalcMaxLineLength()
         {
-            int maxLineLength = 0;
-            TextSource lines = this.lines;
-            int count = lines.Count;
-            int charHeight = CharHeight;
-            int topIndent = Paddings.Top;
-            TextHeight = topIndent;
+            int currentMaxLineLength = 0;
 
-            for (int i = 0; i < count; i++)
+            // first line start after the top padding
+            int currentHeight = this.Paddings.Top;
+
+            for (int i = 0; i < lines.Count; i++)
             {
-                int lineLength = lines.GetLineLength(i);
-                LineInfo lineInfo = LineInfos[i];
-                if (lineLength > maxLineLength && lineInfo.VisibleState == VisibleState.Visible)
-                    maxLineLength = lineLength;
-                lineInfo.startY = TextHeight;
-                TextHeight += lineInfo.WordWrapStringsCount*charHeight + lineInfo.bottomPadding;
-                LineInfos[i] = lineInfo;
+                int lineLength = this.lines.GetLineLength(i);
+                LineInfo lineInfo = this.LineInfos[i];
+                if (lineLength > currentMaxLineLength && lineInfo.VisibleState == VisibleState.Visible)
+                {
+                    // found a line that is longer
+                    currentMaxLineLength = lineLength;
+                }
+                lineInfo.startY = currentHeight;
+
+                currentHeight += lineInfo.WordWrapStringsCount * this.CharHeight + lineInfo.bottomPadding;
+                
+                this.LineInfos[i] = lineInfo;
             }
 
-            TextHeight -= topIndent;
+            // substract the padding so we get the actual height of the lines
+            this.TextHeight = currentHeight - this.Paddings.Top;
 
-            return maxLineLength;
+            return currentMaxLineLength;
         }
 
         private int GetMaxLineWordWrapedWidth()
@@ -4644,7 +4650,7 @@ namespace FastColoredTextBoxNS
         public string GetLineText(int iLine)
         {
             if (iLine < 0 || iLine >= lines.Count)
-                throw new ArgumentOutOfRangeException("Line index out of range");
+                throw new ArgumentOutOfRangeException("iLine", "Line index out of range");
             var sb = new StringBuilder(lines[iLine].Count);
             foreach (Char c in lines[iLine])
                 sb.Append(c.c);
@@ -4658,7 +4664,7 @@ namespace FastColoredTextBoxNS
         public virtual void ExpandFoldedBlock(int iLine)
         {
             if (iLine < 0 || iLine >= lines.Count)
-                throw new ArgumentOutOfRangeException("Line index out of range");
+                throw new ArgumentOutOfRangeException("iLine", "Line index out of range");
             //find all hidden lines afetr iLine
             int end = iLine;
             for (; end < LinesCount - 1; end++)
@@ -4775,9 +4781,9 @@ namespace FastColoredTextBoxNS
         public virtual void CollapseFoldingBlock(int iLine)
         {
             if (iLine < 0 || iLine >= lines.Count)
-                throw new ArgumentOutOfRangeException("Line index out of range");
+                throw new ArgumentOutOfRangeException("iLine", "Line index out of range");
             if (string.IsNullOrEmpty(lines[iLine].FoldingStartMarker))
-                throw new ArgumentOutOfRangeException("This line is not folding start line");
+                throw new ArgumentOutOfRangeException("iLine", "This line is not folding start line");
             //find end of block
             int i = FindEndOfFoldingBlock(iLine);
             //collapse
