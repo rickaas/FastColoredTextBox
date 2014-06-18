@@ -44,6 +44,10 @@ namespace FastColoredTextBoxNS
             get;
             internal set;
         }
+        /// <summary>
+        /// The format of the line ending
+        /// </summary>
+        public EolFormat EolFormat { get; internal set; }
 
         internal Line(int uid)
         {

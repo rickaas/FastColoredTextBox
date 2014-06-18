@@ -250,6 +250,8 @@ namespace FastColoredTextBoxNS
 
             language = Language.Custom;
 
+            this.DefaultEolFormat = EolFormat.CRLF;
+
             // init appearance properties
 
             //append monospace font
@@ -710,6 +712,7 @@ namespace FastColoredTextBoxNS
                     Selection.SelectAll();
                     InsertText(value);
                     GoHome();
+                    TryDeriveEolFormat();
                 }
                 finally
                 {
@@ -722,6 +725,12 @@ namespace FastColoredTextBoxNS
         // appearance and behavior properties
         // =============================
         #region appearance and behavior properties
+
+        /// <summary>
+        /// Defines the default end-of-line format: LN, CR/LN, CR.
+        /// This is used when pressing Enter.
+        /// </summary>
+        public EolFormat DefaultEolFormat { get; set; }
 
         private char[] autoCompleteBracketsList = { '(', ')', '{', '}', '[', ']', '"', '"', '\'', '\'' };
 
@@ -2133,6 +2142,58 @@ namespace FastColoredTextBoxNS
         #endregion
 
         /// <summary>
+        /// Tries to derive the end-of-line format from the first 'maxlines' lines and sets the DefaultEolFormat
+        /// </summary>
+        private void TryDeriveEolFormat(int maxlines = 10)
+        {
+            int crCount = 0, lfCount = 0, crlfCount = 0;
+
+            for (int i = 0; i < lines.Count && i < maxlines; i++)
+            {
+                switch (lines[i].EolFormat)
+                {
+                    case EolFormat.CR:
+                        crCount++;
+                        break;
+                    case EolFormat.CRLF:
+                        crlfCount++;
+                        break;
+                    case EolFormat.LF:
+                        lfCount++;
+                        break;
+                }
+            }
+            if (lfCount > crlfCount && lfCount > crCount)
+            {
+                DefaultEolFormat = EolFormat.LF;
+            }
+            else if (crCount > crlfCount && crCount > lfCount)
+            {
+                DefaultEolFormat = EolFormat.CR;
+            }
+            else
+            {
+                DefaultEolFormat = EolFormat.CRLF;
+            }
+        }
+
+        /// <summary>
+        /// Converts all line endings to the new format and sets the DefaultEolFormat to the newFormat
+        /// </summary>
+        /// <param name="newFormat"></param>
+        public void ConvertEolFormat(EolFormat newFormat)
+        {
+            foreach (var line in lines)
+            {
+                if (line.EolFormat != EolFormat.None)
+                {
+                    line.EolFormat = newFormat;
+                }
+            }
+            DefaultEolFormat = newFormat;
+        }
+
+        /// <summary>
         /// Call this method if the recalc of the position of lines is needed.
         /// This will schedule a recalc
         /// </summary>
@@ -2531,8 +2592,9 @@ namespace FastColoredTextBoxNS
         {
             if (text == null)
                 return;
-            if (text == "\r")
-                text = "\n";
+            // Keep EOL format
+            //if (text == "\r")
+            //    text = "\n";
 
             lines.Manager.BeginAutoUndoCommands();
             try
@@ -3459,9 +3521,21 @@ namespace FastColoredTextBoxNS
             //is not tab?
             if (c != '\t')
             {
+                string cStr = c.ToString(); // for EOL characters we need a string
                 //replace \r on \n
                 if (c == '\r')
+                {
                     c = '\n';
+                    switch (DefaultEolFormat)
+                    {
+                        case EolFormat.CRLF:
+                            cStr = "\r\n";
+                            break;
+                        case EolFormat.LF:
+                            cStr = "\n";
+                            break;
+                    }
+                }
                 //replace mode? select forward char
                 if (IsReplaceMode)
                 {
@@ -3472,7 +3546,9 @@ namespace FastColoredTextBoxNS
                 if (!Selection.ReadOnly)
                 {
                     if (!DoAutocompleteBrackets(c))
-                        InsertChar(c);
+                    {
+                        InsertText(cStr);
+                    }
                 }
 
                 //do autoindent

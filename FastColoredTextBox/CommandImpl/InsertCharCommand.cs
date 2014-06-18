@@ -91,12 +91,44 @@ namespace FastColoredTextBoxNS.CommandImpl
             {
                 case '\n':
                     if (!ts.CurrentTB.allowInsertRemoveLines)
+                    {
                         throw new ArgumentOutOfRangeException("Cant insert this char in ColumnRange mode");
+                    }
+
+                    if (tb.Selection.Start.iLine > 0 && tb[tb.Selection.Start.iLine].EolFormat == EolFormat.None && tb.Selection.Start.iChar == 0 && tb[tb.Selection.Start.iLine -1].EolFormat == EolFormat.CR)
+                    {
+                        // If we have a CR before this LF, we do not need to insert a new line: it has already happened
+                        tb[tb.Selection.Start.iLine - 1].EolFormat = EolFormat.CRLF;
+                        break;
+                    }
+
                     if (ts.Count == 0)
+                    {
                         InsertLine(ts);
+                    }
+
+                    // No CR: we set the EOL to LF and insert the line
+                    tb[tb.Selection.Start.iLine].EolFormat = EolFormat.LF;
+
                     InsertLine(ts);
+
                     break;
-                case '\r': break;
+                case '\r':
+                    if (!ts.CurrentTB.allowInsertRemoveLines)
+                    {
+                        throw new ArgumentOutOfRangeException("Cant insert this char in ColumnRange mode");
+                    }
+
+                    if (ts.Count == 0)
+                    {
+                        InsertLine(ts);
+                    }
+
+                    tb[tb.Selection.Start.iLine].EolFormat = EolFormat.CR;
+
+                    InsertLine(ts);
+
+                    break;
                 case '\b'://backspace
                     if (tb.Selection.Start.iChar == 0 && tb.Selection.Start.iLine == 0)
                         return;
@@ -172,18 +204,26 @@ namespace FastColoredTextBoxNS.CommandImpl
             tb.ExpandBlock(i);
             tb.ExpandBlock(i + 1);
             int pos = ts[i].Count;
+
+            // save the next lines EolFormat, because this one is the one that is saved
+            EolFormat format = ts[i + 1].EolFormat;
             //
             /*
             if(ts[i].Count == 0)
                 ts.RemoveLine(i);
             else*/
             if (ts[i + 1].Count == 0)
+            {
                 ts.RemoveLine(i + 1);
+            }
             else
             {
                 ts[i].AddRange(ts[i + 1]);
                 ts.RemoveLine(i + 1);
             }
+            // set the EolFormat to the next lines EolFormat.
+            ts[i].EolFormat = format;
+
             tb.Selection.Start = new Place(pos, i);
             ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(0, 1));
         }

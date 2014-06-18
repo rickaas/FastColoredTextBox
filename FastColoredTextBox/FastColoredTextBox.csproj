@@ -79,6 +79,7 @@
     <Compile Include="DoDragDropHelper.cs" />
     <Compile Include="EncodingDetector.cs" />
     <Compile Include="EnumDefinitions.cs" />
+    <Compile Include="EolFormat.cs" />
     <Compile Include="EventArgDefs\AutoIndentEventArgs.cs" />
     <Compile Include="EventArgDefs\CustomActionEventArgs.cs" />
     <Compile Include="EventArgDefs\HintClickEventArgs.cs" />

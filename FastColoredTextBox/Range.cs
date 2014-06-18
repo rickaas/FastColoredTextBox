@@ -216,9 +216,25 @@ namespace FastColoredTextBoxNS
                     int fromX = y == fromLine ? fromChar : 0;
                     int toX = y == toLine ? Math.Min(tb[y].Count - 1, toChar - 1) : tb[y].Count - 1;
                     for (int x = fromX; x <= toX; x++)
+                    {
                         sb.Append(tb[y][x].c);
+                    }
                     if (y != toLine && fromLine != toLine)
-                        sb.AppendLine();
+                    {
+                        //sb.AppendLine();
+                        switch (tb[y].EolFormat)
+                        {
+                            case EolFormat.CR:
+                                sb.Append("\r");
+                                break;
+                            case EolFormat.CRLF:
+                                sb.Append("\r\n");
+                                break;
+                            case EolFormat.LF:
+                                sb.Append("\n");
+                                break;
+                        }
+                    }
                 }
                 return sb.ToString();
             }
