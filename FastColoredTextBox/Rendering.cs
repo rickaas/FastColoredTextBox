@@ -126,8 +126,7 @@ namespace FastColoredTextBoxNS
                     }
                 }
 
-                var caretRect = new Rectangle(car.X, car.Y, carWidth, textbox.CharHeight + 1);
-
+                var caretRect = new Rectangle(textbox.HorizontalScroll.Value + car.X, textbox.VerticalScroll.Value + car.Y, carWidth, textbox.CharHeight + 1);
                 if (textbox.prevCaretRect != caretRect)
                 {
                     // caret changed
