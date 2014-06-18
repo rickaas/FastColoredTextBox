@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using FastColoredTextBoxNS.EventArgDefs;
 
 namespace FastColoredTextBoxNS.CommandImpl
 {
@@ -82,6 +83,39 @@ namespace FastColoredTextBoxNS.CommandImpl
             catch (ExternalException)
             {
                 //occurs if some other process holds open clipboard
+            }
+        }
+
+        /// <summary>
+        /// Paste text from clipboard into selected position
+        /// </summary>
+        public static void Paste(FastColoredTextBox textbox)
+        {
+            string text = null;
+            var thread = new Thread(() =>
+            {
+                if (Clipboard.ContainsText())
+                    text = Clipboard.GetText();
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+
+            // get result from event handler, because pasting could be cancelled.
+            TextChangingEventArgs result = textbox.OnPasting(text);
+
+            if (result.Cancel)
+            {
+                text = string.Empty;
+            }
+            else
+            {
+                text = result.InsertingText;
+            }
+
+            if (!string.IsNullOrEmpty(text))
+            {
+                textbox.InsertText(text);
             }
         }
 

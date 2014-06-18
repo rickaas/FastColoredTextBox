@@ -14,23 +14,28 @@ namespace FastColoredTextBoxNS
 
         public string FoldingStartMarker { get; set; }
         public string FoldingEndMarker { get; set; }
+
         /// <summary>
         /// Text of line was changed
         /// </summary>
         public bool IsChanged { get; set; }
+
         /// <summary>
         /// Time of last visit of caret in this line
         /// </summary>
         /// <remarks>This property can be used for forward/backward navigating</remarks>
         public DateTime LastVisit { get; set; }
+
         /// <summary>
         /// Background brush.
         /// </summary>
         public Brush BackgroundBrush { get; set;}
+
         /// <summary>
         /// Unique ID
         /// </summary>
         public int UniqueId { get; private set; }
+
         /// <summary>
         /// Count of needed start spaces for AutoIndent
         /// </summary>

@@ -130,6 +130,7 @@ namespace FastColoredTextBoxNS
 
                 if (textbox.prevCaretRect != caretRect)
                 {
+                    // caret changed
                     NativeMethods.CreateCaret(textbox.Handle, 0, carWidth, textbox.CharHeight + 1);
                     NativeMethods.SetCaretPos(car.X, car.Y);
                     NativeMethods.ShowCaret(textbox.Handle);
@@ -139,6 +140,7 @@ namespace FastColoredTextBoxNS
             }
             else
             {
+                // don't draw caret
                 NativeMethods.HideCaret(textbox.Handle);
                 textbox.prevCaretRect = Rectangle.Empty;
             }

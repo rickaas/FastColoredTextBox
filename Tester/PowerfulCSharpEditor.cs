@@ -420,7 +420,7 @@ namespace Tester
 
         private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CurrentTB.Paste();
+            EditorCommands.Paste(this.CurrentTB);
         }
 
         private void selectAllToolStripMenuItem_Click(object sender, EventArgs e)

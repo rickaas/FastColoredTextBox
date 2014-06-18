@@ -133,6 +133,15 @@ namespace FastColoredTextBoxNS
 
             return result;
         }
+
+        internal static readonly Dictionary<FCTBAction, bool> ScrollActions = new Dictionary<FCTBAction, bool>()
+            {
+                { FCTBAction.ScrollDown, true }, 
+                { FCTBAction.ScrollUp, true }, 
+                { FCTBAction.ZoomOut, true }, 
+                { FCTBAction.ZoomIn, true }, 
+                { FCTBAction.ZoomNormal, true }
+            };
     }
 
     /// <summary>

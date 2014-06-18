@@ -51,7 +51,7 @@ namespace FastColoredTextBoxNS
         /// </summary>
         protected virtual void AddVisualMarker(FastColoredTextBox tb, StyleVisualMarker marker)
         {
-            tb.AddVisualMarker(marker);
+            tb.visibleMarkers.Add(marker);
         }
 
         public static Size GetSizeOfRange(Range range)
@@ -330,7 +330,7 @@ namespace FastColoredTextBoxNS
                         firstNonSpaceSymbolX += range.tb.CharWidth;
 
                 //create marker
-                range.tb.AddVisualMarker(new FoldedAreaMarker(range.Start.iLine, new Rectangle(firstNonSpaceSymbolX, position.Y, position.X + (range.End.iChar - range.Start.iChar) * range.tb.CharWidth - firstNonSpaceSymbolX, range.tb.CharHeight)));
+                range.tb.visibleMarkers.Add(new FoldedAreaMarker(range.Start.iLine, new Rectangle(firstNonSpaceSymbolX, position.Y, position.X + (range.End.iChar - range.Start.iChar) * range.tb.CharWidth - firstNonSpaceSymbolX, range.tb.CharHeight)));
             }
             else
             {
@@ -338,7 +338,7 @@ namespace FastColoredTextBoxNS
                 using(Font f = new Font(range.tb.Font, FontStyle))
                     gr.DrawString("...", f, ForeBrush, range.tb.LeftIndent, position.Y - 2);
                 //create marker
-                range.tb.AddVisualMarker(new FoldedAreaMarker(range.Start.iLine, new Rectangle(range.tb.LeftIndent + 2, position.Y, 2 * range.tb.CharHeight, range.tb.CharHeight)));
+                range.tb.visibleMarkers.Add(new FoldedAreaMarker(range.Start.iLine, new Rectangle(range.tb.LeftIndent + 2, position.Y, 2 * range.tb.CharHeight, range.tb.CharHeight)));
             }
         }
     }

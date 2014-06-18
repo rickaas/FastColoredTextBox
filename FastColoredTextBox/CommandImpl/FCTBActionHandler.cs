@@ -82,7 +82,7 @@ namespace FastColoredTextBoxNS.CommandImpl
 
                 case FCTBAction.Paste:
                     if (!this.textbox.Selection.ReadOnly)
-                        this.textbox.Paste();
+                        EditorCommands.Paste(this.textbox);
                     break;
 
                 case FCTBAction.SelectAll:
