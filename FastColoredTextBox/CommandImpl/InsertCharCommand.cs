@@ -96,7 +96,8 @@ namespace FastColoredTextBoxNS.CommandImpl
                     }
 
                     if (tb.Selection.Start.iLine > 0
-                        && (tb[tb.Selection.Start.iLine].EolFormat == EolFormat.None || tb[tb.Selection.Start.iLine].EolFormat == EolFormat.None)
+                        // current line either can have EolFormat.None or EolFormat.CR (when the \n was preceeded by a \r)
+                        && (tb[tb.Selection.Start.iLine].EolFormat == EolFormat.None || tb[tb.Selection.Start.iLine].EolFormat == EolFormat.CR)
                         && tb.Selection.Start.iChar == 0 
                         && tb[tb.Selection.Start.iLine -1].EolFormat == EolFormat.CR)
                     {
