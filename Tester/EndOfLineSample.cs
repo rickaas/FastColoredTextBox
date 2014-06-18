@@ -14,6 +14,7 @@ namespace Tester
     public partial class EndOfLineSample : Form
     {
         public const string MY_TEXT = "foo\nbar\ncheese\n\n\ngoo";
+        public const string MY_CRLF_TEXT = "foo\r\nbar\r\ncheese\r\n\r\n\r\ngoo";
 
         // Does not work on empty lines because range is empty
         private readonly Style invisibleCharsStyle = new InvisibleCharsRenderer(Pens.Gray);
@@ -80,6 +81,11 @@ namespace Tester
         private void loadTextButton_Click(object sender, EventArgs e)
         {
             this.fctb.Text = MY_TEXT;
+        }
+
+        private void loadCRLFTextButton_Click(object sender, EventArgs e)
+        {
+            this.fctb.Text = MY_CRLF_TEXT;
         }
 
     }

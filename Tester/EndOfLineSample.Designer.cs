@@ -38,6 +38,7 @@
             this.fctb = new FastColoredTextBoxNS.FastColoredTextBox();
             this.loadEmptyButton = new System.Windows.Forms.Button();
             this.loadTextButton = new System.Windows.Forms.Button();
+            this.loadCRLFTextButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.fctb)).BeginInit();
             this.SuspendLayout();
             // 
@@ -141,15 +142,26 @@
             this.loadTextButton.Name = "loadTextButton";
             this.loadTextButton.Size = new System.Drawing.Size(75, 23);
             this.loadTextButton.TabIndex = 7;
-            this.loadTextButton.Text = "Text";
+            this.loadTextButton.Text = "LF Text";
             this.loadTextButton.UseVisualStyleBackColor = true;
             this.loadTextButton.Click += new System.EventHandler(this.loadTextButton_Click);
+            // 
+            // loadCRLFTextButton
+            // 
+            this.loadCRLFTextButton.Location = new System.Drawing.Point(174, 42);
+            this.loadCRLFTextButton.Name = "loadCRLFTextButton";
+            this.loadCRLFTextButton.Size = new System.Drawing.Size(75, 23);
+            this.loadCRLFTextButton.TabIndex = 8;
+            this.loadCRLFTextButton.Text = "CR-LF Text";
+            this.loadCRLFTextButton.UseVisualStyleBackColor = true;
+            this.loadCRLFTextButton.Click += new System.EventHandler(this.loadCRLFTextButton_Click);
             // 
             // EndOfLineSample
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(475, 389);
+            this.Controls.Add(this.loadCRLFTextButton);
             this.Controls.Add(this.loadTextButton);
             this.Controls.Add(this.loadEmptyButton);
             this.Controls.Add(this.wordWrapCheckBox);
@@ -176,5 +188,6 @@
         private System.Windows.Forms.CheckBox wordWrapCheckBox;
         private System.Windows.Forms.Button loadEmptyButton;
         private System.Windows.Forms.Button loadTextButton;
+        private System.Windows.Forms.Button loadCRLFTextButton;
     }
 }

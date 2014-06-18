@@ -95,7 +95,10 @@ namespace FastColoredTextBoxNS.CommandImpl
                         throw new ArgumentOutOfRangeException("Cant insert this char in ColumnRange mode");
                     }
 
-                    if (tb.Selection.Start.iLine > 0 && tb[tb.Selection.Start.iLine].EolFormat == EolFormat.None && tb.Selection.Start.iChar == 0 && tb[tb.Selection.Start.iLine -1].EolFormat == EolFormat.CR)
+                    if (tb.Selection.Start.iLine > 0
+                        && (tb[tb.Selection.Start.iLine].EolFormat == EolFormat.None || tb[tb.Selection.Start.iLine].EolFormat == EolFormat.None)
+                        && tb.Selection.Start.iChar == 0 
+                        && tb[tb.Selection.Start.iLine -1].EolFormat == EolFormat.CR)
                     {
                         // If we have a CR before this LF, we do not need to insert a new line: it has already happened
                         tb[tb.Selection.Start.iLine - 1].EolFormat = EolFormat.CRLF;
