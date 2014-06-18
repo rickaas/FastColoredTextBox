@@ -24,6 +24,7 @@ namespace FastColoredTextBoxNS.CommandImpl
             }
             catch
             {
+                // failed, show an empty file
                 textbox.InitTextSource(textbox.CreateTextSource());
                 textbox.lines.InsertLine(0, textbox.TextSource.CreateLine());
                 textbox.IsChanged = false;
@@ -48,6 +49,7 @@ namespace FastColoredTextBoxNS.CommandImpl
             }
             catch
             {
+                // failed, show an empty file
                 textbox.InitTextSource(textbox.CreateTextSource());
                 textbox.lines.InsertLine(0, textbox.TextSource.CreateLine());
                 textbox.IsChanged = false;
@@ -72,6 +74,7 @@ namespace FastColoredTextBoxNS.CommandImpl
             }
             catch
             {
+                // failed, show an empty file
                 fts.CloseFile();
                 textbox.InitTextSource(textbox.CreateTextSource());
                 textbox.lines.InsertLine(0, textbox.TextSource.CreateLine());
@@ -91,6 +94,7 @@ namespace FastColoredTextBoxNS.CommandImpl
                 var fts = textbox.lines as FileTextSource;
                 fts.CloseFile();
 
+                // show an empty file
                 textbox.InitTextSource(textbox.CreateTextSource());
                 textbox.lines.InsertLine(0, textbox.TextSource.CreateLine());
                 textbox.IsChanged = false;

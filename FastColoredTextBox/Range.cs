@@ -221,6 +221,7 @@ namespace FastColoredTextBoxNS
                     }
                     if (y != toLine && fromLine != toLine)
                     {
+                        // This won't append a newline to the last line
                         //sb.AppendLine();
                         switch (tb[y].EolFormat)
                         {

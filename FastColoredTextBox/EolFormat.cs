@@ -7,7 +7,9 @@ namespace FastColoredTextBoxNS
 {
     public enum EolFormat
     {
-        None, // None is default: we set the EolFormat when 
+        // None is default: we set the EolFormat when creating a line.
+        // The last line has EolFormat.None when the file does not end with a new line.
+        None, 
 
         [Description("Unix (LF)")]
         LF,
