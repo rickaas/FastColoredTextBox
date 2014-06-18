@@ -59,6 +59,7 @@ namespace Tester
                 new ExampleItem(typeof(CustomWordWrapSample),"Custom wordwrap sample."),
                 new ExampleItem(typeof(TabStopsInText),"Tab stop characters"),
                 new ExampleItem(typeof(BraceComplete),"Brace Completion"),
+                new ExampleItem(typeof(EndOfLineSample),"Line endings")
 
             };
 

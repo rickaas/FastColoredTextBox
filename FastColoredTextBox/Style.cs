@@ -553,4 +553,43 @@ namespace FastColoredTextBoxNS
             //
         }
     }
+
+    /// <summary>
+    /// Draw EOL marker after the last character in a line.
+    /// </summary>
+    public class EndOfLineStyle : Style
+    {
+
+        public Font Font { get; private set; }
+
+        public EndOfLineStyle(Font f)
+        {
+            this.Font = f;
+        }
+
+        public override void Draw(Graphics gr, Point position, Range range)
+        {
+            // Callers should ensure that Draw(...) isn't called for the last line
+            // TODO: Check if range is the last character of the line
+            //bool isLastChar = range.tb[range.Start.iLine].Count == range.End.iChar;
+            var line = range.tb[range.Start.iLine]; // text on the line
+            
+            switch (line.EolFormat)
+            {
+                case EolFormat.LF:
+                    gr.DrawString("¶", this.Font, Brushes.Gray, position);
+                    break;
+                case EolFormat.CRLF:
+                    gr.DrawString("§¶", this.Font, Brushes.Gray, position);
+                    break;
+                case EolFormat.CR:
+                    gr.DrawString("§", this.Font, Brushes.Gray, position);
+                    break;
+                case EolFormat.None:
+                default:
+                    break;
+            }
+        }
+
+    }
 }

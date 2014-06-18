@@ -119,6 +119,12 @@
     <Compile Include="DocumentMapSample.Designer.cs">
       <DependentUpon>DocumentMapSample.cs</DependentUpon>
     </Compile>
+    <Compile Include="EndOfLineSample.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="EndOfLineSample.Designer.cs">
+      <DependentUpon>EndOfLineSample.cs</DependentUpon>
+    </Compile>
     <Compile Include="ExampleIndex.cs" />
     <Compile Include="RulerSample.cs">
       <SubType>Form</SubType>
@@ -340,6 +346,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="DocumentMapSample.resx">
       <DependentUpon>DocumentMapSample.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="EndOfLineSample.resx">
+      <DependentUpon>EndOfLineSample.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="RulerSample.resx">
       <DependentUpon>RulerSample.cs</DependentUpon>

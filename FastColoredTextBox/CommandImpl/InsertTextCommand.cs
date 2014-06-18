@@ -60,6 +60,7 @@ namespace FastColoredTextBoxNS.CommandImpl
                 }
                 tb.ExpandBlock(tb.Selection.Start.iLine);
                 foreach (char c in insertedText)
+                    // FIXME: swallow newlines and detect current EOL
                     InsertCharCommand.InsertChar(c, ref cc, ts);
                 ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(0, 1));
             }

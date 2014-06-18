@@ -228,9 +228,18 @@ namespace FastColoredTextBoxNS.CommandImpl
             ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(0, 1));
         }
 
+        /// <summary>
+        /// Chop an existing line into two lines.
+        /// This means that this method is also called when pressing enter on the start of a line.
+        /// </summary>
+        /// <param name="iLine"></param>
+        /// <param name="pos"></param>
+        /// <param name="ts"></param>
         internal static void BreakLines(int iLine, int pos, TextSource ts)
         {
             Line newLine = ts.CreateLine();
+            EolFormat format = ts[iLine].EolFormat;
+            newLine.EolFormat = format;
             for (int i = pos; i < ts[iLine].Count; i++)
                 newLine.Add(ts[iLine][i]);
             ts[iLine].RemoveRange(pos, ts[iLine].Count - pos);

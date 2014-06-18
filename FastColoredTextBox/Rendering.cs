@@ -403,6 +403,19 @@ namespace FastColoredTextBoxNS
                                new Range(textbox, from + iLastFlushedChar + 1, iLine, from + lastChar + 1, iLine));
             }
 
+            if (textbox.EndOfLineStyle != null && line.Count == to + 1)
+            {
+                // don't draw EOL for last line
+                bool isLastLine = textbox.LinesCount - 1 == iLine;
+                if (!isLastLine)
+                {
+                    // point after the last character
+                    int eolOffset = startX + (lastChar + 1) * textbox.CharWidth;
+                    var eolStart = new Point(eolOffset, y);
+                    textbox.EndOfLineStyle.Draw(gr, eolStart, new Range(textbox, lastChar + 1, iLine, lastChar + 1, iLine));
+                }
+            }
+
             //draw selection
             if (textbox.SelectionHighlightingForLineBreaksEnabled && iWordWrapLine == lineInfo.WordWrapStringsCount - 1) lastChar++;//draw selection for CR
             
@@ -467,6 +480,10 @@ namespace FastColoredTextBoxNS
                 //draw by default renderer
                 if (!hasTextStyle)
                     textbox.DefaultStyle.Draw(gr, pos, range);
+            }
+            else
+            {
+                // empty range
             }
         }
 

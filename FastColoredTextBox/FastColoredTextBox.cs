@@ -1245,6 +1245,13 @@ namespace FastColoredTextBoxNS
         public SelectionStyle SelectionStyle { get; set; }
 
         /// <summary>
+        /// Style for rendering EOL characters.
+        /// The EOL character is defined per Line.
+        /// </summary>
+        [Browsable(false)]
+        public Style EndOfLineStyle { get; set; }
+
+        /// <summary>
         /// Style for folded block rendering
         /// </summary>
         [Browsable(false)]
