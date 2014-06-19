@@ -12,5 +12,6 @@ namespace FastColoredTextBoxNS
         void FindPrevious(string text);
         void Show();
         TextBox FindTextBox { get; }
+        void Close();
     }
 }
