@@ -64,5 +64,15 @@ namespace FastColoredTextBoxNS
 
             return new SizeF(sz2.Width - sz3.Width + 1, /*sz2.Height*/font.Height);
         }
+
+        public static bool IsIdentifierChar(char c)
+        {
+            return char.IsLetterOrDigit(c) || c == '_';
+        }
+
+        public static bool IsSpaceChar(char c)
+        {
+            return c == ' ' || c == '\t';
+        }
     }
 }
