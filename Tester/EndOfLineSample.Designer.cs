@@ -39,6 +39,7 @@
             this.loadEmptyButton = new System.Windows.Forms.Button();
             this.loadTextButton = new System.Windows.Forms.Button();
             this.loadCRLFTextButton = new System.Windows.Forms.Button();
+            this.loadMixedTextButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.fctb)).BeginInit();
             this.SuspendLayout();
             // 
@@ -118,11 +119,11 @@
             this.fctb.EndOfLineStyle = null;
             this.fctb.Hotkeys = resources.GetString("fctb.Hotkeys");
             this.fctb.IsReplaceMode = false;
-            this.fctb.Location = new System.Drawing.Point(12, 85);
+            this.fctb.Location = new System.Drawing.Point(12, 125);
             this.fctb.Name = "fctb";
             this.fctb.Paddings = new System.Windows.Forms.Padding(0);
             this.fctb.SelectionColor = System.Drawing.Color.FromArgb(((int)(((byte)(60)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))), ((int)(((byte)(255)))));
-            this.fctb.Size = new System.Drawing.Size(451, 292);
+            this.fctb.Size = new System.Drawing.Size(451, 252);
             this.fctb.TabIndex = 0;
             this.fctb.Zoom = 100;
             // 
@@ -156,11 +157,22 @@
             this.loadCRLFTextButton.UseVisualStyleBackColor = true;
             this.loadCRLFTextButton.Click += new System.EventHandler(this.loadCRLFTextButton_Click);
             // 
+            // loadMixedTextButton
+            // 
+            this.loadMixedTextButton.Location = new System.Drawing.Point(93, 71);
+            this.loadMixedTextButton.Name = "loadMixedTextButton";
+            this.loadMixedTextButton.Size = new System.Drawing.Size(75, 23);
+            this.loadMixedTextButton.TabIndex = 9;
+            this.loadMixedTextButton.Text = "Mixed Text";
+            this.loadMixedTextButton.UseVisualStyleBackColor = true;
+            this.loadMixedTextButton.Click += new System.EventHandler(this.loadMixedTextButton_Click);
+            // 
             // EndOfLineSample
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(475, 389);
+            this.Controls.Add(this.loadMixedTextButton);
             this.Controls.Add(this.loadCRLFTextButton);
             this.Controls.Add(this.loadTextButton);
             this.Controls.Add(this.loadEmptyButton);
@@ -189,5 +201,6 @@
         private System.Windows.Forms.Button loadEmptyButton;
         private System.Windows.Forms.Button loadTextButton;
         private System.Windows.Forms.Button loadCRLFTextButton;
+        private System.Windows.Forms.Button loadMixedTextButton;
     }
 }

@@ -14,7 +14,12 @@ namespace Tester
     public partial class EndOfLineSample : Form
     {
         public const string MY_TEXT = "foo\nbar\ncheese\n\n\ngoo";
-        public const string MY_CRLF_TEXT = "foo\r\nbar\r\ncheese\r\n\r\n\r\ngoo";
+        //public const string MY_TEXT = "A\n";
+
+        public const string MY_CRLF_TEXT = "foo\r\nbar\r\ncheese\r\n\r\n\r\ngoo\r\n";
+        //public const string MY_CRLF_TEXT = "A\r\n";
+
+        public const string MY_MIXED_TEXT = "foo1\nbar1\r\nline\r\nline\r\nfoo2\nbar2";
 
         // Does not work on empty lines because range is empty
         private readonly Style invisibleCharsStyle = new InvisibleCharsRenderer(Pens.Gray);
@@ -76,6 +81,8 @@ namespace Tester
         private void loadEmptyButton_Click(object sender, EventArgs e)
         {
             this.fctb.Clear();
+            this.fctb.Text = MY_TEXT;
+            this.fctb.Text = "";
         }
 
         private void loadTextButton_Click(object sender, EventArgs e)
@@ -86,6 +93,11 @@ namespace Tester
         private void loadCRLFTextButton_Click(object sender, EventArgs e)
         {
             this.fctb.Text = MY_CRLF_TEXT;
+        }
+
+        private void loadMixedTextButton_Click(object sender, EventArgs e)
+        {
+            this.fctb.Text = MY_MIXED_TEXT;
         }
 
     }

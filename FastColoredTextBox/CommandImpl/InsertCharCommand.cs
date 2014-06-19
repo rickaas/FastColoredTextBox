@@ -96,13 +96,19 @@ namespace FastColoredTextBoxNS.CommandImpl
                     }
 
                     if (tb.Selection.Start.iLine > 0
-                        // current line either can have EolFormat.None or EolFormat.CR (when the \n was preceeded by a \r)
-                        && (tb[tb.Selection.Start.iLine].EolFormat == EolFormat.None || tb[tb.Selection.Start.iLine].EolFormat == EolFormat.CR)
+                        && tb[tb.Selection.Start.iLine].EolFormat == EolFormat.None
                         && tb.Selection.Start.iChar == 0 
                         && tb[tb.Selection.Start.iLine -1].EolFormat == EolFormat.CR)
                     {
                         // If we have a CR before this LF, we do not need to insert a new line: it has already happened
                         tb[tb.Selection.Start.iLine - 1].EolFormat = EolFormat.CRLF;
+                        break;
+                    }
+                    if (tb[tb.Selection.Start.iLine].EolFormat == EolFormat.CR &&
+                        tb.Selection.Start.iChar == 0)
+                    {
+                        // A \r followed by a \n
+                        tb[tb.Selection.Start.iLine].EolFormat = EolFormat.CRLF;
                         break;
                     }
 
@@ -128,9 +134,19 @@ namespace FastColoredTextBoxNS.CommandImpl
                         InsertLine(ts);
                     }
 
-                    tb[tb.Selection.Start.iLine].EolFormat = EolFormat.CR;
+                    bool crEaten = false;
+                    if (tb[tb.Selection.Start.iLine].EolFormat == EolFormat.None)
+                    {
+                        crEaten = true;
+                        tb[tb.Selection.Start.iLine].EolFormat = EolFormat.CR;
+                    }
 
                     InsertLine(ts);
+
+                    if (!crEaten)
+                    {
+                        tb[tb.Selection.Start.iLine].EolFormat = EolFormat.CR;
+                    }
 
                     break;
                 case '\b'://backspace
@@ -242,8 +258,15 @@ namespace FastColoredTextBoxNS.CommandImpl
         internal static void BreakLines(int iLine, int pos, TextSource ts)
         {
             Line newLine = ts.CreateLine();
-            EolFormat format = ts[iLine].EolFormat;
+
+            EolFormat format = EolFormat.None;
+            if (iLine < ts.Count - 1)
+            {
+                // breaking in the middle of an existing line
+                format = ts[iLine].EolFormat;
+            }
             newLine.EolFormat = format;
+
             for (int i = pos; i < ts[iLine].Count; i++)
                 newLine.Add(ts[iLine][i]);
             ts[iLine].RemoveRange(pos, ts[iLine].Count - pos);

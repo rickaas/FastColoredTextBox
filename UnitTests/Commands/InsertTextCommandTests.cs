@@ -28,6 +28,30 @@ namespace UnitTests.Commands
         }
 
         [TestMethod]
+        public void InsertEOL()
+        {
+            FastColoredTextBox fctb = new FastColoredTextBox();
+
+            string insertedText = "foobaar";
+            var command = new InsertTextCommand(fctb.TextSource, insertedText);
+
+            command.Execute();
+            
+            Assert.AreEqual("foobaar", fctb.Text);
+
+            fctb.Selection = new Range(fctb, 3,0,3,0);
+            command = new InsertTextCommand(fctb.TextSource, "\n");
+
+            command.Execute();
+
+            Assert.AreEqual("foo\nbaar", fctb.Text);
+
+            command.Undo();
+            Assert.AreEqual("foobaar", fctb.Text);
+        }
+
+
+        [TestMethod]
         public void InsertTextWithCRLF()
         {
             FastColoredTextBox fctb = new FastColoredTextBox();
@@ -37,6 +61,8 @@ namespace UnitTests.Commands
             Assert.AreEqual("", fctb.Text);
             command.Execute();
             Assert.AreEqual(GetCRLFLine(), fctb.Text);
+            command.Undo();
+            Assert.AreEqual("", fctb.Text);
         }
     }
 }

@@ -45,7 +45,7 @@ namespace FastColoredTextBoxNS.CommandImpl
             base.Execute();
         }
 
-        internal static void InsertText(string insertedText, TextSource ts)
+        internal static void InsertText(string insertedText, TextSource ts, bool normalizeEOL=false)
         {
             var tb = ts.CurrentTB;
             try
@@ -59,9 +59,39 @@ namespace FastColoredTextBoxNS.CommandImpl
                     tb.Selection.Start = Place.Empty;
                 }
                 tb.ExpandBlock(tb.Selection.Start.iLine);
+
+                if (normalizeEOL)
+                {
+                    // The EOL characters in insertedText have to be converted to the EOL characters in the TextSource.
+                    switch (tb.DefaultEolFormat)
+                    {
+                        case EolFormat.LF:
+                            // \r\n -> \n
+                            // \r -> \n
+                            insertedText = insertedText.Replace("\r\n", "\n").Replace("\r", "\n");
+                            break;
+                        case EolFormat.CRLF:
+                            // \r[^\n] (a \r not followed by a \n)
+                            // [^\r]\n (a \n not preceeded by a \r)
+                            // yikes, I don't want to use a Regex for this. Let's normalize to \n and then to \r\n
+                            insertedText = insertedText.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", "\r\n");
+                            break;
+                        case EolFormat.CR:
+                            // \r\n -> \r
+                            // \n -> \r
+                            insertedText = insertedText.Replace("\r\n", "\r").Replace("\n", "\r");
+                            break;
+                        case EolFormat.None:
+                        default:
+                            // The entire text is replaced, keep the EOL characters the way they are.
+                            // Make sure to call FastColoredTextbox.TryDeriveEolFormat(...)
+                            break;
+                    }
+                }
                 foreach (char c in insertedText)
-                    // FIXME: swallow newlines and detect current EOL
+                {
                     InsertCharCommand.InsertChar(c, ref cc, ts);
+                }
                 ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(0, 1));
             }
             finally

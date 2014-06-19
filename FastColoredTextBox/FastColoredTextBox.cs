@@ -710,6 +710,7 @@ namespace FastColoredTextBoxNS
                 try
                 {
                     Selection.SelectAll();
+                    this.DefaultEolFormat = EolFormat.None;
                     InsertText(value);
                     GoHome();
                     TryDeriveEolFormat();
