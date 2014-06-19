@@ -2199,6 +2199,7 @@ namespace FastColoredTextBoxNS
                 }
             }
             DefaultEolFormat = newFormat;
+            this.Invalidate();
         }
 
         /// <summary>
