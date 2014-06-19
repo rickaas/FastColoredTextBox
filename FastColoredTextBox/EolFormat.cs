@@ -21,4 +21,24 @@ namespace FastColoredTextBoxNS
         CR,
 
     }
+
+    public static class EolFormatUtil
+    {
+        public static string ToNewLine(EolFormat eolFormat)
+        {
+            switch (eolFormat)
+            {
+                case EolFormat.LF:
+                    return "\n";
+                case EolFormat.CRLF:
+                    return "\r\n";
+                case EolFormat.CR:
+                    return "\r";
+                case EolFormat.None:
+                default:
+                    throw new ArgumentOutOfRangeException("eolFormat");
+            }
+        }
+    
+    }
 }
