@@ -155,7 +155,7 @@ namespace FastColoredTextBoxNS
             }
             startPlace.iChar = 0;
             //calc scroll pos
-            var linesCount = target.TextSource.GetLines().Count;
+            var linesCount = target.TextSource.Count;
             var sp1 = (float)r.Start.iLine / linesCount;
             var sp2 = (float)r.End.iLine / linesCount;
 

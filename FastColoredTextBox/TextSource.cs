@@ -15,72 +15,51 @@ namespace FastColoredTextBoxNS
     public class TextSource: IList<Line>, IDisposable
     {
         readonly protected List<Line> lines = new List<Line>();
-        protected LinesAccessor linesAccessor;
+
         int lastLineUniqueId;
         public CommandManager Manager { get; protected set; }
         FastColoredTextBox currentTB;
+
         /// <summary>
         /// Styles
         /// </summary>
         public readonly Style[] Styles;
+        
         /// <summary>
         /// Occurs when line was inserted/added
         /// </summary>
         public event EventHandler<LineInsertedEventArgs> LineInserted;
+        
         /// <summary>
         /// Occurs when line was removed
         /// </summary>
         public event EventHandler<LineRemovedEventArgs> LineRemoved;
+        
         /// <summary>
         /// Occurs when text was changed
         /// </summary>
         public event EventHandler<TextSourceTextChangedEventArgs> TextChanged;
+        
         /// <summary>
         /// Occurs when recalc is needed
         /// </summary>
         public event EventHandler<TextSourceTextChangedEventArgs> RecalcNeeded;
+        
         /// <summary>
         /// Occurs when recalc wordwrap is needed
         /// </summary>
         public event EventHandler<TextSourceTextChangedEventArgs> RecalcWordWrap;
+        
         /// <summary>
         /// Occurs before text changing
         /// </summary>
         public event EventHandler<TextChangingEventArgs> TextChanging;
+        
         /// <summary>
         /// Occurs after CurrentTB was changed
         /// </summary>
         public event EventHandler CurrentTBChanged;
-        /// <summary>
-        /// Current focused FastColoredTextBox
-        /// </summary>
-        public FastColoredTextBox CurrentTB {
-            get { return currentTB; }
-            set {
-                if (currentTB == value)
-                    return;
-                currentTB = value;
-                OnCurrentTBChanged(); 
-            }
-        }
-
-        public virtual void ClearIsChanged()
-        {
-            foreach(var line in lines)
-                line.IsChanged = false;
-        }
         
-        public virtual Line CreateLine()
-        {
-            return new Line(GenerateUniqueLineId());
-        }
-
-        private void OnCurrentTBChanged()
-        {
-            if (CurrentTBChanged != null)
-                CurrentTBChanged(this, EventArgs.Empty);
-        }
-
         /// <summary>
         /// Default text style
         /// This style is using when no one other TextStyle is not defined in Char.style
@@ -90,7 +69,6 @@ namespace FastColoredTextBoxNS
         public TextSource(FastColoredTextBox currentTB)
         {
             this.CurrentTB = currentTB;
-            linesAccessor = new LinesAccessor(this);
             Manager = new CommandManager(this);
 
             if (Enum.GetUnderlyingType(typeof(StyleIndex)) == typeof(UInt32))
@@ -99,6 +77,26 @@ namespace FastColoredTextBoxNS
                 Styles = new Style[16];
 
             InitDefaultStyle();
+        }
+
+        /// <summary>
+        /// Current focused FastColoredTextBox
+        /// </summary>
+        public FastColoredTextBox CurrentTB
+        {
+            get { return currentTB; }
+            set
+            {
+                if (currentTB == value)
+                    return;
+                currentTB = value;
+                OnCurrentTBChanged();
+            }
+        }
+
+        public virtual bool IsNeedBuildRemovedLineIds
+        {
+            get { return LineRemoved != null; }
         }
 
         public virtual void InitDefaultStyle()
@@ -129,39 +127,6 @@ namespace FastColoredTextBoxNS
             }
 
             return result;
-        }
-
-        public virtual Line this[int i]
-        {
-            get{
-                return lines[i];
-            }
-            set {
-                throw new NotImplementedException();
-            }
-        }
-
-        public virtual bool IsLineLoaded(int iLine)
-        {
-            return lines[iLine] != null;
-        }
-
-        /// <summary>
-        /// Text lines
-        /// </summary>
-        public virtual IList<string> GetLines()
-        {
-            return linesAccessor;
-        }
-
-        public IEnumerator<Line> GetEnumerator()
-        {
-            return lines.GetEnumerator();
-        }
-
-        IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return (lines  as IEnumerator);
         }
 
         public virtual int BinarySearch(Line item, IComparer<Line> comparer)
@@ -196,11 +161,6 @@ namespace FastColoredTextBoxNS
             RemoveLine(index, 1);
         }
 
-        public virtual bool IsNeedBuildRemovedLineIds
-        {
-            get { return LineRemoved != null; }
-        }
-
         public virtual void RemoveLine(int index, int count)
         {
             List<int> removedLineIds = new List<int>();
@@ -228,15 +188,49 @@ namespace FastColoredTextBoxNS
                 TextChanged(this, new TextSourceTextChangedEventArgs(Math.Min(fromLine, toLine), Math.Max(fromLine, toLine) ));
         }
 
-        public class TextSourceTextChangedEventArgs : EventArgs
+        public virtual void ClearIsChanged()
         {
-            public int iFromLine;
-            public int iToLine;
+            foreach (var line in lines)
+                line.IsChanged = false;
+        }
 
-            public TextSourceTextChangedEventArgs(int iFromLine, int iToLine)
+        public virtual Line CreateLine()
+        {
+            return new Line(GenerateUniqueLineId());
+        }
+
+        private void OnCurrentTBChanged()
+        {
+            if (CurrentTBChanged != null)
+                CurrentTBChanged(this, EventArgs.Empty);
+        }
+
+        public virtual bool IsLineLoaded(int iLine)
+        {
+            return lines[iLine] != null;
+        }
+
+        #region IList interface methods
+
+        public IEnumerator<Line> GetEnumerator()
+        {
+            return lines.GetEnumerator();
+        }
+
+        IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return (lines as IEnumerator);
+        }
+
+        public virtual Line this[int i]
+        {
+            get
             {
-                this.iFromLine = iFromLine;
-                this.iToLine = iToLine;
+                return lines[i];
+            }
+            set
+            {
+                throw new NotImplementedException();
             }
         }
 
@@ -300,6 +294,8 @@ namespace FastColoredTextBoxNS
                 return false;
         }
 
+        #endregion
+
         public virtual void NeedRecalc(TextSourceTextChangedEventArgs args)
         {
             if (RecalcNeeded != null)
@@ -358,6 +354,18 @@ namespace FastColoredTextBoxNS
                     sw.WriteLine(lines[i].Text);
 
                 sw.Write(lines[Count-1].Text);
+            }
+        }
+
+        public class TextSourceTextChangedEventArgs : EventArgs
+        {
+            public int iFromLine;
+            public int iToLine;
+
+            public TextSourceTextChangedEventArgs(int iFromLine, int iToLine)
+            {
+                this.iFromLine = iFromLine;
+                this.iToLine = iToLine;
             }
         }
     }
