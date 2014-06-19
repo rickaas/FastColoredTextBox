@@ -16,7 +16,7 @@ namespace FastColoredTextBoxNS.CommandImpl
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="tb">Underlaying textbox</param>
+        /// <param name="ts">Underlaying TextSource</param>
         /// <param name="ranges">List of ranges for replace</param>
         /// <param name="insertedText">Text for inserting</param>
         public ReplaceTextCommand(TextSource ts, List<Range> ranges, string insertedText)

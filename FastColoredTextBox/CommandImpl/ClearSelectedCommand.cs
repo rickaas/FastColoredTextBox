@@ -14,7 +14,7 @@ namespace FastColoredTextBoxNS.CommandImpl
         /// <summary>
         /// Construstor
         /// </summary>
-        /// <param name="tb">Underlaying textbox</param>
+        /// <param name="ts">Underlaying TextSource</param>
         public ClearSelectedCommand(TextSource ts)
             : base(ts)
         {

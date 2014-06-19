@@ -16,7 +16,7 @@ namespace FastColoredTextBoxNS.CommandImpl
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="tb">Underlaying textbox</param>
+        /// <param name="ts">Underlaying TextSource</param>
         /// <param name="c">Inserting char</param>
         public InsertCharCommand(TextSource ts, char c)
             : base(ts)

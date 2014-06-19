@@ -17,9 +17,8 @@ namespace FastColoredTextBoxNS.CommandImpl
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="tb">Underlaying textbox</param>
-        /// <param name="ranges">List of ranges for replace</param>
-        /// <param name="insertedText">Text for inserting</param>
+        /// <param name="ts">Underlaying TextSource</param>
+        /// <param name="iLines">List of line indices to be removed</param>
         public RemoveLinesCommand(TextSource ts, List<int> iLines)
             : base(ts)
         {
