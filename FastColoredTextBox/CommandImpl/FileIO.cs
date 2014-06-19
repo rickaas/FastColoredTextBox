@@ -60,6 +60,7 @@ namespace FastColoredTextBoxNS.CommandImpl
         /// <summary>
         /// Open file binding mode
         /// </summary>
+        /// <param name="textbox"></param>
         /// <param name="fileName"></param>
         /// <param name="enc"></param>
         public static void OpenBindingFile(FastColoredTextBox textbox, string fileName, Encoding enc)
@@ -105,6 +106,7 @@ namespace FastColoredTextBoxNS.CommandImpl
         /// <summary>
         /// Save text to the file
         /// </summary>
+        /// <param name="textbox"></param>
         /// <param name="fileName"></param>
         /// <param name="enc"></param>
         public static void SaveToFile(FastColoredTextBox textbox, string fileName, Encoding enc)

@@ -490,6 +490,7 @@ namespace FastColoredTextBoxNS
         /// Draws text to given Graphics
         /// </summary>
         /// <param name="gr"></param>
+        /// <param name="textbox"></param>
         /// <param name="start">Start place of drawing text</param>
         /// <param name="size">Size of drawing</param>
         public static void DrawText(Graphics gr, FastColoredTextBox textbox, Place start, Size size)

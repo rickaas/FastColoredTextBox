@@ -35,6 +35,7 @@ namespace FastColoredTextBoxNS
         /// <summary>
         /// Gets absolute text position from line and char position
         /// </summary>
+        /// <param name="lines"></param>
         /// <param name="point">Line and char position</param>
         /// <returns>Point of char</returns>
         public static int PlaceToPosition(TextSource lines, Place point)

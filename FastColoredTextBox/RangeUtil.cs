@@ -10,6 +10,7 @@ namespace FastColoredTextBoxNS
         /// <summary>
         /// Get range of text
         /// </summary>
+        /// <param name="textbox"></param>
         /// <param name="fromPos">Absolute start position</param>
         /// <param name="toPos">Absolute finish position</param>
         /// <returns>Range</returns>
@@ -24,6 +25,7 @@ namespace FastColoredTextBoxNS
         /// <summary>
         /// Get range of text
         /// </summary>
+        /// <param name="textbox"></param>
         /// <param name="fromPlace">Line and char position</param>
         /// <param name="toPlace">Line and char position</param>
         /// <returns>Range</returns>
@@ -35,6 +37,7 @@ namespace FastColoredTextBoxNS
         /// <summary>
         /// Finds ranges for given regex pattern
         /// </summary>
+        /// <param name="textbox"></param>
         /// <param name="regexPattern">Regex pattern</param>
         /// <returns>Enumeration of ranges</returns>
         public static IEnumerable<Range> GetRanges(FastColoredTextBox textbox, string regexPattern)
@@ -49,7 +52,9 @@ namespace FastColoredTextBoxNS
         /// <summary>
         /// Finds ranges for given regex pattern
         /// </summary>
+        /// <param name="textbox"></param>
         /// <param name="regexPattern">Regex pattern</param>
+        /// <param name="options"></param>
         /// <returns>Enumeration of ranges</returns>
         public static IEnumerable<Range> GetRanges(FastColoredTextBox textbox, string regexPattern, RegexOptions options)
         {

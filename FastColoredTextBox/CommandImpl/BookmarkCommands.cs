@@ -10,6 +10,7 @@ namespace FastColoredTextBoxNS.CommandImpl
         /// <summary>
         /// Scrolls to nearest bookmark or to first bookmark
         /// </summary>
+        /// <param name="textbox"></param>
         /// <param name="iLine">Current bookmark line index</param>
         public static bool GotoNextBookmark(FastColoredTextBox textbox, int iLine)
         {
@@ -49,6 +50,7 @@ namespace FastColoredTextBoxNS.CommandImpl
         /// <summary>
         /// Scrolls to nearest previous bookmark or to last bookmark
         /// </summary>
+        /// <param name="textbox"></param>
         /// <param name="iLine">Current bookmark line index</param>
         public static bool GotoPrevBookmark(FastColoredTextBox textbox, int iLine)
         {

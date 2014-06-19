@@ -2597,6 +2597,7 @@ namespace FastColoredTextBoxNS
         /// Insert text into current selected position
         /// </summary>
         /// <param name="text"></param>
+        /// <param name="jumpToCaret"></param>
         public virtual void InsertText(string text, bool jumpToCaret)
         {
             if (text == null)
@@ -2632,6 +2633,7 @@ namespace FastColoredTextBoxNS
         /// Insert text into current selection position (with predefined style)
         /// </summary>
         /// <param name="text"></param>
+        /// <param name="style"></param>
         public virtual void InsertText(string text, Style style)
         {
             InsertText(text, style, true);
@@ -4919,7 +4921,6 @@ namespace FastColoredTextBoxNS
         /// <summary>
         /// Exapnds all folded blocks
         /// </summary>
-        /// <param name="iLine"></param>
         public virtual void ExpandAllFoldingBlocks()
         {
             for (int i = 0; i < LinesCount; i++)
@@ -5595,6 +5596,9 @@ namespace FastColoredTextBoxNS
 
                 if (ToolTip != null)
                     ToolTip.Dispose();
+
+                if (this.hints != null)
+                    this.hints.Dispose();
             }
         }
 
