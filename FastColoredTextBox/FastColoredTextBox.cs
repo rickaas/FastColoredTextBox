@@ -3572,24 +3572,35 @@ namespace FastColoredTextBoxNS
             return true;
         }
 
+        /// <summary>
+        /// Returns true when bracket completion was performed.
+        /// </summary>
+        /// <param name="c"></param>
+        /// <returns></returns>
         private bool DoAutocompleteBrackets(char c)
         {
             if (AutoCompleteBrackets)
             {
                 if (!Selection.ColumnSelectionMode)
+                {
                     for (int i = 1; i < autoCompleteBracketsList.Length; i += 2)
+                    {
                         if (c == autoCompleteBracketsList[i] && c == Selection.CharAfterStart)
                         {
                             Selection.GoRight();
                             return true;
                         }
+                    }
+                }
 
                 for (int i = 0; i < autoCompleteBracketsList.Length; i += 2)
+                {
                     if (c == autoCompleteBracketsList[i])
                     {
                         InsertBrackets(autoCompleteBracketsList[i], autoCompleteBracketsList[i + 1]);
                         return true;
                     }
+                }
             }
             return false;
         }
@@ -3611,14 +3622,15 @@ namespace FastColoredTextBoxNS
                 EndAutoUndo();
                 Selection.EndUpdate();
             }
+            else if (Selection.IsEmpty)
+            {
+                InsertText(left + "" + right);
+                Selection.GoLeft();
+            }
             else
-                if (Selection.IsEmpty)
-                {
-                    InsertText(left + "" + right);
-                    Selection.GoLeft();
-                }
-                else
-                    InsertText(left + SelectedText + right);
+            {
+                InsertText(left + SelectedText + right);
+            }
 
             return true;
         }
