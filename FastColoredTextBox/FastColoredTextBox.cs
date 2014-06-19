@@ -5780,7 +5780,7 @@ namespace FastColoredTextBoxNS
                 // Refresh the control 
                 Refresh();
                 // Disable drawing
-                NativeMethods.SendMessage(Handle, WM_SETREDRAW, 0, 0);
+                NativeMethods.SendMessage(Handle, WM_SETREDRAW, IntPtr.Zero, IntPtr.Zero);
             }
         }
 
@@ -5796,7 +5796,7 @@ namespace FastColoredTextBoxNS
                 Capture = false;
                 base.Cursor = defaultCursor;
                 // Enable drawing
-                NativeMethods.SendMessage(Handle, WM_SETREDRAW, 1, 0);
+                NativeMethods.SendMessage(Handle, WM_SETREDRAW, new IntPtr(1), IntPtr.Zero);
                 Invalidate();
             }
         }
@@ -5904,11 +5904,11 @@ namespace FastColoredTextBoxNS
                 OnScroll(xea);
 
             // Enable drawing
-            NativeMethods.SendMessage(Handle, WM_SETREDRAW, 1, 0);
+            NativeMethods.SendMessage(Handle, WM_SETREDRAW, new IntPtr(1), IntPtr.Zero);
             // Refresh the control 
             Refresh();
             // Disable drawing
-            NativeMethods.SendMessage(Handle, WM_SETREDRAW, 0, 0);
+            NativeMethods.SendMessage(Handle, WM_SETREDRAW, IntPtr.Zero, IntPtr.Zero);
         }
 
         private void DrawMiddleClickScrolling(Graphics gr)

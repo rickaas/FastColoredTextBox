@@ -8,7 +8,7 @@ namespace FastColoredTextBoxNS
     internal static class NativeMethods
     {
         [DllImport("user32.dll")]
-        internal static extern int SendMessage(IntPtr hwnd, int wMsg, int wParam, int lParam);
+        internal static extern IntPtr SendMessage(IntPtr hwnd, uint wMsg, IntPtr wParam, IntPtr lParam);
 
         [DllImport("User32.dll")]
         internal static extern bool CreateCaret(IntPtr hWnd, int hBitmap, int nWidth, int nHeight);
