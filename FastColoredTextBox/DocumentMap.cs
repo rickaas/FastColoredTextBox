@@ -17,7 +17,7 @@ namespace FastColoredTextBoxNS
         public EventHandler TargetChanged;
 
         FastColoredTextBox target;
-        private float scale = 0.3f;
+        private float renderScale = 0.3f;
         private bool needRepaint = true;
         private Place startPlace = Place.Empty;
         private bool scrollbarVisible = true;
@@ -45,12 +45,12 @@ namespace FastColoredTextBoxNS
         /// </summary>
         [Description("Scale")]
         [DefaultValue(0.3f)]
-        public float Scale
+        public float RenderScale
         {
-            get { return scale; }
+            get { return renderScale; }
             set
             {
-                scale = value;
+                renderScale = value;
                 NeedRepaint();
             }
         }
@@ -136,7 +136,7 @@ namespace FastColoredTextBoxNS
             if (target == null)
                 return;
 
-            var zoom = this.Scale * 100 / target.Zoom;
+            var zoom = this.RenderScale * 100 / target.Zoom;
 
             if (zoom <= float.Epsilon)
                 return;
@@ -218,7 +218,7 @@ namespace FastColoredTextBoxNS
             if (target == null)
                 return;
 
-            var zoom = this.Scale*100/target.Zoom;
+            var zoom = this.RenderScale*100/target.Zoom;
 
             if (zoom <= float.Epsilon)
                 return;
