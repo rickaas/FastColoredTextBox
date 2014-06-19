@@ -11,14 +11,21 @@ namespace FastColoredTextBoxNS
     /// </summary>
     public class Range : IEnumerable<Place>
     {
+        // character coordinates
         Place start;
         Place end;
+
         public readonly FastColoredTextBox tb;
+
         int preferedPos = -1;
+
+        // keeps track of BeginUpdate()
         int updating = 0;
 
         string cachedText;
         List<Place> cachedCharIndexToPlace;
+        // corresponds to the TextVersion from FastColoredTextbox.TextVersion.
+        // If the value is different the cache has become invalid.
         int cachedTextVersion = -1;
 
         /// <summary>
@@ -250,14 +257,19 @@ namespace FastColoredTextBoxNS
                 charIndexToPlace = cachedCharIndexToPlace;
                 return;
             }
-            //
+
+            // cache has become invalid
+
+            // get normalized range
             int fromLine = Math.Min(end.iLine, start.iLine);
             int toLine = Math.Max(end.iLine, start.iLine);
             int fromChar = FromX;
             int toChar = ToX;
 
+            // guess capacity with +/- 50 characters per line
             StringBuilder sb = new StringBuilder((toLine - fromLine)*50);
             charIndexToPlace = new List<Place>(sb.Capacity);
+
             if (fromLine >= 0)
             {
                 for (int y = fromLine; y <= toLine; y++)
@@ -278,6 +290,7 @@ namespace FastColoredTextBoxNS
                 }
             }
             text = sb.ToString();
+
             charIndexToPlace.Add(End > Start ? End : Start);
             //caching
             cachedText = text;
