@@ -33,6 +33,7 @@ namespace Tester
         public BraceComplete()
         {
             InitializeComponent();
+            this.fastColoredTextBox1.AutoCompleteBrackets = false;
             this.fastColoredTextBox1.TextChanged += FastColoredTextBox1OnTextChanged;
             this.fastColoredTextBox1.TextChangedDelayed += FastColoredTextBox1OnTextChangedDelayed;
             this.fastColoredTextBox1.TextChanging += FastColoredTextBox1OnTextChanging;
