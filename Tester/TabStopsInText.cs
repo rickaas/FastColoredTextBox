@@ -60,7 +60,7 @@ namespace Tester
                 }
 
                 // TODO: Can range span multiple lines? I don't think so...
-                var llll = range.tb[range.Start.iLine]; // text on the line
+                var llll = range.tb.TextSource[range.Start.iLine]; // text on the line
                 string beforeRangeText = llll.Text.Substring(0, range.Start.iChar); // all text before the range
                 string rangeText = range.Text; // text within the range
                 
@@ -80,7 +80,7 @@ namespace Tester
                 //draw chars
                 Font f = new Font(range.tb.Font, FontStyle);
                 //Font fHalfSize = new Font(range.tb.Font.FontFamily, f.SizeInPoints/2, FontStyle);
-                Line line = range.tb[range.Start.iLine];
+                Line line = range.tb.TextSource[range.Start.iLine];
                 float dx = range.tb.CharWidth;
                 float y = position.Y + range.tb.LineInterval / 2;
                 float x = position.X - range.tb.CharWidth / 3;

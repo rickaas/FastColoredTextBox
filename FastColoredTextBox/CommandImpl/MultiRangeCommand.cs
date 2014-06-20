@@ -67,7 +67,7 @@ namespace FastColoredTextBoxNS.CommandImpl
             var iLine = 0;
             foreach (var r in range.GetSubRanges(true))
             {
-                var line = ts.CurrentTB[r.Start.iLine];
+                var line = ts.CurrentTB.TextSource[r.Start.iLine];
                 var lineIsEmpty = r.End < r.Start && line.StartSpacesCount == line.Count;
                 if (!lineIsEmpty)
                 {

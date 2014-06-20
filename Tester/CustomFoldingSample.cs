@@ -24,18 +24,18 @@ namespace Tester
 
             for (int i = 0; i < fctb.LinesCount; i++)
             {
-                var line = fctb[i];
+                var line = fctb.TextSource[i];
                 var spacesCount = line.StartSpacesCount;
                 if (spacesCount == line.Count) //empty line
                     continue;
 
                 if (currentIndent < spacesCount)
                     //append start folding marker
-                    fctb[lastNonEmptyLine].FoldingStartMarker = "m" + currentIndent;
+                    fctb.TextSource[lastNonEmptyLine].FoldingStartMarker = "m" + currentIndent;
                 else
                 if (currentIndent > spacesCount)
                     //append end folding marker
-                    fctb[lastNonEmptyLine].FoldingEndMarker = "m" + spacesCount;
+                    fctb.TextSource[lastNonEmptyLine].FoldingEndMarker = "m" + spacesCount;
 
                 currentIndent = spacesCount;
                 lastNonEmptyLine = i;

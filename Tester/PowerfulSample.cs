@@ -146,7 +146,7 @@ namespace Tester
             if (!lang.StartsWith("CSharp")) return;
             for (int iLine = 0; iLine < fctb.LinesCount; iLine++)
             {
-                if (fctb[iLine].FoldingStartMarker == @"#region\b")//marker @"#region\b" was used in SetFoldingMarkers()
+                if (fctb.TextSource[iLine].FoldingStartMarker == @"#region\b")//marker @"#region\b" was used in SetFoldingMarkers()
                     fctb.CollapseFoldingBlock(iLine);
             }
         }
@@ -157,7 +157,7 @@ namespace Tester
             if (!lang.StartsWith("CSharp")) return;
             for (int iLine = 0; iLine < fctb.LinesCount; iLine++)
             {
-                if (fctb[iLine].FoldingStartMarker == @"#region\b")//marker @"#region\b" was used in SetFoldingMarkers()
+                if (fctb.TextSource[iLine].FoldingStartMarker == @"#region\b")//marker @"#region\b" was used in SetFoldingMarkers()
                     fctb.ExpandFoldedBlock(iLine);
             }
         }

@@ -67,7 +67,7 @@ namespace Tester
                 case "yellow": fctb.Selection.SetStyle(YellowStyle); break;
                 case "red": fctb.Selection.SetStyle(RedStyle); break;
                 case "green": fctb.Selection.SetStyle(GreenStyle); break;
-                case "lineBackground": fctb[fctb.Selection.Start.iLine].BackgroundBrush = Brushes.Pink; break;
+                case "lineBackground": fctb.TextSource[fctb.Selection.Start.iLine].BackgroundBrush = Brushes.Pink; break;
             }
             //clear shortcut style
             fctb.Selection.ClearStyle(shortCutStyle);
@@ -90,7 +90,7 @@ namespace Tester
         private void clearMarkedToolStripMenuItem_Click(object sender, EventArgs e)
         {
             fctb.Selection.ClearStyle(YellowStyle, RedStyle, GreenStyle);
-            fctb[fctb.Selection.Start.iLine].BackgroundBrush = null;
+            fctb.TextSource[fctb.Selection.Start.iLine].BackgroundBrush = null;
         }
 
         private void fctb_PaintLine(object sender, PaintLineEventArgs e)

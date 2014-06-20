@@ -96,19 +96,19 @@ namespace FastColoredTextBoxNS.CommandImpl
                     }
 
                     if (tb.Selection.Start.iLine > 0
-                        && tb[tb.Selection.Start.iLine].EolFormat == EolFormat.None
-                        && tb.Selection.Start.iChar == 0 
-                        && tb[tb.Selection.Start.iLine -1].EolFormat == EolFormat.CR)
+                        && tb.TextSource[tb.Selection.Start.iLine].EolFormat == EolFormat.None
+                        && tb.Selection.Start.iChar == 0
+                        && tb.TextSource[tb.Selection.Start.iLine - 1].EolFormat == EolFormat.CR)
                     {
                         // If we have a CR before this LF, we do not need to insert a new line: it has already happened
-                        tb[tb.Selection.Start.iLine - 1].EolFormat = EolFormat.CRLF;
+                        tb.TextSource[tb.Selection.Start.iLine - 1].EolFormat = EolFormat.CRLF;
                         break;
                     }
-                    if (tb[tb.Selection.Start.iLine].EolFormat == EolFormat.CR &&
+                    if (tb.TextSource[tb.Selection.Start.iLine].EolFormat == EolFormat.CR &&
                         tb.Selection.Start.iChar == 0)
                     {
                         // A \r followed by a \n
-                        tb[tb.Selection.Start.iLine].EolFormat = EolFormat.CRLF;
+                        tb.TextSource[tb.Selection.Start.iLine].EolFormat = EolFormat.CRLF;
                         break;
                     }
 
@@ -118,7 +118,7 @@ namespace FastColoredTextBoxNS.CommandImpl
                     }
 
                     // No CR: we set the EOL to LF and insert the line
-                    tb[tb.Selection.Start.iLine].EolFormat = EolFormat.LF;
+                    tb.TextSource[tb.Selection.Start.iLine].EolFormat = EolFormat.LF;
 
                     InsertLine(ts);
 
@@ -135,17 +135,17 @@ namespace FastColoredTextBoxNS.CommandImpl
                     }
 
                     bool crEaten = false;
-                    if (tb[tb.Selection.Start.iLine].EolFormat == EolFormat.None)
+                    if (tb.TextSource[tb.Selection.Start.iLine].EolFormat == EolFormat.None)
                     {
                         crEaten = true;
-                        tb[tb.Selection.Start.iLine].EolFormat = EolFormat.CR;
+                        tb.TextSource[tb.Selection.Start.iLine].EolFormat = EolFormat.CR;
                     }
 
                     InsertLine(ts);
 
                     if (!crEaten)
                     {
-                        tb[tb.Selection.Start.iLine].EolFormat = EolFormat.CR;
+                        tb.TextSource[tb.Selection.Start.iLine].EolFormat = EolFormat.CR;
                     }
 
                     break;

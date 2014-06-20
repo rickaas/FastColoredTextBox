@@ -177,7 +177,7 @@ namespace FastColoredTextBoxNS.CommandImpl
                         else
                         {
                             //if line contains only spaces then delete line
-                            if (this.textbox[this.textbox.Selection.Start.iLine].StartSpacesCount == this.textbox[this.textbox.Selection.Start.iLine].Count)
+                            if (this.textbox.TextSource[this.textbox.Selection.Start.iLine].StartSpacesCount == this.textbox.TextSource[this.textbox.Selection.Start.iLine].Count)
                                 this.textbox.RemoveSpacesAfterCaret();
 
                             if (!this.textbox.Selection.IsReadOnlyRightChar())

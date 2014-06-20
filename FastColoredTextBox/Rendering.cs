@@ -432,7 +432,7 @@ namespace FastColoredTextBoxNS
                     }
                     else
                     {
-                        var llll = textRange.tb[textRange.Start.iLine]; // text on the line
+                        var llll = textRange.tb.TextSource[textRange.Start.iLine]; // text on the line
                         string beforeRangeText = llll.Text.Substring(0, textRange.Start.iChar); // all text before the range
                         // Calculate where previous range ended
                         next = TextSizeCalculator.TextWidth(beforeRangeText, textRange.tb.TabLength) * textbox.CharWidth;

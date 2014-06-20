@@ -55,7 +55,7 @@ namespace FastColoredTextBoxNS
             //
             foreach (Place p in r)
             {
-                Char c = r.tb[p.iLine][p.iChar];
+                Char c = r.tb.TextSource[p.iLine][p.iChar];
                 if (c.style != currentStyleId)
                 {
                     Flush(sb, tempSB, currentStyleId);

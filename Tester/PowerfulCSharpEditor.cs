@@ -109,7 +109,7 @@ namespace Tester
                 if (CurrentTB.Selection.Start.iChar > 0)
                 {
                     //current char (before caret)
-                    var c = CurrentTB[CurrentTB.Selection.Start.iLine][CurrentTB.Selection.Start.iChar - 1];
+                    var c = CurrentTB.TextSource[CurrentTB.Selection.Start.iLine][CurrentTB.Selection.Start.iChar - 1];
                     //green Style
                     var greenStyleIndex = Range.ToStyleIndex(iGreenStyle);
                     //if char contains green style then block popup menu
@@ -178,10 +178,10 @@ namespace Tester
             //remember last visit time
             if (tb.Selection.IsEmpty && tb.Selection.Start.iLine < tb.LinesCount)
             {
-                if (lastNavigatedDateTime != tb[tb.Selection.Start.iLine].LastVisit)
+                if (lastNavigatedDateTime != tb.TextSource[tb.Selection.Start.iLine].LastVisit)
                 {
-                    tb[tb.Selection.Start.iLine].LastVisit = DateTime.Now;
-                    lastNavigatedDateTime = tb[tb.Selection.Start.iLine].LastVisit;
+                    tb.TextSource[tb.Selection.Start.iLine].LastVisit = DateTime.Now;
+                    lastNavigatedDateTime = tb.TextSource[tb.Selection.Start.iLine].LastVisit;
                 }
             }
 
@@ -495,7 +495,7 @@ namespace Tester
             {
                 Range r = tbFindChanged?CurrentTB.Range.Clone():CurrentTB.Selection.Clone();
                 tbFindChanged = false;
-                r.End = new Place(CurrentTB[CurrentTB.LinesCount - 1].Count, CurrentTB.LinesCount - 1);
+                r.End = new Place(CurrentTB.TextSource[CurrentTB.LinesCount - 1].Count, CurrentTB.LinesCount - 1);
                 var pattern = Regex.Escape(tbFind.Text);
                 foreach (var found in r.GetRanges(pattern))
                 {
@@ -610,9 +610,9 @@ namespace Tester
             {
                 var t = (tsFiles.Items[iTab].Controls[0] as FastColoredTextBox);
                 for (int i = 0; i < t.LinesCount; i++)
-                    if (t[i].LastVisit < lastNavigatedDateTime && t[i].LastVisit > max)
+                    if (t.TextSource[i].LastVisit < lastNavigatedDateTime && t.TextSource[i].LastVisit > max)
                     {
-                        max = t[i].LastVisit;
+                        max = t.TextSource[i].LastVisit;
                         iLine = i;
                         tb = t;
                     }
@@ -621,7 +621,7 @@ namespace Tester
             {
                 tsFiles.SelectedItem = (tb.Parent as FATabStripItem);
                 tb.Navigate(iLine);
-                lastNavigatedDateTime = tb[iLine].LastVisit;
+                lastNavigatedDateTime = tb.TextSource[iLine].LastVisit;
                 Console.WriteLine("Backward: " + lastNavigatedDateTime);
                 tb.Focus();
                 tb.Invalidate();
@@ -640,9 +640,9 @@ namespace Tester
             {
                 var t = (tsFiles.Items[iTab].Controls[0] as FastColoredTextBox);
                 for (int i = 0; i < t.LinesCount; i++)
-                    if (t[i].LastVisit > lastNavigatedDateTime && t[i].LastVisit < min)
+                    if (t.TextSource[i].LastVisit > lastNavigatedDateTime && t.TextSource[i].LastVisit < min)
                     {
-                        min = t[i].LastVisit;
+                        min = t.TextSource[i].LastVisit;
                         iLine = i;
                         tb = t;
                     }
@@ -651,7 +651,7 @@ namespace Tester
             {
                 tsFiles.SelectedItem = (tb.Parent as FATabStripItem);
                 tb.Navigate(iLine);
-                lastNavigatedDateTime = tb[iLine].LastVisit;
+                lastNavigatedDateTime = tb.TextSource[iLine].LastVisit;
                 Console.WriteLine("Forward: " + lastNavigatedDateTime);
                 tb.Focus();
                 tb.Invalidate();
@@ -922,7 +922,7 @@ namespace Tester
             using(Brush brush = new SolidBrush(pen.Color))
             foreach (var place in range)
             {
-                switch (tb[place].c)
+                switch (tb.TextSource[place].c)
                 {
                     case ' ':
                         var point = tb.PlaceToPoint(place);
@@ -931,7 +931,7 @@ namespace Tester
                         break;
                 }
 
-                if (tb[place.iLine].Count - 1 == place.iChar)
+                if (tb.TextSource[place.iLine].Count - 1 == place.iChar)
                 {
                     var point = tb.PlaceToPoint(place);
                     point.Offset(tb.CharWidth, 0);

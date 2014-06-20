@@ -554,24 +554,6 @@ namespace FastColoredTextBoxNS
         }
 
         /// <summary>
-        /// Gets or sets char and styleId for given place
-        /// This property does not fire OnTextChanged event
-        /// </summary>
-        public Char this[Place place]
-        {
-            get { return lines[place.iLine][place.iChar]; }
-            set { lines[place.iLine][place.iChar] = value; }
-        }
-
-        /// <summary>
-        /// Gets Line
-        /// </summary>
-        public Line this[int iLine]
-        {
-            get { return lines[iLine]; }
-        }
-
-        /// <summary>
         /// Returns current visible range of text
         /// </summary>
         [Browsable(false)]
@@ -2540,7 +2522,7 @@ namespace FastColoredTextBoxNS
             try
             {
                 int iLine = Selection.Start.iLine;
-                int spaces = this[iLine].StartSpacesCount;
+                int spaces = this.TextSource[iLine].StartSpacesCount;
                 if (Selection.Start.iChar <= spaces)
                     Selection.GoHome(shift);
                 else
@@ -3667,10 +3649,10 @@ namespace FastColoredTextBoxNS
             {
                 DoCaretVisible();
                 int needSpaces = CalcAutoIndent(Selection.Start.iLine);
-                if (this[Selection.Start.iLine].AutoIndentSpacesNeededCount != needSpaces)
+                if (this.TextSource[Selection.Start.iLine].AutoIndentSpacesNeededCount != needSpaces)
                 {
                     DoAutoIndent(Selection.Start.iLine);
-                    this[Selection.Start.iLine].AutoIndentSpacesNeededCount = needSpaces;
+                    this.TextSource[Selection.Start.iLine].AutoIndentSpacesNeededCount = needSpaces;
                 }
             }
         }
@@ -4069,7 +4051,7 @@ namespace FastColoredTextBoxNS
                         return;
                     }
 
-                    if (Selection.IsEmpty || !Selection.Contains(p) || this[p.iLine].Count <= p.iChar || ReadOnly)
+                    if (Selection.IsEmpty || !Selection.Contains(p) || this.TextSource[p.iLine].Count <= p.iChar || ReadOnly)
                         OnMouseClickText(e);
                     else
                     {
@@ -4662,7 +4644,7 @@ namespace FastColoredTextBoxNS
         {
             for (int iLine = range.Start.iLine; iLine <= range.End.iLine; iLine++)
                 if (iLine >= 0 && iLine < lines.Count)
-                    FoldedBlocks.Remove(this[iLine].UniqueId);
+                    FoldedBlocks.Remove(this.TextSource[iLine].UniqueId);
         }
 
 
@@ -4835,7 +4817,7 @@ namespace FastColoredTextBoxNS
 
             ExpandBlock(iLine, end);
 
-            FoldedBlocks.Remove(this[iLine].UniqueId);//remove folded state for this line
+            FoldedBlocks.Remove(this.TextSource[iLine].UniqueId);//remove folded state for this line
             AdjustFolding();
         }
 
@@ -4847,7 +4829,7 @@ namespace FastColoredTextBoxNS
             //collapse folded blocks
             for (int iLine = 0; iLine < LinesCount; iLine++)
                 if (LineInfos[iLine].VisibleState == VisibleState.Visible)
-                    if (FoldedBlocks.ContainsKey(this[iLine].UniqueId))
+                    if (FoldedBlocks.ContainsKey(this.TextSource[iLine].UniqueId))
                         CollapseFoldingBlock(iLine);
         }
 
@@ -4949,7 +4931,7 @@ namespace FastColoredTextBoxNS
             if (i >= 0)
             {
                 CollapseBlock(iLine, i);
-                var id = this[iLine].UniqueId;
+                var id = this.TextSource[iLine].UniqueId;
                 FoldedBlocks[id] = id; //add folded state for line
             }
         }

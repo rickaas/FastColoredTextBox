@@ -135,7 +135,7 @@ namespace FastColoredTextBoxNS
             int backgroundWidth;
             if (this.SpecialTabDraw)
             {
-                var llll = range.tb[range.Start.iLine]; // text on the line
+                var llll = range.tb.TextSource[range.Start.iLine]; // text on the line
                 string beforeRangeText = llll.Text.Substring(0, range.Start.iChar); // all text before the range
                 string rangeText = range.Text; // text within the range
 
@@ -156,7 +156,7 @@ namespace FastColoredTextBoxNS
             using(var f = new Font(range.tb.Font, FontStyle))
             {
                 //Font fHalfSize = new Font(range.tb.Font.FontFamily, f.SizeInPoints/2, FontStyle);
-                Line line = range.tb[range.Start.iLine];
+                Line line = range.tb.TextSource[range.Start.iLine];
                 float dx = range.tb.CharWidth;
                 float y = position.Y + range.tb.LineInterval/2;
                 float x = position.X - range.tb.CharWidth/3;
@@ -324,7 +324,7 @@ namespace FastColoredTextBoxNS
                 
                 //find first non space symbol
                 for (int i = range.Start.iChar; i < range.End.iChar; i++)
-                    if (range.tb[range.Start.iLine][i].c != ' ')
+                    if (range.tb.TextSource[range.Start.iLine][i].c != ' ')
                         break;
                     else
                         firstNonSpaceSymbolX += range.tb.CharWidth;
@@ -374,7 +374,7 @@ namespace FastColoredTextBoxNS
                 if (this.SpecialTabDraw)
                 {
                     // TODO: Can range span multiple lines? I don't think so...
-                    var llll = range.tb[range.Start.iLine]; // text on the line
+                    var llll = range.tb.TextSource[range.Start.iLine]; // text on the line
                     string beforeRangeText = llll.Text.Substring(0, range.Start.iChar); // all text before the range
                     string rangeText = range.Text; // text within the range
 
@@ -572,7 +572,7 @@ namespace FastColoredTextBoxNS
             // Callers should ensure that Draw(...) isn't called for the last line
             // TODO: Check if range is the last character of the line
             //bool isLastChar = range.tb[range.Start.iLine].Count == range.End.iChar;
-            var line = range.tb[range.Start.iLine]; // text on the line
+            var line = range.tb.TextSource[range.Start.iLine]; // text on the line
             
             switch (line.EolFormat)
             {

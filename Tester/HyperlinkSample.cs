@@ -26,7 +26,7 @@ namespace Tester
         {
             var mask = fctb.GetStyleIndexMask(new Style[] { blueStyle });
             if (place.iChar < fctb.GetLineLength(place.iLine))
-                if ((fctb[place].style & mask) != 0)
+                if ((fctb.TextSource[place].style & mask) != 0)
                     return true;
 
             return false;

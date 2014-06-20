@@ -51,7 +51,7 @@ namespace FastColoredTextBoxNS.Bookmarking
                 else
                     if (items[i].LineIndex == e.Index - 1 && e.Count == 1)
                     {
-                        if (tb[e.Index - 1].StartSpacesCount == tb[e.Index - 1].Count)
+                        if (tb.TextSource[e.Index - 1].StartSpacesCount == tb.TextSource[e.Index - 1].Count)
                             items[i].LineIndex = items[i].LineIndex + e.Count;
                     }
         }

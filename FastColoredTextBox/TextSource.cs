@@ -222,6 +222,12 @@ namespace FastColoredTextBoxNS
             return (lines as IEnumerator);
         }
 
+        /// <summary>
+        /// Gets the line for the given index.
+        /// Setting is not supported.
+        /// </summary>
+        /// <param name="i"></param>
+        /// <returns></returns>
         public virtual Line this[int i]
         {
             get
@@ -232,6 +238,16 @@ namespace FastColoredTextBoxNS
             {
                 throw new NotImplementedException();
             }
+        }
+
+        /// <summary>
+        /// Gets or sets Char (which can have styleId for given place).
+        /// This property does not fire OnTextChanged event.
+        /// </summary>
+        public Char this[Place place]
+        {
+            get { return lines[place.iLine][place.iChar]; }
+            set { lines[place.iLine][place.iChar] = value; }
         }
 
         public virtual int IndexOf(Line item)
