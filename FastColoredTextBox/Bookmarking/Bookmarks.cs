@@ -44,16 +44,22 @@ namespace FastColoredTextBoxNS.Bookmarking
         protected virtual void tb_LineInserted(object sender, LineInsertedEventArgs e)
         {
             for (int i = 0; i < Count; i++)
+            {
                 if (items[i].LineIndex >= e.Index)
                 {
                     items[i].LineIndex = items[i].LineIndex + e.Count;
                 }
                 else
+                {
                     if (items[i].LineIndex == e.Index - 1 && e.Count == 1)
                     {
                         if (tb.TextSource[e.Index - 1].StartSpacesCount == tb.TextSource[e.Index - 1].Count)
+                        {
                             items[i].LineIndex = items[i].LineIndex + e.Count;
+                        }
                     }
+                }
+            }
         }
 
         public override void Dispose()

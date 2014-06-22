@@ -64,7 +64,10 @@ namespace FastColoredTextBoxNS.CommandImpl
             if (fromLine < 0) return;
             //
             if (fromLine == toLine)
+            {
+                // remove a single line
                 ts[fromLine].RemoveRange(fromChar, toChar - fromChar);
+            }
             else
             {
                 ts[fromLine].RemoveRange(fromChar, ts[fromLine].Count - fromChar);
