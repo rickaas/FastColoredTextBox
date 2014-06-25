@@ -12,6 +12,8 @@ namespace FastColoredTextBoxNS
         /// 
         /// So first the prevLine is converted from tabs to spaces, then we have an index. 
         /// Then we convert currentLine from tabs to spaces and find a Place that matches.
+        /// 
+        /// Useful when going up or down at the end of aline.
         /// </summary>
         /// <param name="prevLine"></param>
         /// <param name="currentLine"></param>
@@ -25,17 +27,23 @@ namespace FastColoredTextBoxNS
         }
 
         /// <summary>
-        /// 
+        /// Converts a x-coordinate in character display units to a an index with a string.
+        /// This is useful for TABs. 
+        /// When somebody clicks inside the tab range we can move the caret before or after the tab.
         /// 
         /// charPositionOffset is in multiples of the CharWidth.
         /// 
         /// Given string "a\t" (a followed by TAB, with tablenth = 4).
-        /// When charIndex = 0, return 0
-        /// When charIndex = 1, return 1,
-        /// When charIndex = 2 or 3 the index is within the TAB, either go to the first char on the left/right.
+        /// char     01  2 
+        /// string: "a___b"
+        /// index    01234
+        /// 
+        /// When charPositionOffset = 0, return 0
+        /// When charPositionOffset = 1, return 1,
+        /// When charPositionOffset = 2 or 3 the index is within the TAB, either go to the first char on the left/right.
         /// </summary>
         /// <returns></returns>
-        public static int CharIndexAtCharWidthPoint(string text, int tabLength, int charPositionOffset)
+        public static int CharIndexAtCharWidthPoint(IEnumerable<char> text, int tabLength, int charPositionOffset)
         {
             return CharIndexAtPoint(text, tabLength, 1, charPositionOffset);
         }
@@ -48,19 +56,24 @@ namespace FastColoredTextBoxNS
         /// <param name="charWidth">size of a single characters in pixels</param>
         /// <param name="xPos">relative to the start of the string</param>
         /// <returns></returns>
-        public static int CharIndexAtPoint(string text, int tabLength, int charWidth, int xPos)
+        public static int CharIndexAtPoint(IEnumerable<char> text, int tabLength, int charWidth, int xPos)
         {
+            if (text == null) throw new ArgumentException("text");
+            if (tabLength < 0) throw new ArgumentException("tabLength");
+            if (charWidth < 0) throw new ArgumentException("charWidth");
+
             if (xPos <= 0) return 0;
             int drawingWidth = 0;
             int prevDrawingWidth = 0;
-            int size = 0;
+            int size = 0; // count the width of the string (including variable-width TABs)
             int prevSize = 0;
 
-            for (int i = 0; i < text.Length; i++)
+            int characterIndex = 0;
+            foreach (char character in text)
             {
                 prevDrawingWidth = drawingWidth;
                 prevSize = size;
-                if (text[i] != '\t')
+                if (character != '\t')
                 {
                     drawingWidth += charWidth;
                     size++;
@@ -72,29 +85,34 @@ namespace FastColoredTextBoxNS
                     size += tabWidth;
                 }
 
-                if (xPos <= drawingWidth)
+                if (xPos == drawingWidth)
+                {
+                    // on the character
+                    return characterIndex + 1;
+                }
+                else if (xPos < drawingWidth)
                 {
                     // we have gone past the character
                     double d = ((double)(drawingWidth - prevDrawingWidth)) / 2.0;
                     int diff = (int)Math.Round(d, MidpointRounding.AwayFromZero);
-                    //if ((2*diff == charWidth))
-                    //{
-                    //    // current character is exactly one character wide
-                    //    return i;
-                    //}
-                    //else 
-                    if (xPos < prevDrawingWidth + diff)
+
+                    if (xPos < prevDrawingWidth + d)
                     {
-                        return i;
+                        return characterIndex;
+                    }
+                    else if (xPos == prevDrawingWidth + d)
+                    {
+                        return characterIndex;
                     }
                     else
                     {
                         // index could be placed after last character when (i+1) >= text.Length
-                        return i + 1;
+                        return characterIndex + 1;
                     }
                 }
+                characterIndex++;
             }
-            return text.Length;
+            return characterIndex;
         }
 
         /// <summary>
@@ -106,6 +124,9 @@ namespace FastColoredTextBoxNS
         /// <returns></returns>
         public static int TabWidth(int preceedingTextLength, int tabLength)
         {
+            if (preceedingTextLength < 0) throw new ArgumentException("preceedingTextLength");
+            if (tabLength < 0) throw new ArgumentException("tabLength");
+
             int tabFiller = tabLength - (preceedingTextLength % tabLength);
 
             return tabFiller;
@@ -119,12 +140,15 @@ namespace FastColoredTextBoxNS
         /// <param name="text"></param>
         /// <param name="tabLength"></param>
         /// <returns></returns>
-        public static int TextWidth(string text, int tabLength)
+        public static int TextWidth(IEnumerable<char> text, int tabLength)
         {
+            if (text == null) throw new ArgumentException("text");
+            if (tabLength < 0) throw new ArgumentException("tabLength");
+
             int size = 0;
-            for (int i = 0; i < text.Length; i++)
+            foreach (char c in text)
             {
-                if (text[i] != '\t')
+                if (c != '\t')
                 {
                     size++;
                 }
@@ -147,12 +171,16 @@ namespace FastColoredTextBoxNS
         /// <param name="text"></param>
         /// <param name="tabLength"></param>
         /// <returns></returns>
-        public static int TextWidth(int preceedingTextLength, string text, int tabLength)
+        public static int TextWidth(int preceedingTextLength, IEnumerable<char> text, int tabLength)
         {
+            if (preceedingTextLength < 0) throw new ArgumentException("preceedingTextLength");
+            if (text == null) throw new ArgumentException("text");
+            if (tabLength < 0) throw new ArgumentException("tabLength");
+
             int size = preceedingTextLength;
-            for (int i = 0; i < text.Length; i++)
+            foreach (char c in text)
             {
-                if (text[i] != '\t')
+                if (c != '\t')
                 {
                     size++;
                 }
@@ -163,5 +191,6 @@ namespace FastColoredTextBoxNS
             }
             return size;
         }
+    
     }
 }
