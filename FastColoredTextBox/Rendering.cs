@@ -235,15 +235,20 @@ namespace FastColoredTextBoxNS
                 bookmarksByLineIndex[item.LineIndex] = item;
             }
 
-            int firstChar = (Math.Max(0, textbox.HorizontalScroll.Value - textbox.Paddings.Left)) / textbox.CharWidth; // when drawing a line start at this character
-            int lastChar = (textbox.HorizontalScroll.Value + textbox.ClientSize.Width) / textbox.CharWidth; // when drawing a line draw until this character
+            // when drawing a line, start at this character display position
+            int firstChar = (Math.Max(0, textbox.HorizontalScroll.Value - textbox.Paddings.Left)) / textbox.CharWidth; 
+            
+
+            // when drawing a line, draw until this character display position
+            int lastChar = (textbox.HorizontalScroll.Value + textbox.ClientSize.Width) / textbox.CharWidth; 
+            
             
             // x-coordinate of where we can start drawing
             var x = textbox.LeftIndent + textbox.Paddings.Left - textbox.HorizontalScroll.Value;
             if (x < textbox.LeftIndent)
                 firstChar++;
 
-            // y-coordinate to line index
+            // convert y-coordinate to line index
             int startLine = textbox.YtoLineIndex(textbox.VerticalScroll.Value);
             int iLine; // remember the last iLine we drew
             for (iLine = startLine; iLine < textbox.lines.Count; iLine++)
@@ -258,7 +263,9 @@ namespace FastColoredTextBoxNS
                 if (lineInfo.VisibleState == VisibleState.Hidden)
                     continue; // skip
 
+                // pixels
                 int y = lineInfo.startY - textbox.VerticalScroll.Value;
+
                 //
                 graphics.SmoothingMode = SmoothingMode.None;
                 //draw line background
@@ -342,11 +349,14 @@ namespace FastColoredTextBoxNS
                     graphics.DrawLine(servicePen, textbox.LeftIndentLine, y + textbox.CharHeight * lineInfo.WordWrapStringsCount - 1,
                                         textbox.LeftIndentLine + 4, y + textbox.CharHeight * lineInfo.WordWrapStringsCount - 1);
                 }
-                //draw wordwrap strings of line
+
+                // Let's draw the line.
+                // Loop over all wordwrapped parts of the line
                 for (int iWordWrapLine = 0; iWordWrapLine < lineInfo.WordWrapStringsCount; iWordWrapLine++)
                 {
+                    // update y-coordinate in pixels
                     y = lineInfo.startY + iWordWrapLine * textbox.CharHeight - textbox.VerticalScroll.Value;
-                    //indent
+                    //indent in pixels
                     var indent = iWordWrapLine == 0 ? 0 : lineInfo.wordWrapIndent * textbox.CharWidth;
                     //draw chars
                     Rendering.DrawLineChars(graphics, textbox, firstChar, lastChar, iLine, iWordWrapLine, x + indent, y);
@@ -360,46 +370,88 @@ namespace FastColoredTextBoxNS
             return iLine - 1; // correct with -1 because it contains the index of the last lien we didn't draw
         }
 
+        /// <summary>
+        /// Draw a line of characters.
+        /// </summary>
+        /// <param name="gr"></param>
+        /// <param name="textbox"></param>
+        /// <param name="firstChar">Character display position</param>
+        /// <param name="lastChar">Character display position</param>
+        /// <param name="iLine">The line index in textbox.lines</param>
+        /// <param name="iWordWrapLine">Index of the substring of the line or the wordwrap index</param>
+        /// <param name="startX">Drawing coordinate for first character</param>
+        /// <param name="y">Drawing coordinate for liner</param>
         internal static void DrawLineChars(Graphics gr, FastColoredTextBox textbox, int firstChar, int lastChar, int iLine, int iWordWrapLine, int startX, int y)
         {
             Line line = textbox.lines[iLine];
             LineInfo lineInfo = textbox.LineInfos[iLine];
+
+            // use these to access chars in the line
             int from = lineInfo.GetWordWrapStringStartPosition(iWordWrapLine);
             int to = lineInfo.GetWordWrapStringFinishPosition(iWordWrapLine, line);
 
-            lastChar = Math.Min(to - from, lastChar);
+            int lineDisplayWidth = line.GetDisplayWidthForRange(from, to, textbox.TabLength);
+            //lastChar = Math.Min(to - from, lastChar); // is the string index
+            lastChar = Math.Min(lineDisplayWidth, lastChar); // display position of last character
+
+            // use these in ranges
+            int fromDisplay = line.GetDisplayWidthForSubString(from, textbox.TabLength);
+            int toDisplay = line.GetDisplayWidthForSubString(to, textbox.TabLength);
 
             gr.SmoothingMode = SmoothingMode.AntiAlias;
 
             //folded block ?
             if (lineInfo.VisibleState == VisibleState.StartOfHiddenBlock)
             {
+                // FIXME
                 //rendering by FoldedBlockStyle
-                textbox.FoldedBlockStyle.Draw(gr, new Point(startX + firstChar * textbox.CharWidth, y),
-                                      new Range(textbox, from + firstChar, iLine, from + lastChar + 1, iLine));
+
+                //var foldRange = new Range(textbox, from + firstChar, iLine, from + lastChar + 1, iLine);
+                var foldRange = new Range(textbox, fromDisplay + firstChar, iLine, fromDisplay + lastChar + 1, iLine);
+                textbox.FoldedBlockStyle.Draw(gr, new Point(startX + firstChar * textbox.CharWidth, y), foldRange);
             }
             else
             {
                 //render by custom styles
                 StyleIndex currentStyleIndex = StyleIndex.None;
-                int iLastFlushedChar = firstChar - 1;
+                int iLastFlushedChar = firstChar - 1; // display index
 
+                foreach (DisplayChar displayChar in line.GetStyleCharForDisplayRange(firstChar, lastChar, textbox.TabLength))
+                {
+                    StyleIndex style = displayChar.Char.style;
+                    if (currentStyleIndex != style)
+                    {
+                        // flush rendering when the style changed
+                        //var styleRange = new Range(textbox, fromDisplay + iLastFlushedChar + 1, iLine, from + iChar, iLine);
+                        var styleRange = new Range(textbox, fromDisplay + iLastFlushedChar + 1, iLine, fromDisplay + displayChar.DisplayIndex + displayChar.DisplayWidth, iLine);
+                        FlushRendering(gr, textbox, currentStyleIndex,
+                                       new Point(startX + (iLastFlushedChar + 1) * textbox.CharWidth, y), styleRange);
+                        //iLastFlushedChar = iChar - 1;
+                        iLastFlushedChar = displayChar.DisplayIndex - 1;
+                        currentStyleIndex = style;
+                    }
+                }
+
+                /*
                 for (int iChar = firstChar; iChar <= lastChar; iChar++)
                 {
+                    // style are on string index
                     StyleIndex style = line[from + iChar].style;
                     if (currentStyleIndex != style)
                     {
                         // flush rendering when the style changed
+                        var styleRange = new Range(textbox, from + iLastFlushedChar + 1, iLine, from + iChar, iLine);
                         FlushRendering(gr, textbox, currentStyleIndex,
-                                       new Point(startX + (iLastFlushedChar + 1) * textbox.CharWidth, y),
-                                       new Range(textbox, from + iLastFlushedChar + 1, iLine, from + iChar, iLine));
+                                       new Point(startX + (iLastFlushedChar + 1) * textbox.CharWidth, y), styleRange);
                         iLastFlushedChar = iChar - 1;
                         currentStyleIndex = style;
                     }
-                }
+                }*/
+
                 // flush the remainder of the text
-                FlushRendering(gr, textbox, currentStyleIndex, new Point(startX + (iLastFlushedChar + 1) * textbox.CharWidth, y),
-                               new Range(textbox, from + iLastFlushedChar + 1, iLine, from + lastChar + 1, iLine));
+                var remainingTextRange = new Range(textbox, fromDisplay + iLastFlushedChar + 1, iLine, fromDisplay + lastChar + 1, iLine);
+                FlushRendering(gr, textbox, currentStyleIndex,
+                    new Point(startX + (iLastFlushedChar + 1) * textbox.CharWidth, y), remainingTextRange);
             }
 
             if (textbox.EndOfLineStyle != null && line.Count == to + 1)
@@ -421,11 +473,12 @@ namespace FastColoredTextBoxNS
             if (!textbox.Selection.IsEmpty && lastChar >= firstChar)
             {
                 gr.SmoothingMode = SmoothingMode.None;
-                var textRange = new Range(textbox, from + firstChar, iLine, from + lastChar + 1, iLine);
+                var textRange = new Range(textbox, fromDisplay + firstChar, iLine, fromDisplay + lastChar + 1, iLine);
                 textRange = textbox.Selection.GetIntersectionWith(textRange);
                 if (textRange != null && textbox.SelectionStyle != null)
                 {
-                    int next;
+                    int next = (textRange.Start.iChar - fromDisplay) * textbox.CharWidth;
+                    /*
                     if (textbox.ConvertTabToSpaces)
                     {
                         next = (textRange.Start.iChar - from) * textbox.CharWidth;
@@ -436,7 +489,7 @@ namespace FastColoredTextBoxNS
                         string beforeRangeText = llll.Text.Substring(0, textRange.Start.iChar); // all text before the range
                         // Calculate where previous range ended
                         next = TextSizeCalculator.TextWidth(beforeRangeText, textRange.tb.TabLength) * textbox.CharWidth;
-                    }
+                    }*/
                     textbox.SelectionStyle.Draw(gr, new Point(startX + next, 1 + y),
                                         textRange);
                 }

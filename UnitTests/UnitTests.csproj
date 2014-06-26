@@ -73,8 +73,11 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CalcCutOffsTests.cs" />
     <Compile Include="Commands\InsertTextCommandTests.cs" />
+    <Compile Include="LineDisplayRangeTests.cs" />
     <Compile Include="MoveCaretTests.cs" />
+    <Compile Include="RangeTextTests.cs" />
     <Compile Include="TabSizeCalculatorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

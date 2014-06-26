@@ -2934,87 +2934,35 @@ namespace FastColoredTextBoxNS
                 {
                     if (!this.WordWrap)
                     {
-                        LineInfos[iLine].CutOffPositions.Clear();
+                        this.LineInfos[iLine].CutOffPositions.Clear();
                     }
                     else
                     {
-                        LineInfo li = LineInfos[iLine];
+                        LineInfo li = this.LineInfos[iLine];
 
                         li.wordWrapIndent = WordWrapAutoIndent
                                                 ? lines[iLine].StartSpacesCount + WordWrapIndent
                                                 : WordWrapIndent;
 
-                        if (WordWrapMode == WordWrapMode.Custom)
+                        if (this.WordWrapMode == WordWrapMode.Custom)
                         {
-                            if (WordWrapNeeded != null)
+                            // fire event to ask for wordwrap position
+                            if (this.WordWrapNeeded != null)
                             {
-                                WordWrapNeeded(this,
-                                               new WordWrapNeededEventArgs(li.CutOffPositions, ImeAllowed, lines[iLine]));
+                                this.WordWrapNeeded(this, new WordWrapNeededEventArgs(li.CutOffPositions, ImeAllowed, lines[iLine]));
                             }
                         }
                         else
                         {
-                            CalcCutOffs(li.CutOffPositions, maxCharsPerLine, maxCharsPerLine - li.wordWrapIndent,
+                            WordwrapUtil.CalcCutOffs(li.CutOffPositions, maxCharsPerLine, maxCharsPerLine - li.wordWrapIndent,
                                         ImeAllowed, charWrap, lines[iLine]);
                         }
 
-                        LineInfos[iLine] = li;
+                        this.LineInfos[iLine] = li;
                     }
                 }
             }
             needRecalc = true;
-        }
-
-        /// <summary>
-        /// Calculates wordwrap cutoffs
-        /// </summary>
-        public static void CalcCutOffs(List<int> cutOffPositions, int maxCharsPerLine, int maxCharsPerSecondaryLine, bool allowIME, bool charWrap, Line line)
-        {
-            if (maxCharsPerSecondaryLine < 1) maxCharsPerSecondaryLine = 1;
-            if (maxCharsPerLine < 1) maxCharsPerLine = 1;
-
-            int segmentLength = 0;
-            int cutOff = 0;
-            cutOffPositions.Clear();
-
-            for (int i = 0; i < line.Count - 1; i++)
-            {
-                char c = line[i].c;
-                if (charWrap)
-                {
-                    //char wrapping
-                    cutOff = i + 1;
-                }
-                else
-                {
-                    //word wrapping
-                    if (allowIME && CharHelper.IsCJKLetter(c)) //in CJK languages cutoff can be in any letter
-                    {
-                        cutOff = i;
-                    }
-                    else
-                    {
-                        if (!char.IsLetterOrDigit(c) && c != '_' && c != '\'')
-                        {
-                            cutOff = Math.Min(i + 1, line.Count - 1);
-                        }
-                    }
-                }
-
-                segmentLength++;
-
-                if (segmentLength == maxCharsPerLine)
-                {
-                    if (cutOff == 0 ||
-                        (cutOffPositions.Count > 0 && cutOff == cutOffPositions[cutOffPositions.Count - 1]))
-                    {
-                        cutOff = i + 1;
-                    }
-                    cutOffPositions.Add(cutOff);
-                    segmentLength = 1 + i - cutOff;
-                    maxCharsPerLine = maxCharsPerSecondaryLine;
-                }
-            }
         }
 
         protected override void OnClientSizeChanged(EventArgs e)
@@ -3897,7 +3845,14 @@ namespace FastColoredTextBoxNS
             Rendering.DrawTextAreaBorder(e.Graphics, this);
             //
 
-            int endLine = Rendering.DrawLines(e, this, servicePen);
+            int endLine = -1;
+            try
+            {
+                endLine = Rendering.DrawLines(e, this, servicePen);
+            }
+            catch (Exception exception)
+            {
+            }
 
             // y-coordinate to line index
             int startLine = this.YtoLineIndex(this.VerticalScroll.Value);
@@ -4392,7 +4347,7 @@ namespace FastColoredTextBoxNS
         }
 
         /// <summary>
-        /// Gets nearest line and char position from coordinates
+        /// Gets nearest line and char display position from coordinates
         /// FIXME: Take care of wordwrapping and real TABs
         /// </summary>
         /// <param name="point">Point</param>
@@ -4410,6 +4365,7 @@ namespace FastColoredTextBoxNS
 
             int y = 0;
 
+            // find the line index
             for (; iLine < lines.Count; iLine++)
             {
                 y = LineInfos[iLine].startY + LineInfos[iLine].WordWrapStringsCount*CharHeight;
@@ -4420,40 +4376,45 @@ namespace FastColoredTextBoxNS
                 iLine = lines.Count - 1;
             if (LineInfos[iLine].VisibleState != VisibleState.Visible)
                 iLine = FindPrevVisibleLine(iLine);
-            //
+
+            // find the sub string
             int iWordWrapLine = LineInfos[iLine].WordWrapStringsCount;
             do
             {
                 iWordWrapLine--;
                 y -= CharHeight;
             } while (y > point.Y);
-            if (iWordWrapLine < 0) iWordWrapLine = 0;
-            //
+
+            if (iWordWrapLine < 0)
+            {
+                iWordWrapLine = 0;
+            }
+
+
+            // string index positions
             int start = LineInfos[iLine].GetWordWrapStringStartPosition(iWordWrapLine);
             int finish = LineInfos[iLine].GetWordWrapStringFinishPosition(iWordWrapLine, lines[iLine]);
 
-            int x;
-            // var x = (int) Math.Round((float) point.X/CharWidth);
-            if (this.ConvertTabToSpaces)
-            {
-                // each character has a fixed width
-                x = (int)Math.Round((float)point.X / CharWidth); 
-            }
-            else
-            {
-                // we need to correct the charwidth width the tablength
-                x = TextSizeCalculator.CharIndexAtPoint(lines[iLine].Text, this.TabLength, this.CharWidth, point.X);
-            }
+            // display positions
+            int fromDisplay = lines[iLine].GetDisplayWidthForSubString(start, this.TabLength);
+            int toDisplay = lines[iLine].GetDisplayWidthForSubString(finish, this.TabLength);
 
+            int x = (int)Math.Round((float)point.X / CharWidth);
+            // if x is inside a TAB we have to move it
+            x = lines[iLine].DisplayIndexToCharDisplayPosition(x, this.TabLength);
+           
+
+            // if we are on a wrapped line we should correct for the indent pixels
             if (iWordWrapLine > 0)
                 x -= LineInfos[iLine].wordWrapIndent;
 
 
-            x = x < 0 ? start : start + x;
-            if (x > finish)
-                x = finish + 1;
-            if (x > lines[iLine].Count)
-                x = lines[iLine].Count;
+            // if x < 0 then the point is in the indent area
+            x = x < 0 ? fromDisplay : fromDisplay + x;
+            if (x > toDisplay)
+                x = toDisplay + 1; // after the last character of the wrapped string
+            if (x > lines[iLine].GetDisplayWidth(this.TabLength))
+                x = lines[iLine].Count; // after the last character of the entire string
 
 #if debug
             Console.WriteLine("PointToPlace: " + sw.ElapsedMilliseconds);
@@ -4467,16 +4428,16 @@ namespace FastColoredTextBoxNS
             point.Offset(HorizontalScroll.Value, VerticalScroll.Value);
             point.Offset(-LeftIndent - Paddings.Left, 0);
             int iLine = YtoLineIndex(point.Y);
-            int x;
+            int x = (int)Math.Round((float)point.X / CharWidth);
             if (this.ConvertTabToSpaces)
             {
                 // each character has a fixed width
-                x = (int)Math.Round((float)point.X / CharWidth);
+                //x = (int)Math.Round((float)point.X / CharWidth);
             }
             else
             {
                 // we need to correct the charwidth width the tablength
-                x = TextSizeCalculator.CharIndexAtPoint(lines[iLine].Text, this.TabLength, this.CharWidth, point.X);
+                //x = TextSizeCalculator.CharIndexAtPoint(lines[iLine].Text, this.TabLength, this.CharWidth, point.X);
             }
             if (x < 0) x = 0;
             return new Place(x, iLine);
@@ -4769,10 +4730,10 @@ namespace FastColoredTextBoxNS
             int iWordWrapIndex = LineInfos[place.iLine].GetWordWrapStringIndex(place.iChar);
             y += iWordWrapIndex*CharHeight;
 
-            string offsetChars = this.lines[place.iLine].Text.Substring(0, place.iChar);
-            int offset = TextSizeCalculator.TextWidth(offsetChars, this.TabLength);
-            int x = (offset - LineInfos[place.iLine].GetWordWrapStringStartPosition(iWordWrapIndex)) * CharWidth;
-            //int x = (place.iChar - LineInfos[place.iLine].GetWordWrapStringStartPosition(iWordWrapIndex))*CharWidth;
+            //string offsetChars = this.lines[place.iLine].Text.Substring(0, place.iChar);
+            //int offset = TextSizeCalculator.TextWidth(offsetChars, this.TabLength);
+            //int x = (offset - LineInfos[place.iLine].GetWordWrapStringStartPosition(iWordWrapIndex)) * CharWidth;
+            int x = (place.iChar - LineInfos[place.iLine].GetWordWrapStringStartPosition(iWordWrapIndex))*CharWidth;
 
             if(iWordWrapIndex > 0 )
                 x += LineInfos[place.iLine].wordWrapIndent * CharWidth;

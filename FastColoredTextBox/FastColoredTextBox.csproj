@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>FastColoredTextBoxNS</RootNamespace>
     <AssemblyName>FastColoredTextBox</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -158,6 +158,7 @@
     </Compile>
     <Compile Include="VisualMarker.cs" />
     <Compile Include="WindowsRegistry.cs" />
+    <Compile Include="WordwrapUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="AdvancedFindForm.resx">

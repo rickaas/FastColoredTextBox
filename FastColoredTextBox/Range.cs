@@ -13,12 +13,14 @@ namespace FastColoredTextBoxNS
     public class Range : IEnumerable<Place>
     {
         // character coordinates
+        // When getting the text for a range we have to check if the start or end Place is inside a TAB.
         Place start;
         Place end;
 
         public readonly FastColoredTextBox tb;
 
         // used when going up or down
+        // A character display position
         int preferedPos = -1;
 
         // keeps track of BeginUpdate()
@@ -94,6 +96,59 @@ namespace FastColoredTextBoxNS
             }
         }
 
+        // FIXME
+        private void GetText(out string text, out List<Place> charIndexToPlace)
+        {
+            //try get cached text
+            if (tb.TextVersion == cachedTextVersion)
+            {
+                text = cachedText;
+                charIndexToPlace = cachedCharIndexToPlace;
+                return;
+            }
+
+            // cache has become invalid
+
+            // get normalized range
+            int fromLine = Math.Min(end.iLine, start.iLine);
+            int toLine = Math.Max(end.iLine, start.iLine);
+            int fromChar = FromX;
+            int toChar = ToX;
+
+            // guess capacity with +/- 50 characters per line
+            StringBuilder sb = new StringBuilder((toLine - fromLine) * 50);
+            charIndexToPlace = new List<Place>(sb.Capacity);
+
+            if (fromLine >= 0)
+            {
+                for (int y = fromLine; y <= toLine; y++)
+                {
+                    int fromX = y == fromLine ? fromChar : 0;
+                    int toX = y == toLine ? Math.Min(toChar - 1, tb.TextSource[y].Count - 1) : tb.TextSource[y].Count - 1;
+                    for (int x = fromX; x <= toX; x++)
+                    {
+                        sb.Append(tb.TextSource[y][x].c);
+                        charIndexToPlace.Add(new Place(x, y));
+                    }
+                    if (y != toLine && fromLine != toLine)
+                    {
+                        foreach (char c in Environment.NewLine)
+                        {
+                            sb.Append(c);
+                            charIndexToPlace.Add(new Place(tb.TextSource[y].Count/*???*/, y));
+                        }
+                    }
+                }
+            }
+            text = sb.ToString();
+
+            charIndexToPlace.Add(End > Start ? End : Start);
+            //caching
+            cachedText = text;
+            cachedCharIndexToPlace = charIndexToPlace;
+            cachedTextVersion = tb.TextVersion;
+        }
+
         /// <summary>
         /// Text of range
         /// </summary>
@@ -117,16 +172,30 @@ namespace FastColoredTextBoxNS
                 StringBuilder sb = new StringBuilder();
                 for (int y = fromLine; y <= toLine; y++)
                 {
+                    // this is not a column selection so if we are at the first line of the range we start the range at fromChar, 
+                    // otherwise we start at the start of the line
                     int fromX = y == fromLine ? fromChar : 0;
-                    int toX = y == toLine ? Math.Min(tb.TextSource[y].Count - 1, toChar - 1) : tb.TextSource[y].Count - 1;
+
+                    // this is not a column selection so if we are at the last line of a range we end at the min(line_end, toChar),
+                    // otherwise we end at the end of the line
+                    var lineWidth = tb.TextSource[y].GetDisplayWidth(tb.TabLength);
+                    int toX = y == toLine ? Math.Min(lineWidth, toChar) : lineWidth;
+
+                    var chars = tb.TextSource[y].GetCharsForDisplayRange(fromX, toX, tb.TabLength);
+                    foreach (char c in chars) 
+                    {
+                        sb.Append(c);
+                    }
+                    /*
                     for (int x = fromX; x <= toX; x++)
                     {
                         sb.Append(tb.TextSource[y][x].c);
-                    }
+                    }*/
+
                     if (y != toLine && fromLine != toLine)
                     {
-                        // This won't append a newline to the last line
-                        //sb.AppendLine();
+                        // append newline when not at the last line and when range is more than one line.
+                        // (a range from the start of a line to the end will not include a newline)
                         switch (tb.TextSource[y].EolFormat)
                         {
                             case EolFormat.CR:
@@ -251,58 +320,6 @@ namespace FastColoredTextBoxNS
             }
             if (this == tb.Selection)
                 tb.Invalidate();
-        }
-
-        private void GetText(out string text, out List<Place> charIndexToPlace)
-        {
-            //try get cached text
-            if (tb.TextVersion == cachedTextVersion)
-            {
-                text = cachedText;
-                charIndexToPlace = cachedCharIndexToPlace;
-                return;
-            }
-
-            // cache has become invalid
-
-            // get normalized range
-            int fromLine = Math.Min(end.iLine, start.iLine);
-            int toLine = Math.Max(end.iLine, start.iLine);
-            int fromChar = FromX;
-            int toChar = ToX;
-
-            // guess capacity with +/- 50 characters per line
-            StringBuilder sb = new StringBuilder((toLine - fromLine)*50);
-            charIndexToPlace = new List<Place>(sb.Capacity);
-
-            if (fromLine >= 0)
-            {
-                for (int y = fromLine; y <= toLine; y++)
-                {
-                    int fromX = y == fromLine ? fromChar : 0;
-                    int toX = y == toLine ? Math.Min(toChar - 1, tb.TextSource[y].Count - 1) : tb.TextSource[y].Count - 1;
-                    for (int x = fromX; x <= toX; x++)
-                    {
-                        sb.Append(tb.TextSource[y][x].c);
-                        charIndexToPlace.Add(new Place(x, y));
-                    }
-                    if (y != toLine && fromLine != toLine)
-                    {
-                        foreach (char c in Environment.NewLine)
-                        {
-                            sb.Append(c);
-                            charIndexToPlace.Add(new Place(tb.TextSource[y].Count/*???*/, y));
-                        }
-                    }
-                }
-            }
-            text = sb.ToString();
-
-            charIndexToPlace.Add(End > Start ? End : Start);
-            //caching
-            cachedText = text;
-            cachedCharIndexToPlace = charIndexToPlace;
-            cachedTextVersion = tb.TextVersion;
         }
 
         /// <summary>
@@ -444,16 +461,29 @@ namespace FastColoredTextBoxNS
             ColumnSelectionMode = false;
 
             if (!shift)
-            if (start > end)
             {
-                Start = End;
-                return;
+                if (start > end)
+                {
+                    Start = End;
+                    return;
+                }
             }
 
+            // not the first char on a line || not the first line
             if (start.iChar != 0 || start.iLine != 0)
             {
                 if (start.iChar > 0 && tb.LineInfos[start.iLine].VisibleState == VisibleState.Visible)
-                    start.Offset(-1, 0);
+                {
+                    int dx = -1;
+                    // if prev char if \t
+                    int indexInString = TextSizeCalculator.CharIndexAtCharWidthPoint(tb.TextSource[start.iLine].GetCharEnumerable(), this.tb.TabLength, start.iChar);
+                    if (tb.TextSource[start.iLine][indexInString - 1].c == '\t')
+                    {
+                        int prevCharDisplayIndex = tb.TextSource[start.iLine].GetDisplayWidthForSubString(indexInString-1, this.tb.TabLength);
+                        dx = -1 * TextSizeCalculator.TabWidth(prevCharDisplayIndex, this.tb.TabLength);
+                    }
+                    start.Offset(dx, 0);
+                }
                 else
                 {
                     int i = tb.FindPrevVisibleLine(start.iLine);
@@ -475,18 +505,32 @@ namespace FastColoredTextBoxNS
             ColumnSelectionMode = false;
 
             if (!shift)
-            if (start < end)
             {
-                Start = End;
-                return;
+                if (start < end)
+                {
+                    Start = End;
+                    return;
+                }
             }
 
-            if (start.iLine < tb.LinesCount - 1 || start.iChar < tb.TextSource[tb.LinesCount - 1].Count)
+            // start line if before the last line || start char is before the last char of the last line
+            if (start.iLine < tb.LinesCount - 1 
+                || start.iChar < tb.TextSource[tb.LinesCount - 1].GetDisplayWidth(this.tb.TabLength))
             {
-                if (start.iChar < tb.TextSource[start.iLine].Count && tb.LineInfos[start.iLine].VisibleState == VisibleState.Visible)
-                    start.Offset(1, 0);
+                if (start.iChar < tb.TextSource[start.iLine].GetDisplayWidth(this.tb.TabLength) 
+                    && tb.LineInfos[start.iLine].VisibleState == VisibleState.Visible)
+                {
+                    // go to next char on the same line
+                    int dx = 1;
+                    if (tb.TextSource[start.iLine].GetCharAtDisplayPosition(start.iChar, this.tb.TabLength).c == '\t')
+                    {
+                        dx = TextSizeCalculator.TabWidth(start.iChar, this.tb.TabLength);
+                    }
+                    start.Offset(dx, 0);
+                }
                 else
                 {
+                    // go to first char on next line
                     int i = tb.FindNextVisibleLine(start.iLine);
                     if (i == start.iLine) return;
                     start = new Place(0, i);
@@ -506,41 +550,59 @@ namespace FastColoredTextBoxNS
             ColumnSelectionMode = false;
 
             if (!shift)
-            if (start.iLine > end.iLine)
             {
-                Start = End;
-                return;
+                if (start.iLine > end.iLine)
+                {
+                    Start = End;
+                    return;
+                }
             }
 
             if (preferedPos < 0)
-                preferedPos = start.iChar - tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar));
+            {
+                int wrapIndex = tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar);
+                preferedPos = start.iChar - tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(wrapIndex);
+            }
 
             int prevLineIndex = this.Start.iLine;
-            int prevCharIndex = start.iChar;
+            int prevDisplayCharIndex = start.iChar;
 
             int iWW = tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar);
             if (iWW == 0)
             {
                 // set the new line index
-                if (start.iLine <= 0) return;
+                if (start.iLine <= 0) return; // already at first line
                 int i = tb.FindPrevVisibleLine(start.iLine);
-                if (i == start.iLine) return;
+                if (i == start.iLine) return; // lines above us are all invisible
                 start.iLine = i;
                 iWW = tb.LineInfos[start.iLine].WordWrapStringsCount;
             }
 
             if (iWW > 0)
             {
-                int finish = tb.LineInfos[start.iLine].GetWordWrapStringFinishPosition(iWW - 1, tb.TextSource[start.iLine]);
-                start.iChar = tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(iWW - 1) + preferedPos;
+                int startStringIndex = tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(iWW - 1);
+                int finishStringIndex = tb.LineInfos[start.iLine].GetWordWrapStringFinishPosition(iWW - 1, tb.TextSource[start.iLine]);
+                start.iChar = startStringIndex + preferedPos;
+
+                int toDisplay = tb.lines[start.iLine].GetDisplayWidthForSubString(finishStringIndex, this.tb.TabLength);
+
+                /* RL: not required anymore
                 // correct for tab, add the difference between the preceeding text length with tabstops and the preceeding text length without tabstops
                 if (!this.tb.ConvertTabToSpaces)
                 {
                     string prevLineText = this.tb.TextSource[prevLineIndex].Text.Substring(0, prevCharIndex);
                     start.iChar = TextSizeCalculator.AdjustedCharWidthOffset(prevLineText, this.tb.TextSource[start.iLine].Text, this.tb.TabLength);
+                }*/
+
+                if (start.iChar > toDisplay + 1)
+                {
+                    start.iChar = toDisplay + 1;
                 }
-                if (start.iChar > finish + 1)
-                    start.iChar = finish + 1;
+
+                int charDisplayIndex;
+                int charIndex;
+                tb.lines[start.iLine].DisplayIndexToPosition(start.iChar, tb.TabLength, out charDisplayIndex, out charIndex);
+                start.iChar = charDisplayIndex;
             }
 
             if (!shift)
@@ -599,42 +661,65 @@ namespace FastColoredTextBoxNS
         {
             ColumnSelectionMode = false;
 
-            if(!shift)
-            if (start.iLine < end.iLine)
+            if (!shift)
             {
-                Start = End;
-                return;
+                if (start.iLine < end.iLine)
+                {
+                    Start = End;
+                    return;
+                }
             }
 
             if (preferedPos < 0)
-                preferedPos = start.iChar - tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar));
+            {
+                int wrapIndex = tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar);
+                preferedPos = start.iChar - tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(wrapIndex);
+            }
 
             int prevLineIndex = this.Start.iLine;
-            int prevCharIndex = start.iChar;
+            int prevDisplayCharIndex = start.iChar;
+            int prevCharIndex = prevDisplayCharIndex;
 
             int iWW = tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar);
             if (iWW >= tb.LineInfos[start.iLine].WordWrapStringsCount - 1)
             {
-                if (start.iLine >= tb.LinesCount - 1) return;
-                //pass hidden
+                // go to next line
+                if (start.iLine >= tb.LinesCount - 1) return; // on the last line
+                //skip hidden lines
                 int i = tb.FindNextVisibleLine(start.iLine);
-                if (i == start.iLine) return;
+                if (i == start.iLine) return; // on the last visible line
                 start.iLine = i;
                 iWW = -1;
             }
+            // else // go to next wordwrap segment
 
             if (iWW < tb.LineInfos[start.iLine].WordWrapStringsCount - 1)
             {
-                int finish = tb.LineInfos[start.iLine].GetWordWrapStringFinishPosition(iWW + 1, tb.TextSource[start.iLine]);
-                start.iChar = tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(iWW + 1) + preferedPos;
+                int startStringIndex = tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(iWW + 1);
+                int finishStringIndex = tb.LineInfos[start.iLine].GetWordWrapStringFinishPosition(iWW + 1, tb.TextSource[start.iLine]);
+
+
+                int fromDisplay = tb.lines[start.iLine].GetDisplayWidthForSubString(startStringIndex, this.tb.TabLength);
+                int toDisplay = tb.lines[start.iLine].GetDisplayWidthForSubString(finishStringIndex, this.tb.TabLength);
+
+                start.iChar = startStringIndex + preferedPos;
+                /* RL: Not required
                 // correct for tab, add the difference between the preceeding text length with tabstops and the preceeding text length without tabstops
                 if (!this.tb.ConvertTabToSpaces)
                 {
                     string prevLineText = this.tb.TextSource[prevLineIndex].Text.Substring(0, prevCharIndex);
                     start.iChar = TextSizeCalculator.AdjustedCharWidthOffset(prevLineText, this.tb.TextSource[start.iLine].Text, this.tb.TabLength);
                 }
-                if (start.iChar > finish + 1)
-                    start.iChar = finish + 1;
+                */
+                if (start.iChar > toDisplay + 1)
+                {
+                    // beyond the last character
+                    start.iChar = toDisplay + 1;
+                }
+                int charDisplayIndex;
+                int charIndex;
+                tb.lines[start.iLine].DisplayIndexToPosition(start.iChar, tb.TabLength, out charDisplayIndex, out charIndex);
+                start.iChar = charDisplayIndex;
             }
 
             if (!shift)
@@ -948,6 +1033,7 @@ namespace FastColoredTextBoxNS
 
         /// <summary>
         /// Finds ranges for given regex pattern
+        /// FIXME
         /// </summary>
         /// <param name="regexPattern">Regex pattern</param>
         /// <param name="options"></param>
@@ -1062,6 +1148,7 @@ namespace FastColoredTextBoxNS
 
         /// <summary>
         /// Finds ranges for given regex
+        /// FIXME
         /// </summary>
         /// <returns>Enumeration of ranges</returns>
         public IEnumerable<Range> GetRanges(Regex regex)

@@ -129,10 +129,15 @@ namespace FastColoredTextBoxNS
             stringFormat = new StringFormat(StringFormatFlags.MeasureTrailingSpaces);
         }
 
+        // range is in display coordinates
         public override void Draw(Graphics gr, Point position, Range range)
         {
+            //DisplayChar displayChar in line.GetStyleCharForDisplayRange(firstChar, lastChar, range.tb.TabLength);
+
             int beforeRangeSize = -1; // cached value only used when this.SpecialTabDraw == true;
-            int backgroundWidth;
+            int backgroundWidth = (range.End.iChar - range.Start.iChar)*range.tb.CharWidth;
+
+            /*
             if (this.SpecialTabDraw)
             {
                 var llll = range.tb.TextSource[range.Start.iLine]; // text on the line
@@ -148,7 +153,7 @@ namespace FastColoredTextBoxNS
             else
             {
                 backgroundWidth = (range.End.iChar - range.Start.iChar)*range.tb.CharWidth;
-            }
+            }*/
             //draw background
             if (BackgroundBrush != null)
                 gr.FillRectangle(BackgroundBrush, position.X, position.Y, backgroundWidth, range.tb.CharHeight);
@@ -166,14 +171,15 @@ namespace FastColoredTextBoxNS
 
                 //IME mode
                 if (range.tb.ImeAllowed)
+                {
                     for (int i = range.Start.iChar; i < range.End.iChar; i++)
                     {
                         SizeF size = CharHelper.GetCharSize(f, line[i].c);
 
                         var gs = gr.Save();
-                        float k = size.Width > range.tb.CharWidth + 1 ? range.tb.CharWidth/size.Width : 1;
-                        gr.TranslateTransform(x, y + (1 - k)*range.tb.CharHeight/2);
-                        gr.ScaleTransform(k, (float) Math.Sqrt(k));
+                        float k = size.Width > range.tb.CharWidth + 1 ? range.tb.CharWidth / size.Width : 1;
+                        gr.TranslateTransform(x, y + (1 - k) * range.tb.CharHeight / 2);
+                        gr.ScaleTransform(k, (float)Math.Sqrt(k));
                         char c = line[i].c;
                         if (this.SpecialTabDraw && c == '\t')
                         {
@@ -189,8 +195,35 @@ namespace FastColoredTextBoxNS
                         gr.Restore(gs);
                         x += dx;
                     }
+                }
                 else
                 {
+                    foreach (DisplayChar displayChar in line.GetStyleCharForDisplayRange(range.Start.iChar, range.End.iChar, range.tb.TabLength))
+                    {
+                        // draw char
+                        char c = displayChar.Char.c;
+                        if (c == '\t')
+                        {
+                            int tabWidth = TextSizeCalculator.TabWidth(displayChar.DisplayIndex, range.tb.TabLength);
+                            using (Pen pen = new Pen(this.TabDrawColor, range.tb.CharHeight / 10F))
+                            {
+                                pen.EndCap = LineCap.ArrowAnchor;
+                                // add (range.tb.CharWidth/3) because the tab-arrow doesn't need spacing
+                                gr.DrawLine(pen,
+                                            x + range.tb.CharWidth / 3F,
+                                            y + (range.tb.CharHeight / 2F),
+                                            x + (tabWidth * dx) + range.tb.CharWidth / 3F,
+                                            y + (range.tb.CharHeight / 2F));
+                            }
+                            x += tabWidth * dx;
+                        }
+                        else
+                        {
+                            gr.DrawString(c.ToString(), f, ForeBrush, x, y, stringFormat);
+                            x += dx;
+                        }
+                    }
+                    /*
                     //classic mode 
                     if (this.SpecialTabDraw)
                     {
@@ -208,15 +241,15 @@ namespace FastColoredTextBoxNS
                                 // or draw an arrow via DrawLine?
                                 if (!this.HiddenTabCharacter)
                                 {
-                                    using (Pen pen = new Pen(this.TabDrawColor, range.tb.CharHeight/10F))
+                                    using (Pen pen = new Pen(this.TabDrawColor, range.tb.CharHeight / 10F))
                                     {
                                         pen.EndCap = LineCap.ArrowAnchor;
                                         // add (range.tb.CharWidth/3) because the tab-arrow doesn't need spacing
                                         gr.DrawLine(pen,
-                                                    x + range.tb.CharWidth/3F,
-                                                    y + (range.tb.CharHeight/2F),
-                                                    x + (tabWidth*dx) + range.tb.CharWidth/3F,
-                                                    y + (range.tb.CharHeight/2F));
+                                                    x + range.tb.CharWidth / 3F,
+                                                    y + (range.tb.CharHeight / 2F),
+                                                    x + (tabWidth * dx) + range.tb.CharWidth / 3F,
+                                                    y + (range.tb.CharHeight / 2F));
                                     }
                                 }
                                 x += tabWidth * dx; // tab has variable width
@@ -238,7 +271,7 @@ namespace FastColoredTextBoxNS
                             gr.DrawString(line[i].c.ToString(), f, ForeBrush, x, y, stringFormat);
                             x += dx;
                         }
-                    }
+                    }*/
                 }
             }
         }
@@ -365,12 +398,19 @@ namespace FastColoredTextBoxNS
             this.BackgroundBrush = backgroundBrush;
         }
 
+        /// <summary>
+        /// Draw somthing for the given range.
+        /// </summary>
+        /// <param name="gr"></param>
+        /// <param name="position">Start drawing position</param>
+        /// <param name="range">Display range</param>
         public override void Draw(Graphics gr, Point position, Range range)
         {
             //draw background
             if (BackgroundBrush != null)
             {
-                int backgroundWidth;
+                int backgroundWidth = (range.End.iChar - range.Start.iChar) * range.tb.CharWidth;
+                /*
                 if (this.SpecialTabDraw)
                 {
                     // TODO: Can range span multiple lines? I don't think so...
@@ -389,7 +429,7 @@ namespace FastColoredTextBoxNS
                 else
                 {
                     backgroundWidth = (range.End.iChar - range.Start.iChar)*range.tb.CharWidth;
-                }
+                }*/
                 Rectangle rect = new Rectangle(position.X, position.Y, backgroundWidth, range.tb.CharHeight);
                 if (rect.Width == 0)
                     return;

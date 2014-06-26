@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -23,6 +24,27 @@ namespace FastColoredTextBoxNS
         {
             this.c = c;
             style = StyleIndex.None;
+        }
+    }
+
+    public struct DisplayChar
+    {
+        // string index
+        public int StringIndex;
+
+        // display index 
+        public int DisplayIndex;
+
+        public int DisplayWidth;
+
+        public Char Char;
+
+        public DisplayChar(Char c, int stringIndex, int displayIndex, int displayWidth)
+        {
+            this.Char = c;
+            this.StringIndex = stringIndex;
+            this.DisplayIndex = displayIndex;
+            this.DisplayWidth = displayWidth;
         }
     }
 
@@ -73,6 +95,15 @@ namespace FastColoredTextBoxNS
         public static bool IsSpaceChar(char c)
         {
             return c == ' ' || c == '\t';
+        }
+
+        internal static IEnumerable<char> ToCharEnumerable(List<Char> chars)
+        {
+            for (int i = 0; i < chars.Count; i++)
+            {
+                Char c = chars[i];
+                yield return c.c;
+            }
         }
     }
 }
