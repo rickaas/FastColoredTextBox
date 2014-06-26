@@ -6,14 +6,15 @@ using System.Windows.Forms;
 namespace FastColoredTextBoxNS
 {
     /// <summary>
-    /// Char and style
+    /// Char and style.
+    /// The char is immutable, the StyleIndex can change.
     /// </summary>
     public struct Char
     {
         /// <summary>
         /// Unicode character
         /// </summary>
-        public char c;
+        private char _c;
         /// <summary>
         /// Style bit mask
         /// </summary>
@@ -22,8 +23,13 @@ namespace FastColoredTextBoxNS
 
         public Char(char c)
         {
-            this.c = c;
+            this._c = c;
             style = StyleIndex.None;
+        }
+
+        public char c
+        {
+            get { return this._c; }
         }
     }
 
