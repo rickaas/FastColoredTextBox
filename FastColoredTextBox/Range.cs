@@ -1233,7 +1233,7 @@ namespace FastColoredTextBoxNS
         {
             Normalize();
             start = new Place(0, start.iLine);
-            end = new Place(tb.GetLineLength(end.iLine), end.iLine);
+            end = new Place(tb.GetLineDisplayWidth(end.iLine), end.iLine);
         }
 
         IEnumerator<Place> IEnumerable<Place>.GetEnumerator()
@@ -1329,7 +1329,7 @@ namespace FastColoredTextBoxNS
                 {
                     break;
                 }
-                if (r.Start.iChar < tb.GetLineLength(r.Start.iLine))
+                if (r.Start.iChar < tb.GetLineDisplayWidth(r.Start.iLine))
                 {
                     if ((tb.TextSource[r.Start].style & mask) == 0)
                     {
@@ -1348,7 +1348,7 @@ namespace FastColoredTextBoxNS
                 {
                     break;
                 }
-                if (r.Start.iChar < tb.GetLineLength(r.Start.iLine))
+                if (r.Start.iChar < tb.GetLineDisplayWidth(r.Start.iLine))
                 {
                     if ((tb.TextSource[r.Start].style & mask) == 0)
                     {

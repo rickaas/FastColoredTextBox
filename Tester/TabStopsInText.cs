@@ -17,10 +17,10 @@ namespace Tester
         {
             string[] lines = new[]
                 {
-                    "a\tv",
-                    //"a\tvv\tbbb\txxxx\tuuuu",
-                    //"1234____1234____1234____uuuu",
-                    //"h\tii\tzzz\tyyyy\tuuuu",
+                    //"a\tv",
+                    "a\tvv\tbbb\txxxx\tuuuu",
+                    "1234____1234____1234____uuuu",
+                    "h\tii\tzzz\tyyyy\tuuuu",
                 };
             return String.Join("\n", lines);
         }

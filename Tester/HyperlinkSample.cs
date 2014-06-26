@@ -25,7 +25,7 @@ namespace Tester
         bool CharIsHyperlink(Place place)
         {
             var mask = fctb.GetStyleIndexMask(new Style[] { blueStyle });
-            if (place.iChar < fctb.GetLineLength(place.iLine))
+            if (place.iChar < fctb.GetLineDisplayWidth(place.iLine))
                 if ((fctb.TextSource[place].style & mask) != 0)
                     return true;
 

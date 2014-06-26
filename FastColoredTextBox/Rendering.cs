@@ -596,5 +596,37 @@ namespace FastColoredTextBoxNS
                 }
             }
         }
+
+        internal static void DrawTriangle(Graphics g, Brush brush)
+        {
+            const int size = 5;
+            var points = new Point[] { new Point(size, 2 * size), new Point(0, 3 * size), new Point(-size, 2 * size) };
+            g.FillPolygon(brush, points);
+        }
+
+        internal static void DrawMiddleClickScrolling(Graphics gr, Point middleClickScrollingOriginPoint, Color inverseColor, bool ableToScrollVertically, bool ableToScrollHorizontally)
+        {
+
+            using (SolidBrush inverseColorBrush = new SolidBrush(inverseColor))
+            {
+                var p = middleClickScrollingOriginPoint;
+
+                var state = gr.Save();
+
+                gr.SmoothingMode = SmoothingMode.HighQuality;
+                gr.TranslateTransform(p.X, p.Y);
+                gr.FillEllipse(inverseColorBrush, -2, -2, 4, 4);
+
+                if (ableToScrollVertically) Rendering.DrawTriangle(gr, inverseColorBrush);
+                gr.RotateTransform(90);
+                if (ableToScrollHorizontally) Rendering.DrawTriangle(gr, inverseColorBrush);
+                gr.RotateTransform(90);
+                if (ableToScrollVertically) Rendering.DrawTriangle(gr, inverseColorBrush);
+                gr.RotateTransform(90);
+                if (ableToScrollHorizontally) Rendering.DrawTriangle(gr, inverseColorBrush);
+
+                gr.Restore(state);
+            }
+        }
     }
 }

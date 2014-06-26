@@ -347,6 +347,23 @@ namespace FastColoredTextBoxNS
             return lines[i].Count;
         }
 
+        /// <summary>
+        /// Get text of given line
+        /// </summary>
+        /// <param name="iLine">Line index</param>
+        /// <returns>Text</returns>
+        public string GetLineText(int iLine)
+        {
+            if (iLine < 0 || iLine >= lines.Count) throw new ArgumentOutOfRangeException("iLine", "Line index out of range");
+
+            var sb = new StringBuilder(this.lines[iLine].Count);
+            foreach (Char c in this.lines[iLine])
+            {
+                sb.Append(c.c);
+            }
+            return sb.ToString();
+        }
+
         public virtual bool LineHasFoldingStartMarker(int iLine)
         {
             return !string.IsNullOrEmpty(lines[iLine].FoldingStartMarker);

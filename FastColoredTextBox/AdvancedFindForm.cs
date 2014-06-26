@@ -53,7 +53,7 @@ namespace FastColoredTextBoxNS
 
         private Place NextPlace(Place p)
         {
-            int lineLength = tb.GetLineLength(p.iLine);
+            int lineLength = tb.GetLineDisplayWidth(p.iLine);
             if (p.iChar < lineLength - 1)
             {
                 return new Place(p.iChar+1, p.iLine);
@@ -83,11 +83,11 @@ namespace FastColoredTextBoxNS
                 if (p.iLine == 0)
                 {
                     // already at first line, move to the last character at last line
-                    return new Place(tb.GetLineLength(tb.LinesCount - 1), tb.LinesCount - 1);
+                    return new Place(tb.GetLineDisplayWidth(tb.LinesCount - 1), tb.LinesCount - 1);
                 }
                 else
                 {
-                    return new Place(tb.GetLineLength(p.iLine - 1) - 1, p.iLine - 1);
+                    return new Place(tb.GetLineDisplayWidth(p.iLine - 1) - 1, p.iLine - 1);
                 }
             }
             else
@@ -98,7 +98,7 @@ namespace FastColoredTextBoxNS
 
         private Place EndOfLine(Place p)
         {
-            return new Place(tb.GetLineLength(p.iLine) - 1, p.iLine);
+            return new Place(tb.GetLineDisplayWidth(p.iLine) - 1, p.iLine);
         }
         private Place StartOfLine(Place p)
         {
@@ -119,7 +119,7 @@ namespace FastColoredTextBoxNS
         {
             string originalPattern = pattern;
             Place start = new Place(0,0);
-            Place endOfDocument = new Place(tb.GetLineLength(tb.LinesCount - 1), tb.LinesCount - 1);
+            Place endOfDocument = new Place(tb.GetLineDisplayWidth(tb.LinesCount - 1), tb.LinesCount - 1);
             try
             {
                 // create Regex

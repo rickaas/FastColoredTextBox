@@ -58,6 +58,9 @@ namespace FastColoredTextBoxNS
         private const int WM_VSCROLL = 0x115;
         private const int SB_ENDSCROLL = 0x8;
 
+        // Enable or disable drawing
+        private const int WM_SETREDRAW = 0xB;
+
         public readonly List<LineInfo> LineInfos = new List<LineInfo>();
         private readonly Range selection;
 
@@ -139,7 +142,13 @@ namespace FastColoredTextBoxNS
         
 
         private IntPtr m_hImc;
-        private int maxLineLength;
+
+        /// <summary>
+        /// The maximum line display width found in the TextSource.
+        /// This is different from the String length because we support variable width TABs.
+        /// </summary>
+        private int maxLineWidth;
+
         private bool mouseIsDrag;
         private bool mouseIsDragDrop;
 
@@ -149,6 +158,9 @@ namespace FastColoredTextBoxNS
         /// </summary>
         private bool multiline;
 
+        /// <summary>
+        /// When true scrollbars are shown.
+        /// </summary>
         private bool scrollBars;
 
         /// <summary>
@@ -191,6 +203,9 @@ namespace FastColoredTextBoxNS
         private Range updatingRange;
         internal Range visibleRange;
 
+        /// <summary>
+        /// When true wrap long lines over multiple lines.
+        /// </summary>
         private bool wordWrap;
 
         private WordWrapMode wordWrapMode = WordWrapMode.WordWrapControlWidth;
@@ -407,7 +422,7 @@ namespace FastColoredTextBoxNS
         {
             get
             {
-                int rightPaddingStartX = LeftIndent + maxLineLength * CharWidth + Paddings.Left + 1;
+                int rightPaddingStartX = LeftIndent + maxLineWidth * CharWidth + Paddings.Left + 1;
                 rightPaddingStartX = Math.Max(ClientSize.Width - Paddings.Right, rightPaddingStartX);
                 int bottomPaddingStartY = this.TextHeight + this.Paddings.Top;
                 bottomPaddingStartY = Math.Max(ClientSize.Height - Paddings.Bottom, bottomPaddingStartY);
@@ -545,7 +560,7 @@ namespace FastColoredTextBoxNS
         public ReplaceForm replaceForm { get; private set; }
 
         /// <summary>
-        /// Count of lines
+        /// Returns this.TextSource.Count.
         /// </summary>
         [Browsable(false)]
         public int LinesCount
@@ -653,7 +668,9 @@ namespace FastColoredTextBoxNS
         [Browsable(false)]
         public Range Range
         {
-            get { return new Range(this, new Place(0, 0), new Place(lines[lines.Count - 1].Count, lines.Count - 1)); }
+            get { return new Range(this, 
+                new Place(0, 0), 
+                new Place(lines[lines.Count - 1].GetDisplayWidth(this.TabLength), lines.Count - 1)); }
         }
 
         /// <summary>
@@ -1312,7 +1329,7 @@ namespace FastColoredTextBoxNS
                 return isReplaceMode && 
                        Selection.IsEmpty &&
                        (!Selection.ColumnSelectionMode) &&
-                       Selection.Start.iChar < lines[Selection.Start.iLine].Count;
+                       Selection.Start.iChar < lines[Selection.Start.iLine].GetDisplayWidth(this.TabLength);
             }
             set { isReplaceMode = value; }
         }
@@ -1618,7 +1635,7 @@ namespace FastColoredTextBoxNS
         {
             set
             {
-                if (scrollBars)
+                if (this.scrollBars)
                 {
                     if (!base.AutoScroll)
                         base.AutoScroll = true;
@@ -1645,7 +1662,7 @@ namespace FastColoredTextBoxNS
 
             get
             {
-                if (scrollBars)
+                if (this.scrollBars)
                     return base.AutoScrollMinSize;
                 else
                     //return new Size(HorizontalScroll.Maximum, VerticalScroll.Maximum);
@@ -2456,16 +2473,16 @@ namespace FastColoredTextBoxNS
         #endregion
 
         /// <summary>
-        /// Gets length of given line
+        /// Gets the width of the given line.
         /// </summary>
         /// <param name="iLine">Line index</param>
-        /// <returns>Length of line</returns>
-        public int GetLineLength(int iLine)
+        /// <returns>Display width of line</returns>
+        public int GetLineDisplayWidth(int iLine)
         {
             if (iLine < 0 || iLine >= lines.Count)
                 throw new ArgumentOutOfRangeException("iLine", "Line index out of range");
 
-            return lines[iLine].Count;
+            return lines[iLine].GetDisplayWidth(this.TabLength);
         }
 
         /// <summary>
@@ -2479,7 +2496,7 @@ namespace FastColoredTextBoxNS
 
             var sel = new Range(this);
             sel.Start = new Place(0, iLine);
-            sel.End = new Place(lines[iLine].Count, iLine);
+            sel.End = new Place(lines[iLine].GetDisplayWidth(this.TabLength), iLine);
             return sel;
         }
 
@@ -2497,7 +2514,7 @@ namespace FastColoredTextBoxNS
         public void GoEnd()
         {
             if (lines.Count > 0)
-                Selection.Start = new Place(lines[lines.Count - 1].Count, lines.Count - 1);
+                Selection.Start = new Place(lines[lines.Count - 1].GetDisplayWidth(this.TabLength), lines.Count - 1);
             else
                 Selection.Start = new Place(0, 0);
 
@@ -2595,9 +2612,13 @@ namespace FastColoredTextBoxNS
                     lines.Manager.ExecuteCommand(new ClearSelectedCommand(TextSource));
 
                 //insert virtual spaces
-                if(this.TextSource.Count > 0)
-                if (Selection.IsEmpty && Selection.Start.iChar > GetLineLength(Selection.Start.iLine) && VirtualSpace)
-                    InsertVirtualSpaces();
+                if (this.TextSource.Count > 0)
+                {
+                    if (Selection.IsEmpty && Selection.Start.iChar > GetLineDisplayWidth(Selection.Start.iLine) && VirtualSpace)
+                    {
+                        InsertVirtualSpaces();
+                    }
+                }
 
                 lines.Manager.ExecuteCommand(new InsertTextCommand(TextSource, text));
                 if (updating <= 0 && jumpToCaret)
@@ -2665,7 +2686,7 @@ namespace FastColoredTextBoxNS
             try
             {
                 if (lines.Count > 0)
-                    Selection.Start = new Place(lines[lines.Count - 1].Count, lines.Count - 1);
+                    Selection.Start = new Place(lines[lines.Count - 1].GetDisplayWidth(this.TabLength), lines.Count - 1);
                 else
                     Selection.Start = new Place(0, 0);
 
@@ -2697,7 +2718,7 @@ namespace FastColoredTextBoxNS
                     lines.Manager.ExecuteCommand(new ClearSelectedCommand(TextSource));
 
                 //insert virtual spaces
-                if (Selection.IsEmpty && Selection.Start.iChar > GetLineLength(Selection.Start.iLine) && VirtualSpace)
+                if (Selection.IsEmpty && Selection.Start.iChar > GetLineDisplayWidth(Selection.Start.iLine) && VirtualSpace)
                     InsertVirtualSpaces();
 
                 //insert char
@@ -2713,7 +2734,7 @@ namespace FastColoredTextBoxNS
 
         private void InsertVirtualSpaces()
         {
-            int lineLength = GetLineLength(Selection.Start.iLine);
+            int lineLength = GetLineDisplayWidth(Selection.Start.iLine);
             int count = Selection.Start.iChar - lineLength;
             Selection.BeginUpdate();
             try
@@ -2771,48 +2792,57 @@ namespace FastColoredTextBoxNS
             Invalidate();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         internal void Recalc()
         {
-            if (!needRecalc)
+            if (!this.needRecalc)
                 return;
 
 #if debug
             var sw = Stopwatch.StartNew();
 #endif
 
-            needRecalc = false;
-            //calc min left indent
-            LeftIndent = LeftPadding;
-            long maxLineNumber = LinesCount + lineNumberStartValue - 1;
-            int charsForLineNumber = 2 + (maxLineNumber > 0 ? (int) Math.Log10(maxLineNumber) : 0);
+            this.needRecalc = false;
 
-            // If there are reserved character for line numbers: correct this
-            if (this.ReservedCountOfLineNumberChars + 1 > charsForLineNumber)
-                charsForLineNumber = this.ReservedCountOfLineNumberChars + 1;
+            this.LeftIndent = this.LeftPadding;
 
-            if (Created)
+            if (this.Created)
             {
-                if (ShowLineNumbers)
-                    LeftIndent += charsForLineNumber*CharWidth + MIN_LEFT_INDENT + 1;
+                if (this.ShowLineNumbers)
+                {
+                    // the ident contains the line numbers, thus indent depends on the number of lines
+                    long maxLineNumber = this.LinesCount + this.lineNumberStartValue - 1;
+                    int charsForLineNumber = 2 + (maxLineNumber > 0 ? (int)Math.Log10(maxLineNumber) : 0);
+                    // If there are reserved character for line numbers: correct this
+                    if (this.ReservedCountOfLineNumberChars + 1 > charsForLineNumber)
+                    {
+                        charsForLineNumber = this.ReservedCountOfLineNumberChars + 1;
+                    }
+                    this.LeftIndent += charsForLineNumber * this.CharWidth + MIN_LEFT_INDENT + 1;
+                }
 
                 //calc wordwrapping
-                if (needRecalcWordWrap)
+                if (this.needRecalcWordWrap)
                 {
                     RecalcWordWrap(needRecalcWordWrapInterval.X, needRecalcWordWrapInterval.Y);
                     needRecalcWordWrap = false;
                 }
             }
             else
+            {
                 needRecalc = true;
+            }
 
             //calc max line length and count of wordWrapLines
-            this.maxLineLength = RecalcMaxLineLength();
+            UpdateLineDimensions();
 
             //adjust AutoScrollMinSize
             int minWidth;
-            CalcMinAutosizeWidth(out minWidth, ref this.maxLineLength);
+            CalcMinAutosizeWidth(out minWidth, ref this.maxLineWidth);
             
-            AutoScrollMinSize = new Size(minWidth, this.TextHeight + Paddings.Top + Paddings.Bottom);
+            this.AutoScrollMinSize = new Size(minWidth, this.TextHeight + Paddings.Top + Paddings.Bottom);
             UpdateScrollbars();
 #if debug
             sw.Stop();
@@ -2823,68 +2853,85 @@ namespace FastColoredTextBoxNS
         private void CalcMinAutosizeWidth(out int minWidth, ref int _maxLineLength)
         {
             //adjust AutoScrollMinSize
-            minWidth = LeftIndent + _maxLineLength*CharWidth + 2 + Paddings.Left + Paddings.Right;
-            if (wordWrap)
-                switch (WordWrapMode)
+
+            // calc the minimum width of the control
+            minWidth = this.LeftIndent + _maxLineLength*CharWidth + 2 + Paddings.Left + Paddings.Right;
+            if (this.wordWrap)
+            {
+                switch (this.WordWrapMode)
                 {
                     case WordWrapMode.WordWrapControlWidth:
                     case WordWrapMode.CharWrapControlWidth:
                         _maxLineLength = Math.Min(_maxLineLength,
-                                                 (ClientSize.Width - LeftIndent - Paddings.Left - Paddings.Right)/
+                                                 (ClientSize.Width - LeftIndent - Paddings.Left - Paddings.Right) /
                                                  CharWidth);
                         minWidth = 0;
                         break;
                     case WordWrapMode.WordWrapPreferredWidth:
                     case WordWrapMode.CharWrapPreferredWidth:
                         _maxLineLength = Math.Min(_maxLineLength, PreferredLineWidth);
-                        minWidth = LeftIndent + PreferredLineWidth*CharWidth + 2 + Paddings.Left + Paddings.Right;
+                        minWidth = LeftIndent + PreferredLineWidth * CharWidth + 2 + Paddings.Left + Paddings.Right;
                         break;
                 }
+            }
         }
 
+        // recalculate for a single line
         private void RecalcScrollByOneLine(int iLine)
         {
-            if (iLine >= lines.Count)
-                return;
+            if (iLine >= this.lines.Count)
+                return; // out of range
 
-            int _maxLineLength = lines[iLine].Count;
-            if (this.maxLineLength < _maxLineLength && !WordWrap)
-                this.maxLineLength = _maxLineLength;
+            int lineDisplayWidth = lines[iLine].GetDisplayWidth(this.TabLength);
+            if (this.maxLineWidth < lineDisplayWidth && !this.WordWrap)
+            {
+                this.maxLineWidth = lineDisplayWidth;
+            }
 
             int minWidth;
-            CalcMinAutosizeWidth(out minWidth, ref _maxLineLength);
+            CalcMinAutosizeWidth(out minWidth, ref lineDisplayWidth);
 
-            if (AutoScrollMinSize.Width < minWidth)
-                AutoScrollMinSize = new Size(minWidth, AutoScrollMinSize.Height);
+            if (this.AutoScrollMinSize.Width < minWidth)
+            {
+                this.AutoScrollMinSize = new Size(minWidth, this.AutoScrollMinSize.Height);
+            }
         }
 
-        private int RecalcMaxLineLength()
+
+        /// <summary>
+        /// Updates this.TextHeight, this.maxLineLength and lineInfo.startY for each LineInfo.
+        /// </summary>
+        private void UpdateLineDimensions()
         {
-            int currentMaxLineLength = 0;
+            int currentMaxLineWidth = 0;
 
             // first line start after the top padding
             int currentHeight = this.Paddings.Top;
 
-            for (int i = 0; i < lines.Count; i++)
+            for (int i = 0; i < this.lines.Count; i++)
             {
-                int lineLength = this.lines.GetLineLength(i);
                 LineInfo lineInfo = this.LineInfos[i];
-                if (lineLength > currentMaxLineLength && lineInfo.VisibleState == VisibleState.Visible)
+                if (lineInfo.VisibleState == VisibleState.Visible) 
                 {
-                    // found a line that is longer
-                    currentMaxLineLength = lineLength;
+                    int lineWidth = this.lines[i].GetDisplayWidth(this.TabLength);
+                    if (lineWidth > currentMaxLineWidth)
+                    {
+                        // found a line that is longer
+                        currentMaxLineWidth = lineWidth;
+                    }
                 }
                 lineInfo.startY = currentHeight;
 
+                // a line can span multiple wraps 
                 currentHeight += lineInfo.WordWrapStringsCount * this.CharHeight + lineInfo.bottomPadding;
                 
-                this.LineInfos[i] = lineInfo;
+                this.LineInfos[i] = lineInfo; // it's a struct so update the value in the list
             }
 
-            // substract the padding so we get the actual height of the lines
+            // substract the padding so we get the actual height of all the lines
             this.TextHeight = currentHeight - this.Paddings.Top;
 
-            return currentMaxLineLength;
+            this.maxLineWidth = currentMaxLineWidth;
         }
 
         private int GetMaxLineWordWrapedWidth()
@@ -2908,6 +2955,7 @@ namespace FastColoredTextBoxNS
             int maxCharsPerLine = 0;
             bool charWrap = false;
 
+            // correct toLine in case it's out of bounds
             toLine = Math.Min(this.LinesCount - 1, toLine);
 
             switch (this.WordWrapMode)
@@ -2940,9 +2988,9 @@ namespace FastColoredTextBoxNS
                     {
                         LineInfo li = this.LineInfos[iLine];
 
-                        li.wordWrapIndent = WordWrapAutoIndent
-                                                ? lines[iLine].StartSpacesCount + WordWrapIndent
-                                                : WordWrapIndent;
+                        li.wordWrapIndent = this.WordWrapAutoIndent
+                                                ? lines[iLine].StartSpacesCount + this.WordWrapIndent
+                                                : this.WordWrapIndent;
 
                         if (this.WordWrapMode == WordWrapMode.Custom)
                         {
@@ -2962,13 +3010,13 @@ namespace FastColoredTextBoxNS
                     }
                 }
             }
-            needRecalc = true;
+            this.needRecalc = true;
         }
 
         protected override void OnClientSizeChanged(EventArgs e)
         {
             base.OnClientSizeChanged(e);
-            if (WordWrap)
+            if (this.WordWrap)
             {
                 //RecalcWordWrap(0, lines.Count - 1);
                 NeedRecalc(false, true);
@@ -3032,7 +3080,7 @@ namespace FastColoredTextBoxNS
             else if (rect.Left < LeftIndent)
                 h += rect.Left - LeftIndent;
             //
-            if (!Multiline)
+            if (!this.Multiline)
                 v = 0;
             //
             v = Math.Max(VerticalScroll.Minimum, v); // was 0
@@ -3042,6 +3090,7 @@ namespace FastColoredTextBoxNS
             {
                 if (VerticalScroll.Visible || !ShowScrollBars)
                     VerticalScroll.Value = Math.Min(v, VerticalScroll.Maximum);
+
                 if (HorizontalScroll.Visible || !ShowScrollBars)
                     HorizontalScroll.Value = Math.Min(h, HorizontalScroll.Maximum);
             }
@@ -3061,7 +3110,7 @@ namespace FastColoredTextBoxNS
         /// </summary>
         public void UpdateScrollbars()
         {
-            if (ShowScrollBars)
+            if (this.ShowScrollBars)
             {
                 //some magic for update scrolls
                 base.AutoScrollMinSize -= new Size(1, 0);
@@ -3643,7 +3692,7 @@ namespace FastColoredTextBoxNS
                 ClearSelected();
             }
 
-            Selection.Start = new Place(Math.Min(lines[iLine].Count, Math.Max(0, oldStart.iChar + needToInsert)), iLine);
+            Selection.Start = new Place(Math.Min(lines[iLine].GetDisplayWidth(this.TabLength), Math.Max(0, oldStart.iChar + needToInsert)), iLine);
         }
 
         /// <summary>
@@ -4006,7 +4055,7 @@ namespace FastColoredTextBoxNS
                         return;
                     }
 
-                    if (Selection.IsEmpty || !Selection.Contains(p) || this.TextSource[p.iLine].Count <= p.iChar || ReadOnly)
+                    if (Selection.IsEmpty || !Selection.Contains(p) || this.TextSource[p.iLine].GetDisplayWidth(this.TabLength) <= p.iChar || ReadOnly)
                         OnMouseClickText(e);
                     else
                     {
@@ -4023,7 +4072,7 @@ namespace FastColoredTextBoxNS
                     int iLine = PointToPlaceSimple(e.Location).iLine;
                     lineSelectFrom = iLine;
                     Selection.Start = new Place(0, iLine);
-                    Selection.End = new Place(GetLineLength(iLine), iLine);
+                    Selection.End = new Place(GetLineDisplayWidth(iLine), iLine);
                     Selection.EndUpdate();
                     Invalidate();
                 }
@@ -4247,11 +4296,11 @@ namespace FastColoredTextBoxNS
                     if (iLine < lineSelectFrom)
                     {
                         Selection.Start = new Place(0, iLine);
-                        Selection.End = new Place(GetLineLength(lineSelectFrom), lineSelectFrom);
+                        Selection.End = new Place(GetLineDisplayWidth(lineSelectFrom), lineSelectFrom);
                     }
                     else
                     {
-                        Selection.Start = new Place(GetLineLength(iLine), iLine);
+                        Selection.Start = new Place(GetLineDisplayWidth(iLine), iLine);
                         Selection.End = new Place(0, lineSelectFrom);
                     }
 
@@ -4316,7 +4365,7 @@ namespace FastColoredTextBoxNS
             int fromX = p.iChar;
             int toX = p.iChar;
 
-            for (int i = p.iChar; i < lines[p.iLine].Count; i++)
+            for (int i = p.iChar; i < lines[p.iLine].GetDisplayWidth(this.TabLength); i++)
             {
                 char c = lines[p.iLine][i].c;
                 if (char.IsLetterOrDigit(c) || c == '_')
@@ -4414,7 +4463,7 @@ namespace FastColoredTextBoxNS
             if (x > toDisplay)
                 x = toDisplay + 1; // after the last character of the wrapped string
             if (x > lines[iLine].GetDisplayWidth(this.TabLength))
-                x = lines[iLine].Count; // after the last character of the entire string
+                x = lines[iLine].GetDisplayWidth(this.TabLength); // after the last character of the entire string
 
 #if debug
             Console.WriteLine("PointToPlace: " + sw.ElapsedMilliseconds);
@@ -4493,7 +4542,7 @@ namespace FastColoredTextBoxNS
         {
             var r = new Range(this);
             r.Start = new Place(0, Math.Min(fromLine, toLine));
-            r.End = new Place(lines[Math.Max(fromLine, toLine)].Count, Math.Max(fromLine, toLine));
+            r.End = new Place(lines[Math.Max(fromLine, toLine)].GetDisplayWidth(this.TabLength), Math.Max(fromLine, toLine));
             OnTextChanged(new TextChangedEventArgs(r));
         }
 
@@ -4550,7 +4599,7 @@ namespace FastColoredTextBoxNS
                     if (updatingRange.Start.iLine > args.ChangedRange.Start.iLine)
                         updatingRange.Start = new Place(0, args.ChangedRange.Start.iLine);
                     if (updatingRange.End.iLine < args.ChangedRange.End.iLine)
-                        updatingRange.End = new Place(lines[args.ChangedRange.End.iLine].Count,
+                        updatingRange.End = new Place(lines[args.ChangedRange.End.iLine].GetDisplayWidth(this.TabLength),
                                                       args.ChangedRange.End.iLine);
                     updatingRange = updatingRange.GetIntersectionWith(Range);
                 }
@@ -4567,8 +4616,10 @@ namespace FastColoredTextBoxNS
             MarkLinesAsChanged(args.ChangedRange);
             ClearFoldingState(args.ChangedRange);
             //
-            if (wordWrap)
+            if (this.wordWrap)
+            {
                 RecalcWordWrap(args.ChangedRange.Start.iLine, args.ChangedRange.End.iLine);
+            }
             //
             base.OnTextChanged(args);
 
@@ -4725,40 +4776,34 @@ namespace FastColoredTextBoxNS
         {
             if (place.iLine >= LineInfos.Count)
                 return new Point();
-            int y = LineInfos[place.iLine].startY;
+            int y = LineInfos[place.iLine].startY; // vertical start of set of the line
             //
             int iWordWrapIndex = LineInfos[place.iLine].GetWordWrapStringIndex(place.iChar);
-            y += iWordWrapIndex*CharHeight;
+            y += iWordWrapIndex*CharHeight; // add wrapped lines offset
 
             //string offsetChars = this.lines[place.iLine].Text.Substring(0, place.iChar);
             //int offset = TextSizeCalculator.TextWidth(offsetChars, this.TabLength);
             //int x = (offset - LineInfos[place.iLine].GetWordWrapStringStartPosition(iWordWrapIndex)) * CharWidth;
-            int x = (place.iChar - LineInfos[place.iLine].GetWordWrapStringStartPosition(iWordWrapIndex))*CharWidth;
 
-            if(iWordWrapIndex > 0 )
+            int startStringIndex = LineInfos[place.iLine].GetWordWrapStringStartPosition(iWordWrapIndex); // string-index
+            int startDisplay = this.lines[place.iLine].GetDisplayWidthForSubString(startStringIndex, this.TabLength);
+
+            int x = (place.iChar - startDisplay) * CharWidth;
+
+            if (iWordWrapIndex > 0)
+            {
                 x += LineInfos[place.iLine].wordWrapIndent * CharWidth;
+            }
 
-            //
+            // correct for scrollbar
             y = y - VerticalScroll.Value;
+            // include indentation, padding and scrolling
             x = LeftIndent + Paddings.Left + x - HorizontalScroll.Value;
 
             return new Point(x, y);
         }
 
-        /// <summary>
-        /// Get text of given line
-        /// </summary>
-        /// <param name="iLine">Line index</param>
-        /// <returns>Text</returns>
-        public string GetLineText(int iLine)
-        {
-            if (iLine < 0 || iLine >= lines.Count)
-                throw new ArgumentOutOfRangeException("iLine", "Line index out of range");
-            var sb = new StringBuilder(lines[iLine].Count);
-            foreach (Char c in lines[iLine])
-                sb.Append(c.c);
-            return sb.ToString();
-        }
+
 
         /// <summary>
         /// Exapnds folded block
@@ -4766,8 +4811,8 @@ namespace FastColoredTextBoxNS
         /// <param name="iLine">Start line</param>
         public virtual void ExpandFoldedBlock(int iLine)
         {
-            if (iLine < 0 || iLine >= lines.Count)
-                throw new ArgumentOutOfRangeException("iLine", "Line index out of range");
+            if (iLine < 0 || iLine >= lines.Count) throw new ArgumentOutOfRangeException("iLine", "Line index out of range");
+            
             //find all hidden lines afetr iLine
             int end = iLine;
             for (; end < LinesCount - 1; end++)
@@ -4978,7 +5023,7 @@ namespace FastColoredTextBoxNS
             //find first non empty line
             for (; from <= to; from++)
             {
-                if (GetLineText(from).Trim().Length > 0)
+                if (this.lines.GetLineText(from).Trim().Length > 0)
                 {
                     //hide lines
                     for (int i = from + 1; i <= to; i++)
@@ -5097,7 +5142,7 @@ namespace FastColoredTextBoxNS
 
             for (int i = from; i <= to; i++)
             {
-                if (lines[i].Count == 0) continue;
+                if (lines[i].Count == 0) continue; // no need to use DisplayWidth here because we want to know if line is empty
                 Selection.Start = new Place(startChar, i);
                 lines.Manager.ExecuteCommand(new InsertTextCommand(TextSource, new String(' ', TabLength)));
             }
@@ -5160,10 +5205,10 @@ namespace FastColoredTextBoxNS
 
             for (int i = from; i <= to; i++)
             {
-                if (startCharIndex > lines[i].Count)
+                if (startCharIndex > lines[i].GetDisplayWidth(this.TabLength))
                     continue;
                 // Select first characters from the line
-                int endIndex = Math.Min(this.lines[i].Count, startCharIndex + this.TabLength);
+                int endIndex = Math.Min(this.lines[i].GetDisplayWidth(this.TabLength), startCharIndex + this.TabLength);
                 string wasteText = this.lines[i].Text.Substring(startCharIndex, endIndex-startCharIndex);
 
                 // Only select the first whitespace characters
@@ -5304,7 +5349,7 @@ namespace FastColoredTextBoxNS
             // then that line won't be included in the auto indent block
             if (r.End.iChar == 0 && r.End.iLine != r.Start.iLine)
             {
-                r.End = new Place(lines[r.End.iLine - 1].Count, r.End.iLine - 1);
+                r.End = new Place(lines[r.End.iLine - 1].GetDisplayWidth(this.TabLength), r.End.iLine - 1);
             }
             for (int i = r.Start.iLine; i <= r.End.iLine; i++)
                 DoAutoIndent(i);
@@ -5337,7 +5382,7 @@ namespace FastColoredTextBoxNS
                 lines.Manager.ExecuteCommand(new InsertTextCommand(TextSource, prefix));
             }
             Selection.Start = new Place(0, from);
-            Selection.End = new Place(lines[to].Count, to);
+            Selection.End = new Place(lines[to].GetDisplayWidth(this.TabLength), to);
             needRecalc = true;
             lines.Manager.EndAutoUndoCommands();
             Selection.EndUpdate();
@@ -5371,7 +5416,7 @@ namespace FastColoredTextBoxNS
                 }
             }
             Selection.Start = new Place(0, from);
-            Selection.End = new Place(lines[to].Count, to);
+            Selection.End = new Place(lines[to].GetDisplayWidth(this.TabLength), to);
             needRecalc = true;
             lines.Manager.EndAutoUndoCommands();
             Selection.EndUpdate();
@@ -5431,7 +5476,7 @@ namespace FastColoredTextBoxNS
                     return;
                 Selection.BeginUpdate();
                 Selection.Start = new Place(0, iStart);
-                Selection.End = new Place(lines[iEnd].Count, iEnd);
+                Selection.End = new Place(lines[iEnd].GetDisplayWidth(this.TabLength), iEnd);
                 Selection.EndUpdate();
                 Invalidate();
                 return;
@@ -5634,6 +5679,7 @@ namespace FastColoredTextBoxNS
 
         #region Drag and drop
 
+        // True when DragDrop is busy and is allowed.
         internal bool IsDragDrop { get; set; }
 
 
@@ -5762,9 +5808,6 @@ namespace FastColoredTextBoxNS
             OnScroll(yea);
         }
 
-
-        private const int WM_SETREDRAW = 0xB;
-
         void middleClickScrollingTimer_Tick(object sender, EventArgs e)
         {
             if (IsDisposed)
@@ -5862,33 +5905,7 @@ namespace FastColoredTextBoxNS
 
             // Calculate inverse color
             Color inverseColor = Color.FromArgb(100, (byte)~this.BackColor.R, (byte)~this.BackColor.G, (byte)~this.BackColor.B);
-            using (SolidBrush inverseColorBrush = new SolidBrush(inverseColor))
-            {
-                var p = middleClickScrollingOriginPoint;
-
-                var state = gr.Save();
-
-                gr.SmoothingMode = SmoothingMode.HighQuality;
-                gr.TranslateTransform(p.X, p.Y);
-                gr.FillEllipse(inverseColorBrush, -2, -2, 4, 4);
-
-                if (ableToScrollVertically) DrawTriangle(gr, inverseColorBrush);
-                gr.RotateTransform(90);
-                if (ableToScrollHorizontally) DrawTriangle(gr, inverseColorBrush);
-                gr.RotateTransform(90);
-                if (ableToScrollVertically) DrawTriangle(gr, inverseColorBrush);
-                gr.RotateTransform(90);
-                if (ableToScrollHorizontally) DrawTriangle(gr, inverseColorBrush);
-
-                gr.Restore(state);
-            }
-        }
-
-        private void DrawTriangle(Graphics g, Brush brush)
-        {
-            const int size = 5;
-            var points = new Point[] { new Point(size, 2 * size), new Point(0, 3 * size), new Point(-size, 2 * size) };
-            g.FillPolygon(brush, points);
+            Rendering.DrawMiddleClickScrolling(gr, middleClickScrollingOriginPoint, inverseColor, ableToScrollVertically, ableToScrollHorizontally);
         }
 
         #endregion

@@ -62,7 +62,7 @@ namespace Tester
 
         public void AppendText(string text, BlockDesc desc)
         {
-            var oldPlace = new Place(GetLineLength(LinesCount - 1), LinesCount - 1);
+            var oldPlace = new Place(GetLineDisplayWidth(LinesCount - 1), LinesCount - 1);
 
             if (desc.IsBold)
                 AppendText(text, boldStyle);
@@ -77,7 +77,7 @@ namespace Tester
             {
                 //save descriptor in sorted list
                 desc.Start = oldPlace;
-                desc.End = new Place(GetLineLength(LinesCount - 1), LinesCount - 1);
+                desc.End = new Place(GetLineDisplayWidth(LinesCount - 1), LinesCount - 1);
                 blockDescs.Add(desc);
             }
         }

@@ -404,9 +404,12 @@ namespace FastColoredTextBoxNS
 
         //Y coordinate of line on screen
         internal int startY;
+
         internal int bottomPadding;
+
         //indent of secondary wordwrap strings (in chars)
         internal int wordWrapIndent;
+
         /// <summary>
         /// Visible state
         /// </summary>

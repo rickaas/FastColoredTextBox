@@ -28,7 +28,7 @@ namespace FastColoredTextBoxNS.CommandImpl
                     temp.Add(i);
                 }
                 textbox.RemoveLines(temp);
-                textbox.Selection.Start = new Place(textbox.GetLineLength(iLine), iLine);
+                textbox.Selection.Start = new Place(textbox.GetLineDisplayWidth(iLine), iLine);
                 textbox.SelectedText = "\n" + text;
                 textbox.Selection.Start = new Place(prevSelection.Start.iChar, prevSelection.Start.iLine + 1);
                 textbox.Selection.End = new Place(prevSelection.End.iChar, prevSelection.End.iLine + 1);
