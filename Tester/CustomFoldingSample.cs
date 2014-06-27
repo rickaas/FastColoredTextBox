@@ -26,7 +26,7 @@ namespace Tester
             {
                 var line = fctb.TextSource[i];
                 var spacesCount = line.StartSpacesCount;
-                if (spacesCount == line.Count) //empty line
+                if (spacesCount == line.GetDisplayWidth(fctb.TabLength)) //empty line
                     continue;
 
                 if (currentIndent < spacesCount)

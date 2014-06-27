@@ -53,7 +53,7 @@ namespace FastColoredTextBoxNS.Bookmarking
                 {
                     if (items[i].LineIndex == e.Index - 1 && e.Count == 1)
                     {
-                        if (tb.TextSource[e.Index - 1].StartSpacesCount == tb.TextSource[e.Index - 1].Count)
+                        if (tb.TextSource[e.Index - 1].StartSpacesCount == tb.TextSource[e.Index - 1].GetDisplayWidth(tb.TabLength))
                         {
                             items[i].LineIndex = items[i].LineIndex + e.Count;
                         }

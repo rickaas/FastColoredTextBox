@@ -80,7 +80,7 @@ namespace FastColoredTextBoxNS
                         {
                             int d = 0;
                             int spaceCount = line.StartSpacesCount;
-                            if (textbox.lines[iLine.Value].Count <= spaceCount ||
+                            if (textbox.lines[iLine.Value].GetDisplayWidth(textbox.TabLength) <= spaceCount ||
                                 textbox.lines[iLine.Value][spaceCount].c == ' ')
                             {
                                 d = textbox.CharHeight;

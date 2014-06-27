@@ -123,8 +123,15 @@ namespace FastColoredTextBoxNS
             {
                 for (int y = fromLine; y <= toLine; y++)
                 {
+                    // this is not a column selection so if we are at the first line of the range we start the range at fromChar, 
+                    // otherwise we start at the start of the line
                     int fromX = y == fromLine ? fromChar : 0;
-                    int toX = y == toLine ? Math.Min(toChar - 1, tb.TextSource[y].Count - 1) : tb.TextSource[y].Count - 1;
+
+                    // this is not a column selection so if we are at the last line of a range we end at the min(line_end, toChar),
+                    // otherwise we end at the end of the line
+                    var lineWidth = tb.TextSource[y].GetDisplayWidth(tb.TabLength);
+                    // FIXME: are the minus 1 needed
+                    int toX = y == toLine ? Math.Min(toChar - 1, lineWidth - 1) : tb.TextSource[y].Count - 1;
                     for (int x = fromX; x <= toX; x++)
                     {
                         sb.Append(tb.TextSource[y][x].c);
@@ -186,11 +193,6 @@ namespace FastColoredTextBoxNS
                     {
                         sb.Append(c);
                     }
-                    /*
-                    for (int x = fromX; x <= toX; x++)
-                    {
-                        sb.Append(tb.TextSource[y][x].c);
-                    }*/
 
                     if (y != toLine && fromLine != toLine)
                     {
@@ -316,7 +318,7 @@ namespace FastColoredTextBoxNS
             else
             {
                 end = new Place(0, 0);
-                start = new Place(tb.TextSource[tb.LinesCount - 1].Count, tb.LinesCount - 1);
+                start = new Place(tb.TextSource[tb.LinesCount - 1].GetDisplayWidth(tb.TabLength), tb.LinesCount - 1);
             }
             if (this == tb.Selection)
                 tb.Invalidate();
@@ -329,7 +331,7 @@ namespace FastColoredTextBoxNS
         {
             get
             {
-                if (Start.iChar >= tb.TextSource[Start.iLine].Count)
+                if (Start.iChar >= tb.TextSource[Start.iLine].GetDisplayWidth(tb.TabLength))
                     return '\n';
                 return tb.TextSource[Start.iLine][Start.iChar].c;
             }
@@ -342,7 +344,7 @@ namespace FastColoredTextBoxNS
         {
             get
             {
-                if (Start.iChar > tb.TextSource[Start.iLine].Count)
+                if (Start.iChar > tb.TextSource[Start.iLine].GetDisplayWidth(tb.TabLength))
                     return '\n';
                 if (Start.iChar <= 0)
                     return '\n';
@@ -407,10 +409,10 @@ namespace FastColoredTextBoxNS
             if (ColumnSelectionMode)
                 return GoRightThroughFolded_ColumnSelectionMode();
 
-            if (start.iLine >= tb.LinesCount - 1 && start.iChar >= tb.TextSource[tb.LinesCount - 1].Count)
+            if (start.iLine >= tb.LinesCount - 1 && start.iChar >= tb.TextSource[tb.LinesCount - 1].GetDisplayWidth(tb.TabLength))
                 return false;
 
-            if (start.iChar < tb.TextSource[start.iLine].Count)
+            if (start.iChar < tb.TextSource[start.iLine].GetDisplayWidth(tb.TabLength))
                 start.Offset(1, 0);
             else
                 start = new Place(0, start.iLine + 1);
@@ -448,7 +450,7 @@ namespace FastColoredTextBoxNS
             if (start.iChar > 0)
                 start.Offset(-1, 0);
             else
-                start = new Place(tb.TextSource[start.iLine - 1].Count, start.iLine - 1);
+                start = new Place(tb.TextSource[start.iLine - 1].GetDisplayWidth(tb.TabLength), start.iLine - 1);
 
             preferedPos = -1;
             end = start;
@@ -488,7 +490,7 @@ namespace FastColoredTextBoxNS
                 {
                     int i = tb.FindPrevVisibleLine(start.iLine);
                     if (i == start.iLine) return;
-                    start = new Place(tb.TextSource[i].Count, i);
+                    start = new Place(tb.TextSource[i].GetDisplayWidth(tb.TabLength), i);
                 }
             }
 
@@ -803,7 +805,7 @@ namespace FastColoredTextBoxNS
             if (tb.LineInfos[start.iLine].VisibleState != VisibleState.Visible)
                 return;
 
-            start = new Place(tb.TextSource[start.iLine].Count, start.iLine);
+            start = new Place(tb.TextSource[start.iLine].GetDisplayWidth(tb.TabLength), start.iLine);
 
             if (!shift)
                 end = start;
@@ -1236,6 +1238,7 @@ namespace FastColoredTextBoxNS
             end = new Place(tb.GetLineDisplayWidth(end.iLine), end.iLine);
         }
 
+        // FIXME: \t can span multiple places
         IEnumerator<Place> IEnumerable<Place>.GetEnumerator()
         {
             if (ColumnSelectionMode)
@@ -1254,7 +1257,7 @@ namespace FastColoredTextBoxNS
             for (int y = fromLine; y <= toLine; y++)
             {
                 int fromX = y == fromLine ? fromChar : 0;
-                int toX = y == toLine ? Math.Min(toChar - 1, tb.TextSource[y].Count - 1) : tb.TextSource[y].Count - 1;
+                int toX = y == toLine ? Math.Min(toChar - 1, tb.TextSource[y].GetDisplayWidth(tb.TabLength) - 1) : tb.TextSource[y].GetDisplayWidth(tb.TabLength) - 1;
                 for (int x = fromX; x <= toX; x++)
                     yield return new Place(x, y);
             }
@@ -1490,7 +1493,7 @@ namespace FastColoredTextBoxNS
         {
             ColumnSelectionMode = false;
 
-            start = new Place(tb.TextSource[tb.LinesCount - 1].Count, tb.LinesCount - 1);
+            start = new Place(tb.TextSource[tb.LinesCount - 1].GetDisplayWidth(tb.TabLength), tb.LinesCount - 1);
             if (tb.LineInfos[Start.iLine].VisibleState != VisibleState.Visible)
                 GoLeft(shift);
             if (!shift)
@@ -1668,7 +1671,7 @@ namespace FastColoredTextBoxNS
             var r = Clone();
 
             r.Normalize();
-            if (r.end.iChar >= tb.TextSource[end.iLine].Count) return false;
+            if (r.end.iChar >= tb.TextSource[end.iLine].GetDisplayWidth(tb.TabLength)) return false; // after last character
             if (ColumnSelectionMode)
                 r.GoRight_ColumnSelectionMode();
             else

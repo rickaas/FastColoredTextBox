@@ -47,7 +47,7 @@ namespace FastColoredTextBoxNS.CommandImpl
                 if (iLine < ts.Count)
                     tb.Selection.Start = new Place(0, iLine);
                 else
-                    tb.Selection.Start = new Place(ts[ts.Count - 1].Count, ts.Count - 1);
+                    tb.Selection.Start = new Place(ts[ts.Count - 1].GetDisplayWidth(tb.TabLength), ts.Count - 1);
 
                 InsertCharCommand.InsertLine(ts);
                 tb.Selection.Start = new Place(0, iLine);
