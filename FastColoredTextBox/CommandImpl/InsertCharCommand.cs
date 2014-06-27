@@ -45,7 +45,9 @@ namespace FastColoredTextBoxNS.CommandImpl
                     break;
                 default:
                     ts.CurrentTB.ExpandBlock(sel.Start.iLine);
-                    ts[sel.Start.iLine].RemoveAt(sel.Start.iChar);
+                    int stringIndex = ts[sel.Start.iLine].DisplayIndexToStringIndex(sel.Start.iChar, ts.CurrentTB.TabLength);
+                    ts[sel.Start.iLine].RemoveAt(stringIndex);
+                    //ts[sel.Start.iLine].RemoveAt(sel.Start.iChar);
                     ts.CurrentTB.Selection.Start = sel.Start;
                     break;
             }
@@ -164,7 +166,9 @@ namespace FastColoredTextBoxNS.CommandImpl
                     else
                     {
                         deletedChar = ts[tb.Selection.Start.iLine][tb.Selection.Start.iChar - 1].c;
-                        ts[tb.Selection.Start.iLine].RemoveAt(tb.Selection.Start.iChar - 1);
+                        int stringIndex = ts[tb.Selection.Start.iLine].DisplayIndexToStringIndex(tb.Selection.Start.iChar - 1, tb.TabLength);
+                        ts[tb.Selection.Start.iLine].RemoveAt(stringIndex);
+                        //ts[tb.Selection.Start.iLine].RemoveAt(tb.Selection.Start.iChar - 1);
                         tb.Selection.Start = new Place(tb.Selection.Start.iChar - 1, tb.Selection.Start.iLine);
                     }
                     break;
@@ -177,7 +181,11 @@ namespace FastColoredTextBoxNS.CommandImpl
                             spaceCountNextTabStop = tb.TabLength;
 
                         for (int i = 0; i < spaceCountNextTabStop; i++)
-                            ts[tb.Selection.Start.iLine].Insert(tb.Selection.Start.iChar, new Char(' '));
+                        {
+                            int stringIndex = ts[tb.Selection.Start.iLine].DisplayIndexToStringIndex(tb.Selection.Start.iChar, tb.TabLength);
+                            ts[tb.Selection.Start.iLine].Insert(stringIndex, new Char(' '));
+                            //ts[tb.Selection.Start.iLine].Insert(tb.Selection.Start.iChar, new Char(' '));
+                        }
 
                         tb.Selection.Start = new Place(tb.Selection.Start.iChar + spaceCountNextTabStop,
                                                        tb.Selection.Start.iLine);
@@ -185,12 +193,18 @@ namespace FastColoredTextBoxNS.CommandImpl
                     else
                     {
                         // allow \t as characters, do not convert to spaces
-                        ts[tb.Selection.Start.iLine].Insert(tb.Selection.Start.iChar, new Char(c));
+                        int stringIndex = ts[tb.Selection.Start.iLine].DisplayIndexToStringIndex(tb.Selection.Start.iChar, tb.TabLength);
+                        ts[tb.Selection.Start.iLine].Insert(stringIndex, new Char(c));
+                        //ts[tb.Selection.Start.iLine].Insert(tb.Selection.Start.iChar, new Char(c));
                         tb.Selection.Start = new Place(tb.Selection.Start.iChar + 1, tb.Selection.Start.iLine);
                     }
                     break;
                 default:
-                    ts[tb.Selection.Start.iLine].Insert(tb.Selection.Start.iChar, new Char(c));
+                    {
+                        int stringIndex = ts[tb.Selection.Start.iLine].DisplayIndexToStringIndex(tb.Selection.Start.iChar, tb.TabLength);
+                        ts[tb.Selection.Start.iLine].Insert(stringIndex, new Char(c));
+                    }
+                    //ts[tb.Selection.Start.iLine].Insert(tb.Selection.Start.iChar, new Char(c));
                     tb.Selection.Start = new Place(tb.Selection.Start.iChar + 1, tb.Selection.Start.iLine);
                     break;
             }

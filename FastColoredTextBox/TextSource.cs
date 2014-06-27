@@ -16,8 +16,11 @@ namespace FastColoredTextBoxNS
     {
         readonly protected List<Line> lines = new List<Line>();
 
+        // use to set Line.UniqueId
         int lastLineUniqueId;
+
         public CommandManager Manager { get; protected set; }
+
         FastColoredTextBox currentTB;
 
         /// <summary>
@@ -255,16 +258,29 @@ namespace FastColoredTextBoxNS
             return lines.IndexOf(item);
         }
 
+        /// <summary>
+        /// InsertLine
+        /// </summary>
+        /// <param name="index"></param>
+        /// <param name="item"></param>
         public virtual void Insert(int index, Line item)
         {
             InsertLine(index, item);
         }
 
+        /// <summary>
+        /// RemoveLine
+        /// </summary>
+        /// <param name="index"></param>
         public virtual void RemoveAt(int index)
         {
             RemoveLine(index);
         }
 
+        /// <summary>
+        /// InsertLine at the end
+        /// </summary>
+        /// <param name="item"></param>
         public virtual void Add(Line item)
         {
             InsertLine(Count, item);
@@ -342,9 +358,9 @@ namespace FastColoredTextBoxNS
             };
         }
 
-        public virtual int GetLineLength(int i)
+        public virtual int GetLineWidth(int i)
         {
-            return lines[i].Count;
+            return lines[i].GetDisplayWidth(this.currentTB.TabLength);
         }
 
         /// <summary>

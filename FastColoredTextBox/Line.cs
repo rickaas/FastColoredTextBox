@@ -111,6 +111,11 @@ namespace FastColoredTextBoxNS
             }
         }
 
+        /// <summary>
+        /// Returns the string index
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
         public int IndexOf(Char item)
         {
             return chars.IndexOf(item);
@@ -152,6 +157,10 @@ namespace FastColoredTextBoxNS
             }
         }
 
+        /// <summary>
+        /// Add the Char at the end
+        /// </summary>
+        /// <param name="item"></param>
         public void Add(Char item)
         {
             chars.Add(item);
@@ -205,6 +214,13 @@ namespace FastColoredTextBoxNS
             return CharHelper.ToCharEnumerable(this.chars);
         }
 
+        /// <summary>
+        /// Because displayIndex could point to a place inside a tab the out charDisplayIndex 
+        /// returns the display index for a real character in this line.
+        /// </summary>
+        /// <param name="displayIndex"></param>
+        /// <param name="tabLength"></param>
+        /// <returns></returns>
         internal int DisplayIndexToCharDisplayPosition(int displayIndex, int tabLength)
         {
             int charDisplayIndex;
@@ -213,9 +229,18 @@ namespace FastColoredTextBoxNS
             return charDisplayIndex;
         }
 
+        internal int DisplayIndexToStringIndex(int displayIndex, int tabLength)
+        {
+            int charDisplayIndex;
+            int charIndex;
+            this.DisplayIndexToPosition(displayIndex, tabLength, out charDisplayIndex, out charIndex);
+            return charIndex;
+        }
+
         /// <summary>
         /// Because displayIndex could point to a place inside a tab the out charDisplayIndex 
         /// returns the display index for a real character in this line.
+        /// If display index is beyond the last character we use the last character.
         /// </summary>
         /// <param name="displayIndex"></param>
         /// <param name="tabLength"></param>
@@ -226,7 +251,7 @@ namespace FastColoredTextBoxNS
             // first convert to fromDisplayIndex to a character index in this line
             int currentDisplayIndex = 0;
             int currentCharacterIndex = 0;
-            while (currentDisplayIndex < displayIndex)
+            while (currentDisplayIndex < displayIndex && currentCharacterIndex < this.chars.Count)
             {
                 char c = this[currentCharacterIndex].c;
 
@@ -332,7 +357,7 @@ namespace FastColoredTextBoxNS
             DisplayIndexToPosition(fromDisplayIndex, tabLength, out currentDisplayIndex, out currentCharacterIndex);
 
             // we now have the currentCharacterIndex that corresponds to the fromDisplayIndex
-            while (currentDisplayIndex < toDisplayIndex)
+            while (currentDisplayIndex < toDisplayIndex && currentCharacterIndex < this.chars.Count)
             {
                 char c = this[currentCharacterIndex].c;
                 int displayWidth = 1;
@@ -368,6 +393,11 @@ namespace FastColoredTextBoxNS
 
         public int GetDisplayWidthForSubString(int stringIndex, int tabLength) 
         {
+            // FIXME: What if stringIndex < 0
+            if (stringIndex < 0)
+            {
+                return 0;
+            }
             var chars = CharHelper.ToCharEnumerable(this.chars.GetRange(0, stringIndex));
             return TextSizeCalculator.TextWidth(chars, tabLength);
         }

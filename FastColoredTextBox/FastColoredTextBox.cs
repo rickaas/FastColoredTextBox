@@ -620,8 +620,8 @@ namespace FastColoredTextBoxNS
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int SelectionStart
         {
-            get { return Math.Min(TextSourceUtil.PlaceToPosition(this.lines, Selection.Start), TextSourceUtil.PlaceToPosition(this.lines, Selection.End)); }
-            set { Selection.Start = TextSourceUtil.PositionToPlace(this.lines, value); }
+            get { return Math.Min(TextSourceUtil.PlaceToDisplayPosition(this.lines, Selection.Start), TextSourceUtil.PlaceToDisplayPosition(this.lines, Selection.End)); }
+            set { Selection.Start = TextSourceUtil.DisplayPositionToPlace(this.lines, value); }
         }
 
         /// <summary>
@@ -631,11 +631,13 @@ namespace FastColoredTextBoxNS
         [DefaultValue(0)]
         public int SelectionLength
         {
-            get { return Math.Abs(TextSourceUtil.PlaceToPosition(this.lines, Selection.Start) - TextSourceUtil.PlaceToPosition(this.lines, Selection.End)); }
+            get { return Math.Abs(TextSourceUtil.PlaceToDisplayPosition(this.lines, Selection.Start) - TextSourceUtil.PlaceToDisplayPosition(this.lines, Selection.End)); }
             set
             {
                 if (value > 0)
-                    Selection.End = TextSourceUtil.PositionToPlace(this.lines, SelectionStart + value);
+                {
+                    Selection.End = TextSourceUtil.DisplayPositionToPlace(this.lines, SelectionStart + value);
+                }
             }
         }
 
@@ -4493,16 +4495,6 @@ namespace FastColoredTextBoxNS
         }
 
         /// <summary>
-        /// Gets nearest absolute text position for given point
-        /// </summary>
-        /// <param name="point">Point</param>
-        /// <returns>Position</returns>
-        public int PointToPosition(Point point)
-        {
-            return TextSourceUtil.PlaceToPosition(this.lines, PointToPlace(point));
-        }
-
-        /// <summary>
         /// Fires TextChanging event
         /// </summary>
         public virtual void OnTextChanging(ref string text)
@@ -4755,16 +4747,9 @@ namespace FastColoredTextBoxNS
             Invalidate();
         }
 
-
-
-
-
-        /// <summary>
-        /// Gets absolute char position from char position
-        /// </summary>
-        public Point PositionToPoint(int pos)
+        public Point DisplayPositionToPoint(int pos)
         {
-            return PlaceToPoint(TextSourceUtil.PositionToPlace(this.lines, pos));
+            return PlaceToPoint(TextSourceUtil.DisplayPositionToPlace(this.lines, pos));
         }
 
         /// <summary>

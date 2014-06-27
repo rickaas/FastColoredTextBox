@@ -111,7 +111,7 @@ namespace FastColoredTextBoxNS
             sf.Alignment = StringAlignment.Center;
             sf.LineAlignment = StringAlignment.Near;
 
-            var zeroPoint = target.PositionToPoint(0);
+            var zeroPoint = target.DisplayPositionToPoint(0);
             zeroPoint = PointToClient(target.PointToScreen(zeroPoint));
 
             using (var pen = new Pen(TickColor))

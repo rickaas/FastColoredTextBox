@@ -7,20 +7,6 @@ namespace FastColoredTextBoxNS
 {
     public static class RangeUtil
     {
-        /// <summary>
-        /// Get range of text
-        /// </summary>
-        /// <param name="textbox"></param>
-        /// <param name="fromPos">Absolute start position</param>
-        /// <param name="toPos">Absolute finish position</param>
-        /// <returns>Range</returns>
-        public static Range GetRange(FastColoredTextBox textbox, int fromPos, int toPos)
-        {
-            var sel = new Range(textbox);
-            sel.Start = TextSourceUtil.PositionToPlace(textbox.lines, fromPos);
-            sel.End = TextSourceUtil.PositionToPlace(textbox.lines, toPos);
-            return sel;
-        }
 
         /// <summary>
         /// Get range of text

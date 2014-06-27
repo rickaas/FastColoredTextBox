@@ -342,12 +342,12 @@ namespace FastColoredTextBoxNS
             base.Clear();
         }
 
-        public override int GetLineLength(int i)
+        public override int GetLineWidth(int i)
         {
             if (base.lines[i] == null)
                 return 0;
             else
-                return base.lines[i].Count;
+                return base.lines[i].GetDisplayWidth(this.CurrentTB.TabLength);
         }
 
         public override bool LineHasFoldingStartMarker(int iLine)
