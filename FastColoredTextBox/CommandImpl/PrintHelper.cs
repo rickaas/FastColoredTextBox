@@ -19,6 +19,8 @@ namespace FastColoredTextBoxNS.CommandImpl
         {
             Range sel = textbox.Selection.Clone();
             sel.Normalize();
+            throw new NotImplementedException();
+            /*
             int start = TextSourceUtil.PlaceToPosition(textbox.lines, sel.Start) - sel.Start.iLine;
             int len = sel.Text.Length - (sel.End.iLine - sel.Start.iLine);
             return string.Format(
@@ -33,6 +35,7 @@ try{{
 window.status = ""#print"";
 </script>",
                 start, len);
+             */
         }
 
         /// <summary>
@@ -57,6 +60,7 @@ window.status = ""#print"";
         /// </summary>
         public static void Print(FastColoredTextBox textbox, Range range, PrintDialogSettings settings)
         {
+            throw new NotImplementedException();
             //prepare export with wordwrapping
             var exporter = new ExportToHTML();
             exporter.UseBr = true;
