@@ -18,6 +18,9 @@ namespace FastColoredTextBoxNS
         /// <param name="line"></param>
         public static void CalcCutOffs(List<int> cutOffPositions, int maxCharsPerLine, int maxCharsPerSecondaryLine, bool allowIME, bool charWrap, Line line)
         {
+            return;
+            /*
+             * // Don't support wordwrap stuff
             if (maxCharsPerSecondaryLine < 1) maxCharsPerSecondaryLine = 1;
             if (maxCharsPerLine < 1) maxCharsPerLine = 1;
 
@@ -63,6 +66,7 @@ namespace FastColoredTextBoxNS
                     maxCharsPerLine = maxCharsPerSecondaryLine;
                 }
             }
+             */
         }
     }
 }

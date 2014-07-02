@@ -109,7 +109,9 @@ namespace Tester
                 if (CurrentTB.Selection.Start.iChar > 0)
                 {
                     //current char (before caret)
-                    var c = CurrentTB.TextSource[CurrentTB.Selection.Start.iLine][CurrentTB.Selection.Start.iChar - 1];
+                    var line = CurrentTB.TextSource[CurrentTB.Selection.Start.iLine];
+                    //var c = line[CurrentTB.Selection.Start.iChar - 1];
+                    var c = line.GetCharAtDisplayPosition(CurrentTB.Selection.Start.iChar - 1, CurrentTB.TabLength);
                     //green Style
                     var greenStyleIndex = Range.ToStyleIndex(iGreenStyle);
                     //if char contains green style then block popup menu
@@ -495,7 +497,7 @@ namespace Tester
             {
                 Range r = tbFindChanged?CurrentTB.Range.Clone():CurrentTB.Selection.Clone();
                 tbFindChanged = false;
-                r.End = new Place(CurrentTB.TextSource[CurrentTB.LinesCount - 1].Count, CurrentTB.LinesCount - 1);
+                r.End = new Place(CurrentTB.TextSource[CurrentTB.LinesCount - 1].GetDisplayWidth(CurrentTB.TabLength), CurrentTB.LinesCount - 1);
                 var pattern = Regex.Escape(tbFind.Text);
                 foreach (var found in r.GetRanges(pattern))
                 {
@@ -922,16 +924,16 @@ namespace Tester
             using(Brush brush = new SolidBrush(pen.Color))
             foreach (var place in range)
             {
-                switch (tb.TextSource[place].c)
+                /*switch (tb.TextSource[place].c)
                 {
                     case ' ':
                         var point = tb.PlaceToPoint(place);
                         point.Offset(tb.CharWidth / 2, tb.CharHeight / 2);
                         gr.DrawLine(pen, point.X, point.Y, point.X + 1, point.Y);
                         break;
-                }
+                }*/
 
-                if (tb.TextSource[place.iLine].Count - 1 == place.iChar)
+                if (tb.TextSource[place.iLine].GetDisplayWidth(tb.TabLength) - 1 == place.iChar)
                 {
                     var point = tb.PlaceToPoint(place);
                     point.Offset(tb.CharWidth, 0);

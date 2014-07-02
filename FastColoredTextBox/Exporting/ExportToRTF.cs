@@ -52,12 +52,15 @@ namespace FastColoredTextBoxNS
 
             if (IncludeLineNumbers)
                 tempSB.AppendFormat(@"{{\cf{1} {0}}}\tab", currentLine + 1, lineNumberColor);
-            //
+            
+            // when need to loop over DisplayChar instead of Places...
+            /*
             foreach (Place p in r)
             {
                 Char c = r.tb.TextSource[p.iLine][p.iChar];
                 if (c.style != currentStyleId)
                 {
+                    // flush when style changed
                     Flush(sb, tempSB, currentStyleId);
                     currentStyleId = c.style;
                     styles[currentStyleId] = null;
@@ -120,7 +123,7 @@ namespace FastColoredTextBoxNS
 
             sb.Insert(0, @"{\rtf1\ud\deff0");
             sb.AppendLine(@"}");
-
+            */
             return sb.ToString();
         }
 

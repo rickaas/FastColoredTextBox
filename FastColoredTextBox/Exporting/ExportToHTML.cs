@@ -73,7 +73,9 @@ namespace FastColoredTextBoxNS
             //
             if (IncludeLineNumbers)
                 tempSB.AppendFormat("<span class=lineNumber>{0}</span>  ", currentLine + 1);
-            //
+            
+            // when need to loop over DisplayChar instead of Places...
+            /*
             bool hasNonSpace = false;
             foreach (Place p in r)
             {
@@ -138,7 +140,7 @@ namespace FastColoredTextBoxNS
 
             if (IncludeLineNumbers)
                 sb.Insert(0, LineNumbersCSS);
-
+            */
             return sb.ToString();
         }
 

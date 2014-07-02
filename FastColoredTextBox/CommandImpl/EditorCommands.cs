@@ -57,11 +57,13 @@ namespace FastColoredTextBoxNS.CommandImpl
                 exp.UseBr = false;
                 exp.UseNbsp = false;
                 exp.UseStyleTag = true;
-                string html = "<pre>" + exp.GetHtml(textbox.Selection.Clone()) + "</pre>";
+                
                 var data = new DataObject();
                 data.SetData(DataFormats.UnicodeText, true, textbox.Selection.Text);
-                data.SetData(DataFormats.Html, PrepareHtmlForClipboard(html));
-                data.SetData(DataFormats.Rtf, new ExportToRTF().GetRtf(textbox.Selection.Clone()));
+                // RL: Disable HTML and RTF copy formats
+                //string html = "<pre>" + exp.GetHtml(textbox.Selection.Clone()) + "</pre>";
+                //data.SetData(DataFormats.Html, PrepareHtmlForClipboard(html));
+                //data.SetData(DataFormats.Rtf, new ExportToRTF().GetRtf(textbox.Selection.Clone()));
                 //
                 var thread = new Thread(() => SetClipboard(data));
                 thread.SetApartmentState(ApartmentState.STA);

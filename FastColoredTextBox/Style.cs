@@ -172,6 +172,8 @@ namespace FastColoredTextBoxNS
                 //IME mode
                 if (range.tb.ImeAllowed)
                 {
+                    // RL: ImeAllowed not supported
+                    /*
                     for (int i = range.Start.iChar; i < range.End.iChar; i++)
                     {
                         SizeF size = CharHelper.GetCharSize(f, line[i].c);
@@ -194,7 +196,7 @@ namespace FastColoredTextBoxNS
 
                         gr.Restore(gs);
                         x += dx;
-                    }
+                    }*/
                 }
                 else
                 {
@@ -356,11 +358,23 @@ namespace FastColoredTextBoxNS
                 int firstNonSpaceSymbolX = position.X;
                 
                 //find first non space symbol
+                var line = range.tb.TextSource[range.Start.iLine];
+                var displayCharRange = line.GetStyleCharForDisplayRange(range.Start.iChar, range.End.iChar, range.tb.TabLength);
+                foreach (var d in displayCharRange)
+                {
+                    if (!CharHelper.IsSpaceChar(d.Char.c))
+                        break;
+                    else
+                        firstNonSpaceSymbolX += d.DisplayWidth * range.tb.CharWidth;
+                }
+                /*
                 for (int i = range.Start.iChar; i < range.End.iChar; i++)
+                {
                     if (range.tb.TextSource[range.Start.iLine][i].c != ' ')
                         break;
                     else
                         firstNonSpaceSymbolX += range.tb.CharWidth;
+                }*/
 
                 //create marker
                 range.tb.visibleMarkers.Add(new FoldedAreaMarker(range.Start.iLine, new Rectangle(firstNonSpaceSymbolX, position.Y, position.X + (range.End.iChar - range.Start.iChar) * range.tb.CharWidth - firstNonSpaceSymbolX, range.tb.CharHeight)));

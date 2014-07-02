@@ -68,7 +68,8 @@ namespace FastColoredTextBoxNS.CommandImpl
             foreach (var r in range.GetSubRanges(true))
             {
                 var line = ts.CurrentTB.TextSource[r.Start.iLine];
-                var lineIsEmpty = r.End < r.Start && line.StartSpacesCount == line.Count;
+                //var lineIsEmpty = r.End < r.Start && line.StartSpacesCount == line.Count;
+                var lineIsEmpty = r.End < r.Start && line.StartSpacesCount == line.GetDisplayWidth(ts.CurrentTB.TabLength);
                 if (!lineIsEmpty)
                 {
                     var insertedText = lines[iLine % lines.Length];

@@ -165,7 +165,8 @@ namespace FastColoredTextBoxNS.CommandImpl
                     }
                     else
                     {
-                        deletedChar = ts[tb.Selection.Start.iLine][tb.Selection.Start.iChar - 1].c;
+                        //deletedChar = ts[tb.Selection.Start.iLine][tb.Selection.Start.iChar - 1].c;
+                        deletedChar = ts[tb.Selection.Start.iLine].GetCharAtDisplayPosition(tb.Selection.Start.iChar - 1, tb.TabLength).c;
                         int stringIndex = ts[tb.Selection.Start.iLine].DisplayIndexToStringIndex(tb.Selection.Start.iChar - 1, tb.TabLength);
                         ts[tb.Selection.Start.iLine].RemoveAt(stringIndex);
                         //ts[tb.Selection.Start.iLine].RemoveAt(tb.Selection.Start.iChar - 1);
@@ -237,7 +238,7 @@ namespace FastColoredTextBoxNS.CommandImpl
                 return;
             tb.ExpandBlock(i);
             tb.ExpandBlock(i + 1);
-            int pos = ts[i].Count;
+            int pos = ts[i].GetDisplayWidth(ts.CurrentTB.TabLength); // move selection to this position
 
             // save the next lines EolFormat, because this one is the one that is saved
             EolFormat format = ts[i + 1].EolFormat;
@@ -246,13 +247,16 @@ namespace FastColoredTextBoxNS.CommandImpl
             if(ts[i].Count == 0)
                 ts.RemoveLine(i);
             else*/
-            if (ts[i + 1].Count == 0)
+            if (ts[i + 1].IsEmpty)
             {
+                // next line is empty just remove it
                 ts.RemoveLine(i + 1);
             }
             else
             {
-                ts[i].AddRange(ts[i + 1]);
+                // add characters of next line to this line
+                ts[i].AddRange(ts[i + 1].GetCharStructEnumerable());
+                //ts[i].AddRange(ts[i + 1]);
                 ts.RemoveLine(i + 1);
             }
             // set the EolFormat to the next lines EolFormat.
@@ -264,7 +268,8 @@ namespace FastColoredTextBoxNS.CommandImpl
 
         /// <summary>
         /// Chop an existing line into two lines.
-        /// This means that this method is also called when pressing enter on the start of a line.
+        /// This means that this method is also called when pressing enter on the start of a line..
+        /// pos is a display position.
         /// </summary>
         /// <param name="iLine"></param>
         /// <param name="pos"></param>
@@ -281,8 +286,15 @@ namespace FastColoredTextBoxNS.CommandImpl
             }
             newLine.EolFormat = format;
 
+            // add characters starting at pos until the end
+            var chars = ts[iLine].GetCharStructEnumerableStartingAtPosition(pos, ts.CurrentTB.TabLength);
+            newLine.AddRange(chars);
+            /*
             for (int i = pos; i < ts[iLine].Count; i++)
+            {
                 newLine.Add(ts[iLine][i]);
+            }*/
+
             ts[iLine].RemoveRange(pos, ts[iLine].Count - pos);
             //
             ts.InsertLine(iLine + 1, newLine);

@@ -107,7 +107,7 @@ namespace FastColoredTextBoxNS
             DefaultStyle = new TextStyle(null, null, FontStyle.Regular);
         }
 
-
+        /*
         /// <summary>
         /// Returns list of styles of given place
         /// </summary>
@@ -123,6 +123,28 @@ namespace FastColoredTextBoxNS
                         result.Add(Styles[i]);
 #else
                 var s = (ushort)this[place.iLine][place.iChar].style;
+                for (int i = 0; i < 16; i++)
+                    if ((s & ((ushort)1) << i) != 0)
+                        result.Add(Styles[i]);
+#endif
+            }
+
+            return result;
+        }
+        */
+        public List<Style> GetStylesOfPlace(Place place)
+        {
+            var result = new List<Style>();
+            if (place.iLine < this.Count && place.iChar < this[place.iLine].GetDisplayWidth(CurrentTB.TabLength))
+            {
+#if Styles32
+                var s = (uint) this[place.iLine][place.iChar].style;
+                for (int i = 0; i < 32; i++)
+                    if ((s & ((uint) 1) << i) != 0)
+                        result.Add(Styles[i]);
+#else
+                var s = (ushort)this.lines[place.iLine].GetCharAtDisplayPosition(place.iChar, CurrentTB.TabLength).style;
+                //var s = (ushort)this[place.iLine][place.iChar].style;
                 for (int i = 0; i < 16; i++)
                     if ((s & ((ushort)1) << i) != 0)
                         result.Add(Styles[i]);
@@ -243,15 +265,22 @@ namespace FastColoredTextBoxNS
             }
         }
 
+        /*
         /// <summary>
         /// Gets or sets Char (which can have styleId for given place).
         /// This property does not fire OnTextChanged event.
         /// </summary>
         public Char this[Place place]
         {
-            get { return lines[place.iLine][place.iChar]; }
-            set { lines[place.iLine][place.iChar] = value; }
-        }
+            get 
+            { 
+                return lines[place.iLine][place.iChar]; 
+            }
+            set 
+            { 
+                lines[place.iLine][place.iChar] = value; 
+            }
+        }*/
 
         public virtual int IndexOf(Line item)
         {
@@ -372,7 +401,7 @@ namespace FastColoredTextBoxNS
         {
             if (iLine < 0 || iLine >= lines.Count) throw new ArgumentOutOfRangeException("iLine", "Line index out of range");
 
-            var sb = new StringBuilder(this.lines[iLine].Count);
+            var sb = new StringBuilder(this.lines[iLine].StringLength);
             foreach (Char c in this.lines[iLine])
             {
                 sb.Append(c.c);

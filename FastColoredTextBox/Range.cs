@@ -97,7 +97,7 @@ namespace FastColoredTextBoxNS
         }
 
         // FIXME
-        private void GetText(out string text, out List<Place> charIndexToPlace)
+        private void _GetText(out string text, out List<Place> charIndexToPlace)
         {
             //try get cached text
             if (tb.TextVersion == cachedTextVersion)
@@ -131,12 +131,19 @@ namespace FastColoredTextBoxNS
                     // otherwise we end at the end of the line
                     var lineWidth = tb.TextSource[y].GetDisplayWidth(tb.TabLength);
                     // FIXME: are the minus 1 needed
-                    int toX = y == toLine ? Math.Min(toChar - 1, lineWidth - 1) : tb.TextSource[y].Count - 1;
+                    int toX = y == toLine ? Math.Min(toChar - 1, lineWidth - 1) : lineWidth - 1;
+
+                    var chars = tb.TextSource[y].GetCharsForDisplayRange(fromX, toX, tb.TabLength);
+                    foreach (char c in chars)
+                    {
+                        sb.Append(c);
+                    }
+                    /*
                     for (int x = fromX; x <= toX; x++)
                     {
                         sb.Append(tb.TextSource[y][x].c);
                         charIndexToPlace.Add(new Place(x, y));
-                    }
+                    }*/
                     if (y != toLine && fromLine != toLine)
                     {
                         foreach (char c in Environment.NewLine)
@@ -333,7 +340,10 @@ namespace FastColoredTextBoxNS
             {
                 if (Start.iChar >= tb.TextSource[Start.iLine].GetDisplayWidth(tb.TabLength))
                     return '\n';
-                return tb.TextSource[Start.iLine][Start.iChar].c;
+
+                // TODO: Check if this works for tabs?
+                return tb.TextSource[Start.iLine].GetCharAtDisplayPosition(Start.iChar, tb.TabLength).c;
+                //return tb.TextSource[Start.iLine][Start.iChar].c;
             }
         }
 
@@ -348,7 +358,9 @@ namespace FastColoredTextBoxNS
                     return '\n';
                 if (Start.iChar <= 0)
                     return '\n';
-                return tb.TextSource[Start.iLine][Start.iChar - 1].c;
+
+                return tb.TextSource[Start.iLine].GetCharAtDisplayPosition(Start.iChar - 1, tb.TabLength).c;
+                //return tb.TextSource[Start.iLine][Start.iChar - 1].c;
             }
         }
 
@@ -479,7 +491,7 @@ namespace FastColoredTextBoxNS
                     int dx = -1;
                     // if prev char if \t
                     int indexInString = TextSizeCalculator.CharIndexAtCharWidthPoint(tb.TextSource[start.iLine].GetCharEnumerable(), this.tb.TabLength, start.iChar);
-                    if (tb.TextSource[start.iLine][indexInString - 1].c == '\t')
+                    if (tb.TextSource[start.iLine].GetCharAtStringIndex(indexInString - 1).c == '\t')
                     {
                         int prevCharDisplayIndex = tb.TextSource[start.iLine].GetDisplayWidthForSubString(indexInString-1, this.tb.TabLength);
                         dx = -1 * TextSizeCalculator.TabWidth(prevCharDisplayIndex, this.tb.TabLength);
@@ -902,13 +914,15 @@ namespace FastColoredTextBoxNS
             for (int y = fromLine; y <= toLine; y++)
             {
                 int fromX = y == fromLine ? fromChar : 0;
-                int toX = y == toLine ? Math.Min(toChar - 1, tb.TextSource[y].Count - 1) : tb.TextSource[y].Count - 1;
+                int toX = y == toLine ? Math.Min(toChar - 1, tb.TextSource[y].GetDisplayWidth(tb.TabLength) - 1) : tb.TextSource[y].GetDisplayWidth(tb.TabLength) - 1;
+                tb.TextSource[y].AppendStyleForDisplayRange(fromX, toX, styleIndex, tb.TabLength);
+                /*
                 for (int x = fromX; x <= toX; x++)
                 {
                     Char c = tb.TextSource[y][x];
                     c.style |= styleIndex;
                     tb.TextSource[y][x] = c;
-                }
+                }*/
             }
         }
 
@@ -939,13 +953,15 @@ namespace FastColoredTextBoxNS
             for (int y = fromLine; y <= toLine; y++)
             {
                 int fromX = y == fromLine ? fromChar : 0;
-                int toX = y == toLine ? Math.Min(toChar - 1, tb.TextSource[y].Count - 1) : tb.TextSource[y].Count - 1;
+                int toX = y == toLine ? Math.Min(toChar - 1, tb.TextSource[y].GetDisplayWidth(tb.TabLength) - 1) : tb.TextSource[y].GetDisplayWidth(tb.TabLength) - 1;
+                tb.TextSource[y].ClearStyleForDisplayRange(fromX, toX, styleIndex, tb.TabLength);
+                /*
                 for (int x = fromX; x <= toX; x++)
                 {
                     Char c = tb.TextSource[y][x];
                     c.style &= ~styleIndex;
                     tb.TextSource[y][x] = c;
-                }
+                }*/
             }
             //
             tb.Invalidate();
@@ -1091,14 +1107,16 @@ namespace FastColoredTextBoxNS
 
             var fts = tb.TextSource as FileTextSource; //<----!!!! ugly
 
-            //enumaerate lines
-            for (int iLine = Start.iLine; iLine <= End.iLine; iLine++)
+            //enumerate lines
+            for (int iLine = this.Start.iLine; iLine <= this.End.iLine; iLine++)
             {
                 //
                 bool isLineLoaded = fts != null ? fts.IsLineLoaded(iLine) : true;
-                //
-                var r = new Range(tb, new Place(0, iLine), new Place(tb.TextSource[iLine].Count, iLine));
-                if (iLine == Start.iLine || iLine == End.iLine)
+                // span entire line
+                var r = new Range(tb, new Place(0, iLine), new Place(tb.TextSource[iLine].GetDisplayWidth(tb.TabLength), iLine));
+
+                // only match on partial line for the start and end
+                if (iLine == this.Start.iLine || iLine == this.End.iLine)
                     r = r.GetIntersectionWith(this);
 
                 foreach (var foundRange in r.GetRanges(regex))
@@ -1125,13 +1143,13 @@ namespace FastColoredTextBoxNS
             //
             var fts = tb.TextSource as FileTextSource; //<----!!!! ugly
 
-            //enumaerate lines
+            //enumerate lines
             for (int iLine = End.iLine; iLine >= Start.iLine; iLine--)
             {
                 //
                 bool isLineLoaded = fts != null ? fts.IsLineLoaded(iLine) : true;
-                //
-                var r = new Range(tb, new Place(0, iLine), new Place(tb.TextSource[iLine].Count, iLine));
+                // span entire line
+                var r = new Range(tb, new Place(0, iLine), new Place(tb.TextSource[iLine].GetDisplayWidth(tb.TabLength), iLine));
                 if (iLine == Start.iLine || iLine == End.iLine)
                     r = r.GetIntersectionWith(this);
 
@@ -1279,25 +1297,31 @@ namespace FastColoredTextBoxNS
                 {
                     foreach (var p in GetEnumerator_ColumnSelectionMode())
                     {
-                        yield return tb.TextSource[p];
+                        //yield return tb.TextSource[p];
+                        yield break;
                     }
                     yield break;
                 }
 
                 int fromLine = Math.Min(end.iLine, start.iLine);
                 int toLine = Math.Max(end.iLine, start.iLine);
-                int fromChar = FromX;
-                int toChar = ToX;
+                int fromChar = FromX; // display position
+                int toChar = ToX; // display position
                 if (fromLine < 0) yield break;
-                //
+
+                // return the continuous stream of characters
                 for (int y = fromLine; y <= toLine; y++)
                 {
+                    // fromX == 0 when not on the first line of the selection
                     int fromX = y == fromLine ? fromChar : 0;
-                    int toX = y == toLine ? Math.Min(toChar - 1, tb.TextSource[y].Count - 1) : tb.TextSource[y].Count - 1;
+
+                    int toX = y == toLine ? Math.Min(toChar - 1, tb.TextSource[y].GetDisplayWidth(tb.TabLength) - 1) : tb.TextSource[y].GetDisplayWidth(tb.TabLength) - 1;
+
                     var line = tb.TextSource[y];
-                    for (int x = fromX; x <= toX; x++)
+
+                    foreach (var displayChar in line.GetStyleCharForDisplayRange(fromX, toX, tb.TabLength))
                     {
-                        yield return line[x];
+                        yield return displayChar.Char;
                     }
                 }
             }
@@ -1319,7 +1343,7 @@ namespace FastColoredTextBoxNS
         /// <param name="style">Allowed style for fragment</param>
         /// <param name="allowLineBreaks"></param>
         /// <returns>Range of found fragment</returns>
-        public Range GetFragment(Style style, bool allowLineBreaks)
+        public Range _GetFragment(Style style, bool allowLineBreaks)
         {
             var mask = tb.GetStyleIndexMask(new Style[] { style });
             //
@@ -1334,7 +1358,8 @@ namespace FastColoredTextBoxNS
                 }
                 if (r.Start.iChar < tb.GetLineDisplayWidth(r.Start.iLine))
                 {
-                    if ((tb.TextSource[r.Start].style & mask) == 0)
+                    //if ((tb.TextSource[r.Start].style & mask) == 0)
+                    if (false)
                     {
                         r.GoRightThroughFolded();
                         break;
@@ -1353,7 +1378,8 @@ namespace FastColoredTextBoxNS
                 }
                 if (r.Start.iChar < tb.GetLineDisplayWidth(r.Start.iLine))
                 {
-                    if ((tb.TextSource[r.Start].style & mask) == 0)
+                    //if ((tb.TextSource[r.Start].style & mask) == 0)
+                    if (false)
                     {
                         break;
                     }
@@ -1365,7 +1391,7 @@ namespace FastColoredTextBoxNS
         }
 
         /// <summary>
-        /// Get fragment of text around Start place. Returns maximal mathed to pattern fragment.
+        /// Get fragment of text around Start place. Returns maximal matched to pattern fragment.
         /// </summary>
         /// <param name="allowedSymbolsPattern">Allowed chars pattern for fragment</param>
         /// <param name="options"></param>
@@ -1522,6 +1548,11 @@ namespace FastColoredTextBoxNS
             }
         }
 
+        /// <summary>
+        /// When in ColumnSelectionMode return the range for each line.
+        /// </summary>
+        /// <param name="includeEmpty"></param>
+        /// <returns></returns>
         public IEnumerable<Range> GetSubRanges(bool includeEmpty)
         {
             if (!ColumnSelectionMode)
@@ -1530,13 +1561,14 @@ namespace FastColoredTextBoxNS
                 yield break;
             }
 
-            var rect = Bounds;
+            var rect = this.Bounds;
             for (int y = rect.iStartLine; y <= rect.iEndLine; y++)
             {
-                if (rect.iStartChar > tb.TextSource[y].Count && !includeEmpty)
+                // start is beyond the last char of the current line
+                if (rect.iStartChar > tb.TextSource[y].GetDisplayWidth(tb.TabLength) && !includeEmpty)
                     continue;
 
-                var r = new Range(tb, rect.iStartChar, y, Math.Min(rect.iEndChar, tb.TextSource[y].Count), y);
+                var r = new Range(tb, rect.iStartChar, y, Math.Min(rect.iEndChar, tb.TextSource[y].GetDisplayWidth(tb.TabLength)), y);
                 yield return r;
             }
         }
@@ -1575,10 +1607,13 @@ namespace FastColoredTextBoxNS
                             foreach (var sr in GetSubRanges(false))
                             {
                                 line = tb.TextSource[sr.start.iLine];
-                                if (sr.start.iChar < line.Count && sr.start.iChar > 0)
+                                if (sr.start.iChar < line.GetDisplayWidth(tb.TabLength) && sr.start.iChar > 0)
                                 {
-                                    var left = line[sr.start.iChar - 1];
-                                    var right = line[sr.start.iChar];
+                                    //var left = line[sr.start.iChar - 1];
+                                    //var right = line[sr.start.iChar];
+                                    var left = line.GetCharAtDisplayPosition(sr.start.iChar - 1, tb.TabLength);
+                                    var right = line.GetCharAtDisplayPosition(sr.start.iChar, tb.TabLength);
+
                                     if ((left.style & si) != 0 &&
                                         (right.style & si) != 0)
                                     {
@@ -1589,10 +1624,13 @@ namespace FastColoredTextBoxNS
                         }
                         else
                         {
-                            if (start.iChar < line.Count && start.iChar > 0)
+                            if (start.iChar < line.GetDisplayWidth(tb.TabLength) && start.iChar > 0)
                             {
-                                var left = line[start.iChar - 1];
-                                var right = line[start.iChar];
+                                //var left = line[start.iChar - 1];
+                                //var right = line[start.iChar];
+                                var left = line.GetCharAtDisplayPosition(start.iChar - 1, tb.TabLength);
+                                var right = line.GetCharAtDisplayPosition(start.iChar, tb.TabLength);
+
                                 if ((left.style & si) != 0 &&
                                     (right.style & si) != 0) return true;//we are between readonly chars
                             }
@@ -1698,7 +1736,7 @@ namespace FastColoredTextBoxNS
             var boundes = Bounds;
             var endOfLines = true;
             for (int iLine = boundes.iStartLine; iLine <= boundes.iEndLine; iLine++)
-                if (boundes.iEndChar < tb.TextSource[iLine].Count)
+                if (boundes.iEndChar < tb.TextSource[iLine].GetDisplayWidth(tb.TabLength))
                 {
                     endOfLines = false;
                     break;
@@ -1719,36 +1757,50 @@ namespace FastColoredTextBoxNS
             return true;
         }
 
+        /*
+        // some characters span multiple places
+        // TODO: Do we return multiple places for a single TAB, or just 1 place?
         private IEnumerable<Place> GetEnumerator_ColumnSelectionMode()
         {
-            var bounds = Bounds;
+            var bounds = Bounds; // in display coordinates
             if (bounds.iStartLine < 0) yield break;
             //
             for (int y = bounds.iStartLine; y <= bounds.iEndLine; y++)
             {
+                var line = tb.TextSource[y];
+
                 for (int x = bounds.iStartChar; x < bounds.iEndChar; x++)
                 {
                     if (x < tb.TextSource[y].Count)
                         yield return new Place(x, y);
                 }
             }
-        }
+        }*/
 
         private string Text_ColumnSelectionMode
         {
             get
             {
                 StringBuilder sb = new StringBuilder();
-                var bounds = Bounds;
+                var bounds = this.Bounds;
                 if (bounds.iStartLine < 0) return "";
                 //
                 for (int y = bounds.iStartLine; y <= bounds.iEndLine; y++)
                 {
+                    var chars = tb.TextSource[y].GetCharsForDisplayRange(bounds.iStartChar, bounds.iEndChar, tb.TabLength);
+
+                    foreach (char c in chars)
+                    {
+                        sb.Append(c);
+                    }
+                    /*
                     for (int x = bounds.iStartChar; x < bounds.iEndChar; x++)
                     {
                         if (x < tb.TextSource[y].Count)
                             sb.Append(tb.TextSource[y][x].c);
-                    }
+                    }*/
+
+                    // add a newline at the end of each line but not after the last
                     if (bounds.iEndLine != bounds.iStartLine && y != bounds.iEndLine)
                         sb.AppendLine();
                 }

@@ -40,6 +40,7 @@ using FastColoredTextBoxNS.CommandImpl;
 using FastColoredTextBoxNS.EventArgDefs;
 using Microsoft.Win32;
 using Timer = System.Windows.Forms.Timer;
+using System.Linq;
 
 namespace FastColoredTextBoxNS
 {
@@ -4367,6 +4368,21 @@ namespace FastColoredTextBoxNS
             int fromX = p.iChar;
             int toX = p.iChar;
 
+            // start walking forward and keep swallowing letters, digits or underscores
+            var afterPlaceRange = lines[p.iLine].GetStyleCharForDisplayRange(p.iChar, lines[p.iLine].GetDisplayWidth(this.TabLength), this.TabLength);
+            foreach (var dc in afterPlaceRange)
+            {
+                char c = dc.Char.c;
+                if (char.IsLetterOrDigit(c) || c == '_')
+                {
+                    toX = dc.DisplayIndex + 1;
+                }
+                else
+                {
+                    break;
+                }
+            }
+            /*
             for (int i = p.iChar; i < lines[p.iLine].GetDisplayWidth(this.TabLength); i++)
             {
                 char c = lines[p.iLine][i].c;
@@ -4374,8 +4390,21 @@ namespace FastColoredTextBoxNS
                     toX = i + 1;
                 else
                     break;
-            }
+            }*/
 
+            // now walk backwards
+            // FIXME: SLOW!!!
+            var lineRange = lines[p.iLine].GetStyleCharForDisplayRange(0, lines[p.iLine].GetDisplayWidth(this.TabLength), this.TabLength);
+            var reverse = lineRange.Where(x => x.DisplayIndex < p.iChar).Reverse().ToList();
+            foreach (var back in reverse)
+            {
+                char c = back.Char.c;
+                if (char.IsLetterOrDigit(c) || c == '_')
+                    fromX = back.DisplayIndex;
+                else
+                    break;
+            }
+            /*
             for (int i = p.iChar - 1; i >= 0; i--)
             {
                 char c = lines[p.iLine][i].c;
@@ -4383,7 +4412,7 @@ namespace FastColoredTextBoxNS
                     fromX = i;
                 else
                     break;
-            }
+            }*/
 
             Selection = new Range(this, toX, p.iLine, fromX, p.iLine);
         }
@@ -5127,7 +5156,7 @@ namespace FastColoredTextBoxNS
 
             for (int i = from; i <= to; i++)
             {
-                if (lines[i].Count == 0) continue; // no need to use DisplayWidth here because we want to know if line is empty
+                if (lines[i].IsEmpty) continue; // no need to use DisplayWidth here because we want to know if line is empty
                 Selection.Start = new Place(startChar, i);
                 lines.Manager.ExecuteCommand(new InsertTextCommand(TextSource, new String(' ', TabLength)));
             }

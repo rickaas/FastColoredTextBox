@@ -56,18 +56,28 @@ namespace FastColoredTextBoxNS
                 graphics.DrawRectangle(pen, rect);
         }
 
+        /// <summary>
+        /// startLine and endLine are the line-index ranges for which we are drawing
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="textbox"></param>
+        /// <param name="startLine"></param>
+        /// <param name="endLine"></param>
         internal static void DrawFoldingLines(PaintEventArgs e, FastColoredTextBox textbox, int startLine, int endLine)
         {
             e.Graphics.SmoothingMode = SmoothingMode.None;
             using (var pen = new Pen(Color.FromArgb(200, textbox.ServiceLinesColor)) {DashStyle = DashStyle.Dot})
             {
+
                 foreach (var iLine in textbox.foldingPairs)
                 {
+                    // iLine.Key is start of the folding line
+                    // iLine.Value is end of the folding line
                     if (iLine.Key < endLine && iLine.Value > startLine)
                     {
                         Line line = textbox.lines[iLine.Key];
                         int y = textbox.LineInfos[iLine.Key].startY - textbox.VerticalScroll.Value + textbox.CharHeight;
-                        y += y%2;
+                        y += y%2; // RL: Why plus zero or one. Maybe for rounding?
 
                         int y2;
 
@@ -81,8 +91,10 @@ namespace FastColoredTextBoxNS
                             int d = 0;
                             int spaceCount = line.StartSpacesCount;
                             if (textbox.lines[iLine.Value].GetDisplayWidth(textbox.TabLength) <= spaceCount ||
-                                textbox.lines[iLine.Value][spaceCount].c == ' ')
+                                //textbox.lines[iLine.Value][spaceCount].c == ' ')
+                                textbox.lines[iLine.Value].GetCharAtDisplayPosition(spaceCount, textbox.TabLength).c == ' ')
                             {
+                                // Why is y2 correct with one character?
                                 d = textbox.CharHeight;
                             }
                             y2 = textbox.LineInfos[iLine.Value].startY - textbox.VerticalScroll.Value + d;
@@ -96,8 +108,9 @@ namespace FastColoredTextBoxNS
                                 textbox.HorizontalScroll.Value;
                         if (x >= textbox.LeftIndent + textbox.Paddings.Left)
                         {
-                            e.Graphics.DrawLine(pen, x, y >= 0 ? y : 0, x,
-                                                y2 < textbox.ClientSize.Height ? y2 : textbox.ClientSize.Height);
+                            int y_start = y >= 0 ? y : 0;
+                            int y_end = y2 < textbox.ClientSize.Height ? y2 : textbox.ClientSize.Height; // don't draw outside the control
+                            e.Graphics.DrawLine(pen, x, y_start, x, y_end);
                         }
                     }
                 }
@@ -454,7 +467,7 @@ namespace FastColoredTextBoxNS
                     new Point(startX + (iLastFlushedChar + 1) * textbox.CharWidth, y), remainingTextRange);
             }
 
-            if (textbox.EndOfLineStyle != null && line.Count == to + 1)
+            if (textbox.EndOfLineStyle != null && line.StringLength == to + 1)
             {
                 // don't draw EOL for last line
                 bool isLastLine = textbox.LinesCount - 1 == iLine;

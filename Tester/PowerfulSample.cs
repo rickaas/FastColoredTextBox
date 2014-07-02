@@ -381,6 +381,7 @@ namespace Tester
 
         private void rTFToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            MessageBox.Show("Not Supported");
             SaveFileDialog sfd = new SaveFileDialog();
             sfd.Filter = "RTF|*.rtf";
             if (sfd.ShowDialog() == DialogResult.OK)

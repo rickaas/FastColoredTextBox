@@ -2,13 +2,14 @@
 using System;
 using System.Text;
 using System.Drawing;
+using System.Linq;
 
 namespace FastColoredTextBoxNS
 {
     /// <summary>
     /// Line of text
     /// </summary>
-    public class Line : IList<Char>
+    public class Line /*: IList<Char>*/
     {
         protected List<Char> chars;
 
@@ -63,11 +64,37 @@ namespace FastColoredTextBoxNS
         {
             FoldingStartMarker = null;
             FoldingEndMarker = null;
-            for (int i = 0; i < Count; i++)
+            for (int i = 0; i < this.chars.Count; i++)
             {
-                Char c = this[i];
+                Char c = this.chars[i];
                 c.style &= ~styleIndex;
-                this[i] = c;
+                this.chars[i] = c;
+            }
+        }
+
+        public void AppendStyleForDisplayRange(int fromDisplay, int toDisplay, StyleIndex styleIndex, int tabLength)
+        {
+            int fromIndex = this.DisplayIndexToStringIndex(fromDisplay, tabLength);
+            int toIndex = this.DisplayIndexToStringIndex(toDisplay, tabLength);
+
+            for (int x = fromIndex; x <= toIndex; x++)
+            {
+                Char c = this.chars[x];
+                c.style |= styleIndex;
+                this.chars[x] = c; // set again because of struct
+            }
+        }
+
+        public void ClearStyleForDisplayRange(int fromDisplay, int toDisplay, StyleIndex styleIndex, int tabLength)
+        {
+            int fromIndex = this.DisplayIndexToStringIndex(fromDisplay, tabLength);
+            int toIndex = this.DisplayIndexToStringIndex(toDisplay, tabLength);
+
+            for (int x = fromIndex; x <= toIndex; x++)
+            {
+                Char c = this.chars[x];
+                c.style &= ~styleIndex;
+                this.chars[x] = c;
             }
         }
 
@@ -77,7 +104,7 @@ namespace FastColoredTextBoxNS
         public virtual string Text
         {
             get{
-                StringBuilder sb = new StringBuilder(Count);
+                StringBuilder sb = new StringBuilder(this.chars.Count);
                 foreach(Char c in this)
                     sb.Append(c.c);
                 return sb.ToString();
@@ -102,13 +129,23 @@ namespace FastColoredTextBoxNS
             get
             {
                 int spacesCount = 0;
-                for (int i = 0; i < Count; i++)
-                    if (this[i].c == ' ')
+                for (int i = 0; i < this.chars.Count; i++)
+                    if (this.chars[i].c == ' ')
                         spacesCount++;
                     else
                         break;
                 return spacesCount;
             }
+        }
+
+        public bool IsEmpty
+        {
+            get { return this.chars.Count == 0; }
+        }
+
+        public int StringLength
+        {
+            get { return this.chars.Count; }
         }
 
         /// <summary>
@@ -140,6 +177,12 @@ namespace FastColoredTextBoxNS
             chars.RemoveAt(index);
         }
 
+        public Char GetCharAtStringIndex(int stringIndex)
+        {
+            return this.chars[stringIndex];
+        }
+
+        /*
         /// <summary>
         /// Gets or sets the Char at the given string index
         /// </summary>
@@ -155,7 +198,7 @@ namespace FastColoredTextBoxNS
             {
                 chars[index] = value;
             }
-        }
+        }*/
 
         /// <summary>
         /// Add the Char at the end
@@ -176,18 +219,20 @@ namespace FastColoredTextBoxNS
             return chars.Contains(item);
         }
 
+        /*
         public void CopyTo(Char[] array, int arrayIndex)
         {
             chars.CopyTo(array, arrayIndex);
-        }
+        }*/
 
+        /*
         /// <summary>
         /// Chars count, this can differ from the display width
         /// </summary>
         public int Count
         {
             get { return chars.Count; }
-        }
+        }*/
 
         public bool IsReadOnly
         {
@@ -204,18 +249,30 @@ namespace FastColoredTextBoxNS
             return chars.GetEnumerator();
         }
         
+        /*
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return chars.GetEnumerator() as System.Collections.IEnumerator;
-        }
+        }*/
 
         public IEnumerable<char> GetCharEnumerable()
         {
             return CharHelper.ToCharEnumerable(this.chars);
         }
 
+        public IEnumerable<Char> GetCharStructEnumerable()
+        {
+            return this.chars;
+        }
+
+        public IEnumerable<Char> GetCharStructEnumerableStartingAtPosition(int displayPosition, int tabLength)
+        {
+            int stringIndex = DisplayIndexToStringIndex(displayPosition, tabLength);
+            return this.chars.Skip(stringIndex);
+        }
+
         /// <summary>
-        /// Because displayIndex could point to a place inside a tab the out charDisplayIndex 
+        /// Because displayIndex could point to a place inside a tab this
         /// returns the display index for a real character in this line.
         /// </summary>
         /// <param name="displayIndex"></param>
@@ -253,7 +310,7 @@ namespace FastColoredTextBoxNS
             int currentCharacterIndex = 0;
             while (currentDisplayIndex < displayIndex && currentCharacterIndex < this.chars.Count)
             {
-                char c = this[currentCharacterIndex].c;
+                char c = this.chars[currentCharacterIndex].c;
 
                 if (c == '\t')
                 {
@@ -297,7 +354,7 @@ namespace FastColoredTextBoxNS
             int currentDisplayIndex;
             int currentCharacterIndex;
             DisplayIndexToPosition(displayIndex, tabLength, out currentDisplayIndex, out currentCharacterIndex);
-            return this[currentCharacterIndex];
+            return this.chars[currentCharacterIndex];
         }
 
         /// <summary>
@@ -317,7 +374,7 @@ namespace FastColoredTextBoxNS
             // we now have the currentCharacterIndex that corresponds to the fromDisplayIndex
             while (currentDisplayIndex < toDisplayIndex)
             {
-                char c = this[currentCharacterIndex].c;
+                char c = this.chars[currentCharacterIndex].c;
 
                 if (c == '\t')
                 {
@@ -359,7 +416,7 @@ namespace FastColoredTextBoxNS
             // we now have the currentCharacterIndex that corresponds to the fromDisplayIndex
             while (currentDisplayIndex < toDisplayIndex && currentCharacterIndex < this.chars.Count)
             {
-                char c = this[currentCharacterIndex].c;
+                char c = this.chars[currentCharacterIndex].c;
                 int displayWidth = 1;
                 if (c == '\t')
                 {
@@ -379,7 +436,7 @@ namespace FastColoredTextBoxNS
                     displayWidth = tabWidth;
                 }
 
-                yield return new DisplayChar(this[currentCharacterIndex], currentCharacterIndex, currentDisplayIndex, displayWidth);
+                yield return new DisplayChar(this.chars[currentCharacterIndex], currentCharacterIndex, currentDisplayIndex, displayWidth);
 
                 currentCharacterIndex++;
                 currentDisplayIndex += displayWidth;
@@ -409,12 +466,22 @@ namespace FastColoredTextBoxNS
             return to - from;
         }
 
+        public void RemoveCharRange(int charIndex, int charCount)
+        {
+            if (charIndex > this.StringLength)
+            {
+                return;
+            }
+            chars.RemoveRange(charIndex, Math.Min(this.StringLength - charIndex, charCount));
+        }
+
+        /*
         public virtual void RemoveRange(int index, int count)
         {
             if (index >= Count)
                 return;
             chars.RemoveRange(index, Math.Min(Count - index, count));
-        }
+        }*/
 
         public virtual void TrimExcess()
         {
@@ -467,7 +534,8 @@ namespace FastColoredTextBoxNS
         }
 
         /// <summary>
-        /// Count of wordwrap string count for this line
+        /// Number of editor lines this text line spans.
+        /// Takes into account the VisibleState of the line.
         /// </summary>
         public int WordWrapStringsCount
         {
@@ -500,6 +568,7 @@ namespace FastColoredTextBoxNS
 
         /// <summary>
         /// Returns the string index of the wordwrap finish.
+        /// For the given line segment, return the string-index at which that segment ends
         /// </summary>
         /// <param name="iWordWrapLine"></param>
         /// <param name="line"></param>
@@ -508,7 +577,7 @@ namespace FastColoredTextBoxNS
         {
             if (WordWrapStringsCount <= 0) return 0;
 
-            return iWordWrapLine == WordWrapStringsCount - 1 ? line.Count - 1 : CutOffPositions[iWordWrapLine] - 1;
+            return iWordWrapLine == WordWrapStringsCount - 1 ? line.StringLength - 1 : CutOffPositions[iWordWrapLine] - 1;
         }
 
         /// <summary>
