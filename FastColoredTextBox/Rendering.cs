@@ -403,7 +403,7 @@ namespace FastColoredTextBoxNS
             int from = lineInfo.GetWordWrapStringStartPosition(iWordWrapLine);
             int to = lineInfo.GetWordWrapStringFinishPosition(iWordWrapLine, line);
 
-            int lineDisplayWidth = line.GetDisplayWidthForRange(from, to, textbox.TabLength);
+            int lineDisplayWidth = line.GetDisplayWidthForRange(from, to+1, textbox.TabLength);
             //lastChar = Math.Min(to - from, lastChar); // is the string index
             lastChar = Math.Min(lineDisplayWidth, lastChar); // display position of last character
 
@@ -491,21 +491,7 @@ namespace FastColoredTextBoxNS
                 textRange = textbox.Selection.GetIntersectionWith(textRange);
                 if (textRange != null && textbox.SelectionStyle != null)
                 {
-                    int next = (textRange.Start.iChar - fromDisplay) * textbox.CharWidth;
-                    /*
-                    if (textbox.ConvertTabToSpaces)
-                    {
-                        next = (textRange.Start.iChar - from) * textbox.CharWidth;
-                    }
-                    else
-                    {
-                        var llll = textRange.tb.TextSource[textRange.Start.iLine]; // text on the line
-                        string beforeRangeText = llll.Text.Substring(0, textRange.Start.iChar); // all text before the range
-                        // Calculate where previous range ended
-                        next = TextSizeCalculator.TextWidth(beforeRangeText, textRange.tb.TabLength) * textbox.CharWidth;
-                    }*/
-                    textbox.SelectionStyle.Draw(gr, new Point(startX + next, 1 + y),
-                                        textRange);
+                    textbox.SelectionStyle.Draw(gr, new Point(startX + (textRange.Start.iChar - from) * textbox.CharWidth, 1 + y), textRange);
                 }
             }
         }
