@@ -200,13 +200,19 @@ namespace FastColoredTextBoxNS
                 }
                 else
                 {
-                    foreach (DisplayChar displayChar in line.GetStyleCharForDisplayRange(range.Start.iChar, range.End.iChar, range.tb.TabLength))
+                    foreach (DisplayChar displayChar in line.GetStyleCharForDisplayRange(range.Start.iChar, range.End.iChar, range.tb.TabLength, alwaysIncludePartial:true))
                     {
                         // draw char
                         char c = displayChar.Char.c;
                         if (c == '\t')
                         {
                             int tabWidth = TextSizeCalculator.TabWidth(displayChar.DisplayIndex, range.tb.TabLength);
+                            if (displayChar.DisplayIndex < range.Start.iChar)
+                            {
+                                // partial render
+                                int partial = displayChar.DisplayIndex + tabWidth - range.Start.iChar;
+                                tabWidth = partial;
+                            }
                             using (Pen pen = new Pen(this.TabDrawColor, range.tb.CharHeight / 10F))
                             {
                                 pen.EndCap = LineCap.ArrowAnchor;
