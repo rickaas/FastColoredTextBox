@@ -295,7 +295,10 @@ namespace FastColoredTextBoxNS.CommandImpl
                 newLine.Add(ts[iLine][i]);
             }*/
 
-            ts[iLine].RemoveRange(pos, ts[iLine].Count - pos);
+            // remove from position until end of line, these characters are moved to the next line
+            int index = ts[iLine].DisplayIndexToStringIndex(pos, ts.CurrentTB.TabLength);
+            //ts[iLine].RemoveRange(pos, ts[iLine].Count - pos);
+            ts[iLine].RemoveCharRange(index, ts[iLine].StringLength - index);
             //
             ts.InsertLine(iLine + 1, newLine);
         }

@@ -1165,7 +1165,8 @@ namespace FastColoredTextBoxNS
                     fts.UnloadLine(iLine);
             }
         }
-
+        
+        
         /// <summary>
         /// Finds ranges for given regex
         /// FIXME
@@ -1257,14 +1258,17 @@ namespace FastColoredTextBoxNS
         }
 
         // FIXME: \t can span multiple places
+        // FIXME: return a Place for each char or for each position?
         IEnumerator<Place> IEnumerable<Place>.GetEnumerator()
         {
+            /*
+             * FIXME
             if (ColumnSelectionMode)
             {
                 foreach(var p in GetEnumerator_ColumnSelectionMode())
                     yield return p;
                 yield break;
-            }
+            }*/
 
             int fromLine = Math.Min(end.iLine, start.iLine);
             int toLine = Math.Max(end.iLine, start.iLine);
@@ -1293,6 +1297,8 @@ namespace FastColoredTextBoxNS
         {
             get
             {
+                /*
+                 * FIXME:
                 if (ColumnSelectionMode)
                 {
                     foreach (var p in GetEnumerator_ColumnSelectionMode())
@@ -1301,7 +1307,7 @@ namespace FastColoredTextBoxNS
                         yield break;
                     }
                     yield break;
-                }
+                }*/
 
                 int fromLine = Math.Min(end.iLine, start.iLine);
                 int toLine = Math.Max(end.iLine, start.iLine);
