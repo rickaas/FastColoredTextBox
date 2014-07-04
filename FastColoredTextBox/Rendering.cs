@@ -429,7 +429,8 @@ namespace FastColoredTextBoxNS
                 StyleIndex currentStyleIndex = StyleIndex.None;
                 int iLastFlushedChar = firstChar - 1; // display index
 
-                foreach (DisplayChar displayChar in line.GetStyleCharForDisplayRange(firstChar, lastChar, textbox.TabLength))
+                // if firstChar is inside a TAB when to render a partial TAB arrow...
+                foreach (DisplayChar displayChar in line.GetStyleCharForDisplayRange(firstChar, lastChar, textbox.TabLength, alwaysIncludePartial:true))
                 {
                     StyleIndex style = displayChar.Char.style;
                     if (currentStyleIndex != style)

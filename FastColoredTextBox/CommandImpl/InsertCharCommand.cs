@@ -166,11 +166,14 @@ namespace FastColoredTextBoxNS.CommandImpl
                     else
                     {
                         //deletedChar = ts[tb.Selection.Start.iLine][tb.Selection.Start.iChar - 1].c;
-                        deletedChar = ts[tb.Selection.Start.iLine].GetCharAtDisplayPosition(tb.Selection.Start.iChar - 1, tb.TabLength).c;
-                        int stringIndex = ts[tb.Selection.Start.iLine].DisplayIndexToStringIndex(tb.Selection.Start.iChar - 1, tb.TabLength);
-                        ts[tb.Selection.Start.iLine].RemoveAt(stringIndex);
+                        int currentStringIndex = ts[tb.Selection.Start.iLine].DisplayIndexToStringIndex(tb.Selection.Start.iChar, tb.TabLength);
+                        int deletedIndex = currentStringIndex - 1;
+                        deletedChar = ts[tb.Selection.Start.iLine].GetCharAtStringIndex(deletedIndex).c;
+
+                        ts[tb.Selection.Start.iLine].RemoveAt(deletedIndex);
                         //ts[tb.Selection.Start.iLine].RemoveAt(tb.Selection.Start.iChar - 1);
-                        tb.Selection.Start = new Place(tb.Selection.Start.iChar - 1, tb.Selection.Start.iLine);
+                        int displayPosition = ts[tb.Selection.Start.iLine].GetDisplayWidthForSubString(deletedIndex, tb.TabLength);
+                        tb.Selection.Start = new Place(displayPosition, tb.Selection.Start.iLine);
                     }
                     break;
                 case '\t':
@@ -196,8 +199,12 @@ namespace FastColoredTextBoxNS.CommandImpl
                         // allow \t as characters, do not convert to spaces
                         int stringIndex = ts[tb.Selection.Start.iLine].DisplayIndexToStringIndex(tb.Selection.Start.iChar, tb.TabLength);
                         ts[tb.Selection.Start.iLine].Insert(stringIndex, new Char(c));
+
+                        int displayEnd = ts[tb.Selection.Start.iLine].GetDisplayWidthForSubString(stringIndex+1, tb.TabLength);
                         //ts[tb.Selection.Start.iLine].Insert(tb.Selection.Start.iChar, new Char(c));
-                        tb.Selection.Start = new Place(tb.Selection.Start.iChar + 1, tb.Selection.Start.iLine);
+
+                        //tb.Selection.Start = new Place(tb.Selection.Start.iChar + 1, tb.Selection.Start.iLine);
+                        tb.Selection.Start = new Place(displayEnd, tb.Selection.Start.iLine);
                     }
                     break;
                 default:

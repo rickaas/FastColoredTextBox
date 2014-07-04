@@ -130,13 +130,15 @@ namespace FastColoredTextBoxNS
                     // this is not a column selection so if we are at the last line of a range we end at the min(line_end, toChar),
                     // otherwise we end at the end of the line
                     var lineWidth = tb.TextSource[y].GetDisplayWidth(tb.TabLength);
-                    // FIXME: are the minus 1 needed
+                    // FIXME: are the minus 1 needed?
                     int toX = y == toLine ? Math.Min(toChar - 1, lineWidth - 1) : lineWidth - 1;
 
-                    var chars = tb.TextSource[y].GetCharsForDisplayRange(fromX, toX, tb.TabLength);
-                    foreach (char c in chars)
+                    var displayChars = tb.TextSource[y].GetStyleCharForDisplayRange(fromX, toX, tb.TabLength);
+                    foreach (var dc in displayChars)
                     {
-                        sb.Append(c);
+                        sb.Append(dc.Char.c);
+                        charIndexToPlace.Add(new Place(dc.DisplayIndex, y));
+
                     }
                     /*
                     for (int x = fromX; x <= toX; x++)
@@ -146,10 +148,11 @@ namespace FastColoredTextBoxNS
                     }*/
                     if (y != toLine && fromLine != toLine)
                     {
-                        foreach (char c in Environment.NewLine)
+                        foreach (char c in EolFormatUtil.ToNewLine(tb.TextSource[y].EolFormat))
                         {
                             sb.Append(c);
-                            charIndexToPlace.Add(new Place(tb.TextSource[y].Count/*???*/, y));
+                            // FIXME: We have two chars at the same place when EOL is \r\n
+                            charIndexToPlace.Add(new Place(lineWidth/*???*/, y));
                         }
                     }
                 }
@@ -1061,7 +1064,7 @@ namespace FastColoredTextBoxNS
             //get text
             string text;
             List<Place> charIndexToPlace;
-            GetText(out text, out charIndexToPlace);
+            _GetText(out text, out charIndexToPlace);
             //create regex
             Regex regex = new Regex(regexPattern, options);
             //
@@ -1073,8 +1076,10 @@ namespace FastColoredTextBoxNS
                 if (!group.Success)
                     group = m.Groups[0];
                 //
-                r.Start = charIndexToPlace[group.Index];
-                r.End = charIndexToPlace[group.Index + group.Length];
+                int stringIndex = group.Index;
+                int stringLength = group.Length;
+                r.Start = charIndexToPlace[stringIndex];
+                r.End = charIndexToPlace[stringIndex + stringLength];
                 yield return r;
             }
         }
@@ -1177,7 +1182,7 @@ namespace FastColoredTextBoxNS
             //get text
             string text;
             List<Place> charIndexToPlace;
-            GetText(out text, out charIndexToPlace);
+            _GetText(out text, out charIndexToPlace);
             //
             foreach (Match m in regex.Matches(text))
             {

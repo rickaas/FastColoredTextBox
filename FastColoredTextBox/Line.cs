@@ -303,7 +303,7 @@ namespace FastColoredTextBoxNS
         /// <param name="tabLength"></param>
         /// <param name="charDisplayIndex"></param>
         /// <param name="charIndex"></param>
-        internal void DisplayIndexToPosition(int displayIndex, int tabLength, out int charDisplayIndex, out int charIndex) 
+        internal void DisplayIndexToPosition(int displayIndex, int tabLength, out int charDisplayIndex, out int charIndex, bool alwaysIncludePartial=false) 
         {
             // first convert to fromDisplayIndex to a character index in this line
             int currentDisplayIndex = 0;
@@ -319,12 +319,20 @@ namespace FastColoredTextBoxNS
                     if (currentDisplayIndex + tabWidth > displayIndex)
                     {
                         // Already past the fromDisplayIndex, do we include the tab?
-                        int centerOfTab = (tabWidth + 1) / 2; // integer division always rounds down so do plus one
-                        int centerOfTabDisplayIndex = currentDisplayIndex + centerOfTab;
-                        if (displayIndex < centerOfTabDisplayIndex)
+                        if (alwaysIncludePartial)
                         {
-                            // not beyond half the tab width so include it
                             break;
+                        } 
+                        else 
+                        {
+
+                            int centerOfTab = (tabWidth + 1) / 2; // integer division always rounds down so do plus one
+                            int centerOfTabDisplayIndex = currentDisplayIndex + centerOfTab;
+                            if (displayIndex < centerOfTabDisplayIndex)
+                            {
+                                // not beyond half the tab width so include it
+                                break;
+                            }
                         }
                     }
                     currentDisplayIndex += tabWidth;
@@ -406,12 +414,12 @@ namespace FastColoredTextBoxNS
         }
 
         // Char, string index, display index
-        public IEnumerable<DisplayChar> GetStyleCharForDisplayRange(int fromDisplayIndex, int toDisplayIndex, int tabLength)
+        public IEnumerable<DisplayChar> GetStyleCharForDisplayRange(int fromDisplayIndex, int toDisplayIndex, int tabLength, bool alwaysIncludePartial = false)
         {
             // first convert to fromDisplayIndex to a character index in this line
             int currentDisplayIndex;
             int currentCharacterIndex;
-            DisplayIndexToPosition(fromDisplayIndex, tabLength, out currentDisplayIndex, out currentCharacterIndex);
+            DisplayIndexToPosition(fromDisplayIndex, tabLength, out currentDisplayIndex, out currentCharacterIndex, alwaysIncludePartial);
 
             // we now have the currentCharacterIndex that corresponds to the fromDisplayIndex
             while (currentDisplayIndex < toDisplayIndex && currentCharacterIndex < this.chars.Count)
@@ -424,13 +432,20 @@ namespace FastColoredTextBoxNS
 
                     if (currentDisplayIndex + tabWidth > toDisplayIndex)
                     {
-                        // Already past the toDisplayIndex, do we include the tab?
-                        int centerOfTab = (tabWidth + 1) / 2; // integer division always rounds down so do plus one
-                        int centerOfTabDisplayIndex = currentDisplayIndex + centerOfTab;
-                        if (centerOfTabDisplayIndex > toDisplayIndex)
+                        if (alwaysIncludePartial)
                         {
-                            // not beyond half the tab width so exclude it
-                            yield break;
+                            // always include the tab
+                        }
+                        else
+                        {
+                            // Already past the toDisplayIndex, do we include the tab?
+                            int centerOfTab = (tabWidth + 1) / 2; // integer division always rounds down so do plus one
+                            int centerOfTabDisplayIndex = currentDisplayIndex + centerOfTab;
+                            if (centerOfTabDisplayIndex > toDisplayIndex)
+                            {
+                                // not beyond half the tab width so exclude it
+                                yield break;
+                            }
                         }
                     }
                     displayWidth = tabWidth;
