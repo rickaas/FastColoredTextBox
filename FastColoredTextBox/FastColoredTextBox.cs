@@ -4477,7 +4477,8 @@ namespace FastColoredTextBoxNS
 
             // display positions
             int fromDisplay = lines[iLine].GetDisplayWidthForSubString(start, this.TabLength);
-            int toDisplay = lines[iLine].GetDisplayWidthForSubString(finish, this.TabLength);
+            // finish + 1 because finish is the index of the last character
+            int toDisplay = lines[iLine].GetDisplayWidthForSubString(finish+1, this.TabLength);
 
             int x = (int)Math.Round((float)point.X / CharWidth);
             // if x is inside a TAB we have to move it
