@@ -165,6 +165,9 @@ namespace FastColoredTextBoxNS
         /// <param name="item"></param>
         public void Insert(int index, Char item)
         {
+            if (index > chars.Count)
+            {
+            }
             chars.Insert(index, item);
         }
 
@@ -174,11 +177,17 @@ namespace FastColoredTextBoxNS
         /// <param name="index"></param>
         public void RemoveAt(int index)
         {
+            if (index > chars.Count)
+            {
+            }
             chars.RemoveAt(index);
         }
 
         public Char GetCharAtStringIndex(int stringIndex)
         {
+            if (stringIndex >= this.chars.Count)
+            {
+            }
             return this.chars[stringIndex];
         }
 
@@ -362,6 +371,9 @@ namespace FastColoredTextBoxNS
             int currentDisplayIndex;
             int currentCharacterIndex;
             DisplayIndexToPosition(displayIndex, tabLength, out currentDisplayIndex, out currentCharacterIndex);
+            if (currentCharacterIndex >= this.chars.Count)
+            {
+            }
             return this.chars[currentCharacterIndex];
         }
 
@@ -380,7 +392,7 @@ namespace FastColoredTextBoxNS
             DisplayIndexToPosition(fromDisplayIndex, tabLength, out currentDisplayIndex, out currentCharacterIndex);
 
             // we now have the currentCharacterIndex that corresponds to the fromDisplayIndex
-            while (currentDisplayIndex < toDisplayIndex)
+            while (currentDisplayIndex < toDisplayIndex && currentCharacterIndex < this.chars.Count)
             {
                 char c = this.chars[currentCharacterIndex].c;
 
@@ -463,14 +475,20 @@ namespace FastColoredTextBoxNS
             return TextSizeCalculator.TextWidth(this.GetCharEnumerable(), tabLength);
         }
 
-        public int GetDisplayWidthForSubString(int stringIndex, int tabLength) 
+        /// <summary>
+        /// Returns the display width for the specified number of characters.
+        /// </summary>
+        /// <param name="count"></param>
+        /// <param name="tabLength"></param>
+        /// <returns></returns>
+        public int GetDisplayWidthForSubString(int count, int tabLength) 
         {
             // FIXME: What if stringIndex < 0
-            if (stringIndex < 0)
+            if (count < 0)
             {
                 return 0;
             }
-            var chars = CharHelper.ToCharEnumerable(this.chars.GetRange(0, stringIndex));
+            var chars = CharHelper.ToCharEnumerable(this.chars.GetRange(0, count));
             return TextSizeCalculator.TextWidth(chars, tabLength);
         }
 
@@ -584,6 +602,7 @@ namespace FastColoredTextBoxNS
         /// <summary>
         /// Returns the string index of the wordwrap finish.
         /// For the given line segment, return the string-index at which that segment ends
+        /// return index is inclusive
         /// </summary>
         /// <param name="iWordWrapLine"></param>
         /// <param name="line"></param>
