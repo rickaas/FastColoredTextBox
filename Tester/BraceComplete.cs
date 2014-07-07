@@ -81,11 +81,10 @@ namespace Tester
 
 
 
-            if (args.InsertingText != null && args.InsertingText.Length == 1)
+            if (args.InsertingText != null)
             {
-                string eol = EolFormatUtil.ToNewLine(this.fastColoredTextBox1.DefaultEolFormat)
-                char c = args.InsertingText[0];
-                if (c == '{')
+                string eol = EolFormatUtil.ToNewLine(this.fastColoredTextBox1.DefaultEolFormat);
+                if (args.InsertingText.Length == 1 && args.InsertingText[0] == '{')
                 {
                     lastCharIsOpenBracket = true; // TODO: Ignore when we are inside a string
                     doCompletionOnEnter = false;
