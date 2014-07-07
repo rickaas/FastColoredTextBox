@@ -475,7 +475,7 @@ namespace FastColoredTextBoxNS
                 if (!isLastLine)
                 {
                     // point after the last character
-                    int eolOffset = startX + (lastChar + 1) * textbox.CharWidth;
+                    int eolOffset = startX + (lastChar) * textbox.CharWidth;
                     var eolStart = new Point(eolOffset, y);
                     textbox.EndOfLineStyle.Draw(gr, eolStart, new Range(textbox, lastChar + 1, iLine, lastChar + 1, iLine));
                 }
