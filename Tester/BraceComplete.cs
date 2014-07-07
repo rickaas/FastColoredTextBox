@@ -33,6 +33,7 @@ namespace Tester
         public BraceComplete()
         {
             InitializeComponent();
+            this.fastColoredTextBox1.EndOfLineStyle = new EndOfLineStyle(fastColoredTextBox1.Font);
             this.fastColoredTextBox1.AutoCompleteBrackets = false;
             this.fastColoredTextBox1.TextChanged += FastColoredTextBox1OnTextChanged;
             this.fastColoredTextBox1.TextChangedDelayed += FastColoredTextBox1OnTextChangedDelayed;
@@ -82,13 +83,14 @@ namespace Tester
 
             if (args.InsertingText != null && args.InsertingText.Length == 1)
             {
+                string eol = EolFormatUtil.ToNewLine(this.fastColoredTextBox1.DefaultEolFormat)
                 char c = args.InsertingText[0];
                 if (c == '{')
                 {
                     lastCharIsOpenBracket = true; // TODO: Ignore when we are inside a string
                     doCompletionOnEnter = false;
                 }
-                else if (c == '\n' && lastCharIsOpenBracket)
+                else if (eol == args.InsertingText && lastCharIsOpenBracket)
                 {
                     if (this.hasPosition && this.caretPosition == this.fastColoredTextBox1.Selection.Start)
                     {
