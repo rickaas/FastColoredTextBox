@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using FastColoredTextBoxNS;
 using FastColoredTextBoxNS.EventArgDefs;
@@ -26,9 +27,14 @@ namespace Tester
         {
             var mask = fctb.GetStyleIndexMask(new Style[] { blueStyle });
             if (place.iChar < fctb.GetLineDisplayWidth(place.iLine))
-                //if ((fctb.TextSource[place].style & mask) != 0)
-                if (true)
+            {
+                var dsc = fctb.TextSource[place.iLine].GetStyleCharForDisplayRange(place.iChar, place.iChar+1, fctb.TabLength).ToList();
+                //bool hasStyle = (fctb.TextSource[place].style & mask) != 0
+                if (dsc.Count > 0 && (dsc[0].Char.style & mask) != 0)
+                {
                     return true;
+                }
+            }
 
             return false;
         }
