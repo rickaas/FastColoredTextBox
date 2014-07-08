@@ -66,7 +66,7 @@ namespace FastColoredTextBoxNS.CommandImpl
             if (fromLine == toLine)
             {
                 int fromIndex = ts[fromLine].DisplayIndexToStringIndex(fromChar, tb.TabLength);
-                int toIndex = ts[fromLine].DisplayIndexToStringIndex(toChar, tb.TabLength);
+                int toIndex = ts[toLine].DisplayIndexToStringIndex(toChar, tb.TabLength);
                 // remove a single line
                 //ts[fromLine].RemoveRange(fromChar, toChar - fromChar);
                 ts[fromLine].RemoveCharRange(fromIndex, toIndex - fromIndex);
@@ -74,13 +74,13 @@ namespace FastColoredTextBoxNS.CommandImpl
             else
             {
                 int fromIndex = ts[fromLine].DisplayIndexToStringIndex(fromChar, tb.TabLength);
-                int toIndex = ts[fromLine].DisplayIndexToStringIndex(toChar, tb.TabLength);
+                int toIndex = ts[toLine].DisplayIndexToStringIndex(toChar, tb.TabLength);
 
                 //ts[fromLine].RemoveRange(fromChar, ts[fromLine].Count - fromChar);
                 ts[fromLine].RemoveCharRange(fromIndex, ts[fromLine].StringLength - fromIndex);
 
                 //ts[toLine].RemoveRange(0, toChar);
-                ts[fromLine].RemoveCharRange(0, toIndex);
+                ts[toLine].RemoveCharRange(0, toIndex);
 
                 ts.RemoveLine(fromLine + 1, toLine - fromLine - 1);
                 InsertCharCommand.MergeLines(fromLine, ts);
