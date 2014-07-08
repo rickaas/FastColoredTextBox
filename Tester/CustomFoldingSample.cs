@@ -25,7 +25,7 @@ namespace Tester
             for (int i = 0; i < fctb.LinesCount; i++)
             {
                 var line = fctb.TextSource[i];
-                var spacesCount = line.StartSpacesCount;
+                var spacesCount = line.StartSpacesCount; // FIXME: Also count spaces?
                 if (spacesCount == line.GetDisplayWidth(fctb.TabLength)) //empty line
                     continue;
 
