@@ -131,21 +131,15 @@ namespace FastColoredTextBoxNS
                     // otherwise we end at the end of the line
                     var lineWidth = tb.TextSource[y].GetDisplayWidth(tb.TabLength);
                     // FIXME: are the minus 1 needed?
-                    int toX = y == toLine ? Math.Min(toChar - 1, lineWidth - 1) : lineWidth - 1;
+                    int toX = y == toLine ? Math.Min(toChar, lineWidth) : lineWidth;
 
                     var displayChars = tb.TextSource[y].GetStyleCharForDisplayRange(fromX, toX, tb.TabLength);
                     foreach (var dc in displayChars)
                     {
                         sb.Append(dc.Char.c);
                         charIndexToPlace.Add(new Place(dc.DisplayIndex, y));
-
                     }
-                    /*
-                    for (int x = fromX; x <= toX; x++)
-                    {
-                        sb.Append(tb.TextSource[y][x].c);
-                        charIndexToPlace.Add(new Place(x, y));
-                    }*/
+
                     if (y != toLine && fromLine != toLine)
                     {
                         foreach (char c in EolFormatUtil.ToNewLine(tb.TextSource[y].EolFormat))
@@ -342,7 +336,9 @@ namespace FastColoredTextBoxNS
             get
             {
                 if (Start.iChar >= tb.TextSource[Start.iLine].GetDisplayWidth(tb.TabLength))
-                    return '\n';
+                {
+                    return '\n'; // FIXME: What about the EOL symbol?
+                }
 
                 // TODO: Check if this works for tabs?
                 return tb.TextSource[Start.iLine].GetCharAtDisplayPosition(Start.iChar, tb.TabLength).c;
@@ -358,9 +354,9 @@ namespace FastColoredTextBoxNS
             get
             {
                 if (Start.iChar > tb.TextSource[Start.iLine].GetDisplayWidth(tb.TabLength))
-                    return '\n';
+                    return '\n'; // FIXME: What about the EOL symbol?
                 if (Start.iChar <= 0)
-                    return '\n';
+                    return '\n'; // FIXME: What about the EOL symbol?
 
                 return tb.TextSource[Start.iLine].GetCharAtDisplayPosition(Start.iChar - 1, tb.TabLength).c;
                 //return tb.TextSource[Start.iLine][Start.iChar - 1].c;
@@ -416,7 +412,7 @@ namespace FastColoredTextBoxNS
         }
 
         /// <summary>
-        /// Move range left
+        /// Move range right
         /// </summary>
         /// <remarks>This method can to go inside folded blocks</remarks>
         public virtual bool GoRightThroughFolded()
@@ -428,9 +424,19 @@ namespace FastColoredTextBoxNS
                 return false;
 
             if (start.iChar < tb.TextSource[start.iLine].GetDisplayWidth(tb.TabLength))
-                start.Offset(1, 0);
+            {
+                // go to next char on the same line
+                int dx = 1;
+                if (tb.TextSource[start.iLine].GetCharAtDisplayPosition(start.iChar, this.tb.TabLength).c == '\t')
+                {
+                    dx = TextSizeCalculator.TabWidth(start.iChar, this.tb.TabLength);
+                }
+                start.Offset(dx, 0);
+            }
             else
+            {
                 start = new Place(0, start.iLine + 1);
+            }
 
             preferedPos = -1;
             end = start;
@@ -463,9 +469,22 @@ namespace FastColoredTextBoxNS
                 return false;
 
             if (start.iChar > 0)
-                start.Offset(-1, 0);
+            {
+                int dx = -1;
+                // if prev char is \t
+                int indexInString = TextSizeCalculator.CharIndexAtCharWidthPoint(tb.TextSource[start.iLine].GetCharEnumerable(), this.tb.TabLength, start.iChar);
+                if (tb.TextSource[start.iLine].GetCharAtStringIndex(indexInString - 1).c == '\t')
+                {
+                    int prevCharDisplayIndex = tb.TextSource[start.iLine].GetDisplayWidthForSubString(indexInString - 1, this.tb.TabLength);
+                    dx = -1 * TextSizeCalculator.TabWidth(prevCharDisplayIndex, this.tb.TabLength);
+                }
+                start.Offset(dx, 0);
+            }
             else
+            {
+                // at first character in line, move to the end of the previous line
                 start = new Place(tb.TextSource[start.iLine - 1].GetDisplayWidth(tb.TabLength), start.iLine - 1);
+            }
 
             preferedPos = -1;
             end = start;
@@ -492,7 +511,7 @@ namespace FastColoredTextBoxNS
                 if (start.iChar > 0 && tb.LineInfos[start.iLine].VisibleState == VisibleState.Visible)
                 {
                     int dx = -1;
-                    // if prev char if \t
+                    // if prev char is \t
                     int indexInString = TextSizeCalculator.CharIndexAtCharWidthPoint(tb.TextSource[start.iLine].GetCharEnumerable(), this.tb.TabLength, start.iChar);
                     if (tb.TextSource[start.iLine].GetCharAtStringIndex(indexInString - 1).c == '\t')
                     {
@@ -1354,7 +1373,7 @@ namespace FastColoredTextBoxNS
             //go left, check style
             while (r.GoLeftThroughFolded())
             {
-                if (!allowLineBreaks && r.CharAfterStart == '\n')
+                if (!allowLineBreaks && r.CharAfterStart == '\n') // FIXME: What about the EOL symbol?
                 {
                     break;
                 }
@@ -1374,7 +1393,7 @@ namespace FastColoredTextBoxNS
             //go right, check style
             do
             {
-                if (!allowLineBreaks && r.CharAfterStart == '\n')
+                if (!allowLineBreaks && r.CharAfterStart == '\n') // FIXME: What about the EOL symbol?
                 {
                     break;
                 }
@@ -1451,7 +1470,7 @@ namespace FastColoredTextBoxNS
                 wasIdentifier = true;
                 range.GoLeft(shift);
             }
-            if (!wasIdentifier && (!wasSpace || range.CharBeforeStart != '\n'))
+            if (!wasIdentifier && (!wasSpace || range.CharBeforeStart != '\n')) // FIXME: What about the EOL symbol?
             {
                 range.GoLeft(shift);
             }
@@ -1491,7 +1510,7 @@ namespace FastColoredTextBoxNS
                 wasIdentifier = true;
                 range.GoRight(shift); // skip all identifier characters
             }
-            if (!wasIdentifier && (!wasSpace || range.CharAfterStart != '\n'))
+            if (!wasIdentifier && (!wasSpace || range.CharAfterStart != '\n')) // FIXME: What about the EOL symbol?
             {
                 range.GoRight(shift); // no identifier found and 
             }

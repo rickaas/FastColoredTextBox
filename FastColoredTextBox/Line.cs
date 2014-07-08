@@ -48,7 +48,7 @@ namespace FastColoredTextBoxNS
         /// <summary>
         /// The format of the line ending
         /// </summary>
-        public EolFormat EolFormat { get; internal set; }
+        public EolFormat EolFormat { get; set; }
 
         internal Line(int uid)
         {
@@ -74,11 +74,17 @@ namespace FastColoredTextBoxNS
 
         public void AppendStyleForDisplayRange(int fromDisplay, int toDisplay, StyleIndex styleIndex, int tabLength)
         {
+            if (this.chars.Count == 0) return; // out of bounds, just ignore
+
             int fromIndex = this.DisplayIndexToStringIndex(fromDisplay, tabLength);
             int toIndex = this.DisplayIndexToStringIndex(toDisplay, tabLength);
 
             for (int x = fromIndex; x <= toIndex; x++)
             {
+                if (x >= this.chars.Count)
+                {
+                    return; // out of bounds, just ignore
+                }
                 Char c = this.chars[x];
                 c.style |= styleIndex;
                 this.chars[x] = c; // set again because of struct
@@ -87,11 +93,17 @@ namespace FastColoredTextBoxNS
 
         public void ClearStyleForDisplayRange(int fromDisplay, int toDisplay, StyleIndex styleIndex, int tabLength)
         {
+            if (this.chars.Count == 0) return; // out of bounds, just ignore
+
             int fromIndex = this.DisplayIndexToStringIndex(fromDisplay, tabLength);
             int toIndex = this.DisplayIndexToStringIndex(toDisplay, tabLength);
 
             for (int x = fromIndex; x <= toIndex; x++)
             {
+                if (x >= this.chars.Count)
+                {
+                    return; // out of bounds, just ignore
+                }
                 Char c = this.chars[x];
                 c.style &= ~styleIndex;
                 this.chars[x] = c;
@@ -167,6 +179,7 @@ namespace FastColoredTextBoxNS
         {
             if (index > chars.Count)
             {
+                // FIXME: out of bounds, just ignore?
             }
             chars.Insert(index, item);
         }
@@ -179,6 +192,7 @@ namespace FastColoredTextBoxNS
         {
             if (index > chars.Count)
             {
+                // FIXME: out of bounds, just ignore?
             }
             chars.RemoveAt(index);
         }
@@ -187,6 +201,7 @@ namespace FastColoredTextBoxNS
         {
             if (stringIndex >= this.chars.Count)
             {
+                // FIXME: out of bounds, just ignore?
             }
             return this.chars[stringIndex];
         }
@@ -373,6 +388,7 @@ namespace FastColoredTextBoxNS
             DisplayIndexToPosition(displayIndex, tabLength, out currentDisplayIndex, out currentCharacterIndex);
             if (currentCharacterIndex >= this.chars.Count)
             {
+                // FIXME: out of bounds, just ignore?
             }
             return this.chars[currentCharacterIndex];
         }
@@ -503,7 +519,7 @@ namespace FastColoredTextBoxNS
         {
             if (charIndex > this.StringLength)
             {
-                return;
+                return; // out of bounds, just ignore
             }
             chars.RemoveRange(charIndex, Math.Min(this.StringLength - charIndex, charCount));
         }
