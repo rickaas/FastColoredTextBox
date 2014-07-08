@@ -581,9 +581,6 @@ namespace FastColoredTextBoxNS
                 preferedPos = start.iChar - tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(wrapIndex);
             }
 
-            int prevLineIndex = this.Start.iLine;
-            int prevDisplayCharIndex = start.iChar;
-
             int iWW = tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar);
             if (iWW == 0)
             {
@@ -599,27 +596,20 @@ namespace FastColoredTextBoxNS
             {
                 int startStringIndex = tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(iWW - 1);
                 int finishStringIndex = tb.LineInfos[start.iLine].GetWordWrapStringFinishPosition(iWW - 1, tb.TextSource[start.iLine]);
-                start.iChar = startStringIndex + preferedPos;
 
-                int toDisplay = tb.lines[start.iLine].GetDisplayWidthForSubString(finishStringIndex, this.tb.TabLength);
+                int fromDisplay = tb.lines[start.iLine].GetDisplayWidthForSubString(startStringIndex, this.tb.TabLength);
+                int toDisplay = tb.lines[start.iLine].GetDisplayWidthForSubString(finishStringIndex + 1, this.tb.TabLength);
 
-                /* RL: not required anymore
-                // correct for tab, add the difference between the preceeding text length with tabstops and the preceeding text length without tabstops
-                if (!this.tb.ConvertTabToSpaces)
-                {
-                    string prevLineText = this.tb.TextSource[prevLineIndex].Text.Substring(0, prevCharIndex);
-                    start.iChar = TextSizeCalculator.AdjustedCharWidthOffset(prevLineText, this.tb.TextSource[start.iLine].Text, this.tb.TabLength);
-                }*/
+                start.iChar = fromDisplay + preferedPos;
 
                 if (start.iChar > toDisplay + 1)
                 {
+                    // beyond the last character
                     start.iChar = toDisplay + 1;
                 }
 
-                int charDisplayIndex;
-                int charIndex;
-                tb.lines[start.iLine].DisplayIndexToPosition(start.iChar, tb.TabLength, out charDisplayIndex, out charIndex);
-                start.iChar = charDisplayIndex;
+                // correct for position inside a TAB
+                start.iChar = tb.lines[start.iLine].DisplayIndexToCharDisplayPosition(start.iChar, tb.TabLength);
             }
 
             if (!shift)
@@ -633,38 +623,44 @@ namespace FastColoredTextBoxNS
             ColumnSelectionMode = false;
 
             if (preferedPos < 0)
-                preferedPos = start.iChar - tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar));
+            {
+                int wrapIndex = tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar);
+                preferedPos = start.iChar - tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(wrapIndex);
+            }
 
-            int pageHeight = tb.ClientRectangle.Height / tb.CharHeight - 1;
+            int pageHeight = tb.ClientRectangle.Height / tb.CharHeight - 1; // measured in display lines
 
             for (int i = 0; i < pageHeight; i++)
             {
-                int prevLineIndex = this.Start.iLine;
-                int prevCharIndex = start.iChar;
-
-                int iWW = tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar);
+                int iWW = tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar); // FIXME: convert to string-index
                 if (iWW == 0)
                 {
-                    if (start.iLine <= 0) break;
+                    if (start.iLine <= 0) break; // on the first line
                     //pass hidden
                     int newLine = tb.FindPrevVisibleLine(start.iLine);
-                    if (newLine == start.iLine) break;
+                    if (newLine == start.iLine) break; // on the first visible line
                     start.iLine = newLine;
                     iWW = tb.LineInfos[start.iLine].WordWrapStringsCount;
                 }
 
                 if (iWW > 0)
                 {
-                    int finish = tb.LineInfos[start.iLine].GetWordWrapStringFinishPosition(iWW - 1, tb.TextSource[start.iLine]);
-                    start.iChar = tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(iWW - 1) + preferedPos;
-                    // correct for tab, add the difference between the preceeding text length with tabstops and the preceeding text length without tabstops
-                    if (!this.tb.ConvertTabToSpaces)
+                    int startStringIndex = tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(iWW - 1);
+                    int fromDisplay = tb.lines[start.iLine].GetDisplayWidthForSubString(startStringIndex, this.tb.TabLength);
+
+                    int finishStringIndex = tb.LineInfos[start.iLine].GetWordWrapStringFinishPosition(iWW - 1, tb.TextSource[start.iLine]);
+                    int toDisplay = tb.lines[start.iLine].GetDisplayWidthForSubString(finishStringIndex + 1, this.tb.TabLength);
+
+                    start.iChar = fromDisplay + preferedPos;
+
+                    if (start.iChar > toDisplay + 1)
                     {
-                        string prevLineText = this.tb.TextSource[prevLineIndex].Text.Substring(0, prevCharIndex);
-                        start.iChar = TextSizeCalculator.AdjustedCharWidthOffset(prevLineText, this.tb.TextSource[start.iLine].Text, this.tb.TabLength);
+                        // beyond the last character
+                        start.iChar = toDisplay + 1;
                     }
-                    if (start.iChar > finish + 1)
-                        start.iChar = finish + 1;
+
+                    // correct for position inside a TAB
+                    start.iChar = tb.lines[start.iLine].DisplayIndexToCharDisplayPosition(start.iChar, tb.TabLength);
                 }
             }
 
@@ -693,10 +689,6 @@ namespace FastColoredTextBoxNS
                 preferedPos = start.iChar - tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(wrapIndex);
             }
 
-            int prevLineIndex = this.Start.iLine;
-            int prevDisplayCharIndex = start.iChar;
-            int prevCharIndex = prevDisplayCharIndex;
-
             int iWW = tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar);
             if (iWW >= tb.LineInfos[start.iLine].WordWrapStringsCount - 1)
             {
@@ -715,28 +707,19 @@ namespace FastColoredTextBoxNS
                 int startStringIndex = tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(iWW + 1);
                 int finishStringIndex = tb.LineInfos[start.iLine].GetWordWrapStringFinishPosition(iWW + 1, tb.TextSource[start.iLine]);
 
-
                 int fromDisplay = tb.lines[start.iLine].GetDisplayWidthForSubString(startStringIndex, this.tb.TabLength);
-                int toDisplay = tb.lines[start.iLine].GetDisplayWidthForSubString(finishStringIndex, this.tb.TabLength);
+                int toDisplay = tb.lines[start.iLine].GetDisplayWidthForSubString(finishStringIndex + 1, this.tb.TabLength);
 
-                start.iChar = startStringIndex + preferedPos;
-                /* RL: Not required
-                // correct for tab, add the difference between the preceeding text length with tabstops and the preceeding text length without tabstops
-                if (!this.tb.ConvertTabToSpaces)
-                {
-                    string prevLineText = this.tb.TextSource[prevLineIndex].Text.Substring(0, prevCharIndex);
-                    start.iChar = TextSizeCalculator.AdjustedCharWidthOffset(prevLineText, this.tb.TextSource[start.iLine].Text, this.tb.TabLength);
-                }
-                */
+                start.iChar = fromDisplay + preferedPos;
+
                 if (start.iChar > toDisplay + 1)
                 {
                     // beyond the last character
                     start.iChar = toDisplay + 1;
                 }
-                int charDisplayIndex;
-                int charIndex;
-                tb.lines[start.iLine].DisplayIndexToPosition(start.iChar, tb.TabLength, out charDisplayIndex, out charIndex);
-                start.iChar = charDisplayIndex;
+
+                // correct for position inside a TAB
+                start.iChar = tb.lines[start.iLine].DisplayIndexToCharDisplayPosition(start.iChar, tb.TabLength);
             }
 
             if (!shift)
@@ -750,38 +733,46 @@ namespace FastColoredTextBoxNS
             ColumnSelectionMode = false;
 
             if (preferedPos < 0)
-                preferedPos = start.iChar - tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar));
+            {
+                int wrapIndex = tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar);
+                preferedPos = start.iChar - tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(wrapIndex);
+            }
 
-            int pageHeight = tb.ClientRectangle.Height / tb.CharHeight - 1;
+            int pageHeight = tb.ClientRectangle.Height / tb.CharHeight - 1; // measured in display lines
 
             for (int i = 0; i < pageHeight; i++)
             {
-                int prevLineIndex = this.Start.iLine;
-                int prevCharIndex = start.iChar;
-
-                int iWW = tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar);
+                int iWW = tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar); // FIXME: convert to string-index
                 if (iWW >= tb.LineInfos[start.iLine].WordWrapStringsCount - 1)
                 {
-                    if (start.iLine >= tb.LinesCount - 1) break;
+                    // go to next line
+                    if (start.iLine >= tb.LinesCount - 1) break; // on the last line
                     //pass hidden
                     int newLine = tb.FindNextVisibleLine(start.iLine);
-                    if (newLine == start.iLine) break;
+                    if (newLine == start.iLine) break; // on the last visible line
                     start.iLine = newLine;
                     iWW = -1;
                 }
+                // else // go to next wordwrap segment
 
                 if (iWW < tb.LineInfos[start.iLine].WordWrapStringsCount - 1)
                 {
-                    int finish = tb.LineInfos[start.iLine].GetWordWrapStringFinishPosition(iWW + 1, tb.TextSource[start.iLine]);
-                    start.iChar = tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(iWW + 1) + preferedPos;
-                    // correct for tab, add the difference between the preceeding text length with tabstops and the preceeding text length without tabstops
-                    if (!this.tb.ConvertTabToSpaces)
+                    int startStringIndex = tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(iWW + 1);
+                    int fromDisplay = tb.lines[start.iLine].GetDisplayWidthForSubString(startStringIndex, this.tb.TabLength);
+                    
+                    int finishStringIndex = tb.LineInfos[start.iLine].GetWordWrapStringFinishPosition(iWW + 1, tb.TextSource[start.iLine]);
+                    int toDisplay = tb.lines[start.iLine].GetDisplayWidthForSubString(finishStringIndex + 1, this.tb.TabLength);
+
+                    start.iChar = fromDisplay + preferedPos;
+
+                    if (start.iChar > toDisplay + 1)
                     {
-                        string prevLineText = this.tb.TextSource[prevLineIndex].Text.Substring(0, prevCharIndex);
-                        start.iChar = TextSizeCalculator.AdjustedCharWidthOffset(prevLineText, this.tb.TextSource[start.iLine].Text, this.tb.TabLength);
+                        // beyond the last character
+                        start.iChar = toDisplay + 1;
                     }
-                    if (start.iChar > finish + 1)
-                        start.iChar = finish + 1;
+
+                    // correct for position inside a TAB
+                    start.iChar = tb.lines[start.iLine].DisplayIndexToCharDisplayPosition(start.iChar, tb.TabLength);
                 }
             }
 
