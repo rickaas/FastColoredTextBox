@@ -1089,7 +1089,7 @@ namespace FastColoredTextBoxNS
                 int stringIndex = group.Index;
                 int stringLength = group.Length;
                 r.Start = charIndexToPlace[stringIndex];
-                r.End = charIndexToPlace[stringIndex + stringLength];
+                r.End = charIndexToPlace[stringIndex + stringLength - 1]; // minus one because the end position is inclusive
                 yield return r;
             }
         }
