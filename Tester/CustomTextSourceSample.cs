@@ -152,7 +152,7 @@ namespace Tester
         private void LoadLineFromSourceString(int i)
         {
             var line = CreateLine();
-
+            line.EolFormat = CurrentTB.DefaultEolFormat;
             string s;
             if(i == Count - 1)
                 s = sourceString.Substring(sourceStringLinePositions[i]);
