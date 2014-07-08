@@ -5159,7 +5159,14 @@ namespace FastColoredTextBoxNS
             {
                 if (lines[i].IsEmpty) continue; // no need to use DisplayWidth here because we want to know if line is empty
                 Selection.Start = new Place(startChar, i);
-                lines.Manager.ExecuteCommand(new InsertTextCommand(TextSource, new String(' ', TabLength)));
+                if (this.ConvertTabToSpaces)
+                {
+                    lines.Manager.ExecuteCommand(new InsertTextCommand(TextSource, new String(' ', TabLength)));
+                }
+                else
+                {
+                    lines.Manager.ExecuteCommand(new InsertTextCommand(TextSource, "\t"));
+                }
             }
 
             // Restore selection
