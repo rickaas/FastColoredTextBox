@@ -42,6 +42,11 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(0, 6, TABLENGTH));
             Assert.AreEqual("asdf12", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(0, 6, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("asdf12", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
+            line.GetStyleCharForDisplayRange(0, 6, TABLENGTH, alwaysIncludePartial: false).ToArray();
         }
 
         [TestMethod]

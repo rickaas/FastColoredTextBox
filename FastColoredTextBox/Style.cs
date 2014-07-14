@@ -134,26 +134,8 @@ namespace FastColoredTextBoxNS
         {
             //DisplayChar displayChar in line.GetStyleCharForDisplayRange(firstChar, lastChar, range.tb.TabLength);
 
-            int beforeRangeSize = -1; // cached value only used when this.SpecialTabDraw == true;
             int backgroundWidth = (range.End.iChar - range.Start.iChar)*range.tb.CharWidth;
 
-            /*
-            if (this.SpecialTabDraw)
-            {
-                var llll = range.tb.TextSource[range.Start.iLine]; // text on the line
-                string beforeRangeText = llll.Text.Substring(0, range.Start.iChar); // all text before the range
-                string rangeText = range.Text; // text within the range
-
-                // Calculate where previous range ended
-                beforeRangeSize = TextSizeCalculator.TextWidth(beforeRangeText, range.tb.TabLength);
-                int rangeSize = TextSizeCalculator.TextWidth(beforeRangeSize, rangeText, range.tb.TabLength) - beforeRangeSize;
-
-                backgroundWidth = rangeSize * range.tb.CharWidth;
-            }
-            else
-            {
-                backgroundWidth = (range.End.iChar - range.Start.iChar)*range.tb.CharWidth;
-            }*/
             //draw background
             if (BackgroundBrush != null)
                 gr.FillRectangle(BackgroundBrush, position.X, position.Y, backgroundWidth, range.tb.CharHeight);

@@ -4368,8 +4368,10 @@ namespace FastColoredTextBoxNS
             int fromX = p.iChar;
             int toX = p.iChar;
 
+            int lineWidth = lines[p.iLine].GetDisplayWidth(this.TabLength);
+
             // start walking forward and keep swallowing letters, digits or underscores
-            var afterPlaceRange = lines[p.iLine].GetStyleCharForDisplayRange(p.iChar, lines[p.iLine].GetDisplayWidth(this.TabLength), this.TabLength);
+            var afterPlaceRange = lines[p.iLine].GetStyleCharForDisplayRange(p.iChar, lineWidth, this.TabLength);
             foreach (var dc in afterPlaceRange)
             {
                 char c = dc.Char.c;
@@ -4394,7 +4396,7 @@ namespace FastColoredTextBoxNS
 
             // now walk backwards
             // FIXME: SLOW!!!
-            var lineRange = lines[p.iLine].GetStyleCharForDisplayRange(0, lines[p.iLine].GetDisplayWidth(this.TabLength), this.TabLength);
+            var lineRange = lines[p.iLine].GetStyleCharForDisplayRange(0, lineWidth, this.TabLength);
             var reverse = lineRange.Where(x => x.DisplayIndex < p.iChar).Reverse().ToList();
             foreach (var back in reverse)
             {

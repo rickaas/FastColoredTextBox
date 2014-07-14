@@ -72,6 +72,8 @@ namespace FastColoredTextBoxNS
             }
         }
 
+
+        // toDisplay
         public void AppendStyleForDisplayRange(int fromDisplay, int toDisplay, StyleIndex styleIndex, int tabLength)
         {
             if (this.chars.Count == 0) return; // out of bounds, just ignore
@@ -310,6 +312,8 @@ namespace FastColoredTextBoxNS
             return charDisplayIndex;
         }
 
+        // Returns the string index of the character whose start display index is the the nearest to displayIndex
+        // (Onlt applies to TABs)
         internal int DisplayIndexToStringIndex(int displayIndex, int tabLength)
         {
             int charDisplayIndex;
@@ -400,6 +404,7 @@ namespace FastColoredTextBoxNS
         /// <param name="toDisplayIndex">exclusive</param>
         /// <param name="tabLength"></param>
         /// <returns></returns>
+        // FIXME: toDisplayIndex is exclusive, make it inclusive
         public IEnumerable<char> GetCharsForDisplayRange(int fromDisplayIndex, int toDisplayIndex, int tabLength)
         {
             // first convert to fromDisplayIndex to a character index in this line
@@ -442,6 +447,7 @@ namespace FastColoredTextBoxNS
         }
 
         // Char, string index, display index
+        // FIXME: toDisplayIndex is exclusive, make it inclusive
         public IEnumerable<DisplayChar> GetStyleCharForDisplayRange(int fromDisplayIndex, int toDisplayIndex, int tabLength, bool alwaysIncludePartial = false)
         {
             // first convert to fromDisplayIndex to a character index in this line

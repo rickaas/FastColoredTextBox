@@ -17,6 +17,11 @@ namespace FastColoredTextBoxNS
         Place start;
         Place end;
 
+        // RL: Ranges can be confusing. A range of (0,0)-(0,0) has no characters
+        // RL: Ranges can be confusing. A range of (0,0)-(1,0) has one character.
+        // The end character position is exclusive
+        // To get the range of an entire line that end position must be at the line-width position (index of last character + 1)
+
         public readonly FastColoredTextBox tb;
 
         // used when going up or down
@@ -921,7 +926,7 @@ namespace FastColoredTextBoxNS
             int fromLine = Math.Min(End.iLine, Start.iLine);
             int toLine = Math.Max(End.iLine, Start.iLine);
             int fromChar = FromX;
-            int toChar = ToX;
+            int toChar = ToX; // exclusive
             if (fromLine < 0) return;
             //
             for (int y = fromLine; y <= toLine; y++)
@@ -1089,7 +1094,7 @@ namespace FastColoredTextBoxNS
                 int stringIndex = group.Index;
                 int stringLength = group.Length;
                 r.Start = charIndexToPlace[stringIndex];
-                r.End = charIndexToPlace[stringIndex + stringLength - 1]; // minus one because the end position is inclusive
+                r.End = charIndexToPlace[stringIndex + stringLength]; 
                 yield return r;
             }
         }
@@ -1336,7 +1341,8 @@ namespace FastColoredTextBoxNS
                     // fromX == 0 when not on the first line of the selection
                     int fromX = y == fromLine ? fromChar : 0;
 
-                    int toX = y == toLine ? Math.Min(toChar - 1, tb.TextSource[y].GetDisplayWidth(tb.TabLength) - 1) : tb.TextSource[y].GetDisplayWidth(tb.TabLength) - 1;
+                    int lineWidth = tb.TextSource[y].GetDisplayWidth(tb.TabLength);
+                    int toX = y == toLine ? Math.Min(toChar, lineWidth) : lineWidth;
 
                     var line = tb.TextSource[y];
 
@@ -1651,7 +1657,7 @@ namespace FastColoredTextBoxNS
                                 //var right = line[start.iChar];
                                 var left = line.GetCharAtDisplayPosition(start.iChar - 1, tb.TabLength);
                                 var right = line.GetCharAtDisplayPosition(start.iChar, tb.TabLength);
-
+                                //between 1 and >, > is not readonly while it should be
                                 if ((left.style & si) != 0 &&
                                     (right.style & si) != 0) return true;//we are between readonly chars
                             }

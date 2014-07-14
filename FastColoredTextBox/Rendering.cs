@@ -252,7 +252,7 @@ namespace FastColoredTextBoxNS
             int firstChar = (Math.Max(0, textbox.HorizontalScroll.Value - textbox.Paddings.Left)) / textbox.CharWidth; 
             
 
-            // when drawing a line, draw until this character display position
+            // when drawing a line, we can draw until this character display position
             int lastChar = (textbox.HorizontalScroll.Value + textbox.ClientSize.Width) / textbox.CharWidth; 
             
             
@@ -389,7 +389,7 @@ namespace FastColoredTextBoxNS
         /// <param name="gr"></param>
         /// <param name="textbox"></param>
         /// <param name="firstChar">Character display position</param>
-        /// <param name="lastChar">Character display position</param>
+        /// <param name="lastChar">The last character display position that is visible. </param>
         /// <param name="iLine">The line index in textbox.lines</param>
         /// <param name="iWordWrapLine">Index of the substring of the line or the wordwrap index</param>
         /// <param name="startX">Drawing coordinate for first character</param>
@@ -400,16 +400,16 @@ namespace FastColoredTextBoxNS
             LineInfo lineInfo = textbox.LineInfos[iLine];
 
             // use these to access chars in the line
-            int from = lineInfo.GetWordWrapStringStartPosition(iWordWrapLine);
-            int to = lineInfo.GetWordWrapStringFinishPosition(iWordWrapLine, line);
+            int from = lineInfo.GetWordWrapStringStartPosition(iWordWrapLine); // start position of wordwrap segment
+            int to = lineInfo.GetWordWrapStringFinishPosition(iWordWrapLine, line); // end position (inclusive) of wordwrap segment
 
-            int lineDisplayWidth = line.GetDisplayWidthForRange(from, to+1, textbox.TabLength);
+            int lineDisplayWidth = line.GetDisplayWidthForRange(from, to + 1, textbox.TabLength);
             //lastChar = Math.Min(to - from, lastChar); // is the string index
-            lastChar = Math.Min(lineDisplayWidth, lastChar); // display position of last character
+            lastChar = Math.Min(lineDisplayWidth, lastChar+1); // display position of last character of the line
 
             // use these in ranges
             int fromDisplay = line.GetDisplayWidthForSubString(from, textbox.TabLength);
-            int toDisplay = line.GetDisplayWidthForSubString(to, textbox.TabLength);
+            //int toDisplay = line.GetDisplayWidthForSubString(to, textbox.TabLength);
 
             gr.SmoothingMode = SmoothingMode.AntiAlias;
 
@@ -420,52 +420,47 @@ namespace FastColoredTextBoxNS
                 //rendering by FoldedBlockStyle
 
                 //var foldRange = new Range(textbox, from + firstChar, iLine, from + lastChar + 1, iLine);
-                var foldRange = new Range(textbox, fromDisplay + firstChar, iLine, fromDisplay + lastChar + 1, iLine);
+                var foldRange = new Range(textbox, fromDisplay + firstChar, iLine, fromDisplay + lastChar, iLine);
                 textbox.FoldedBlockStyle.Draw(gr, new Point(startX + firstChar * textbox.CharWidth, y), foldRange);
             }
             else
             {
                 //render by custom styles
                 StyleIndex currentStyleIndex = StyleIndex.None;
-                int iLastFlushedChar = firstChar - 1; // display index
-
+                int iNextFlushedChar = firstChar; // display index of first next char to flush
+                bool isFirst = true;
                 // if firstChar is inside a TAB when to render a partial TAB arrow...
-                foreach (DisplayChar displayChar in line.GetStyleCharForDisplayRange(firstChar, lastChar, textbox.TabLength, alwaysIncludePartial:true))
+                int rangeEnd = lastChar;
+                foreach (DisplayChar displayChar in line.GetStyleCharForDisplayRange(firstChar, rangeEnd, textbox.TabLength, alwaysIncludePartial: true))
                 {
                     StyleIndex style = displayChar.Char.style;
+                    if (isFirst)
+                    {
+                        // no need to flush before first character
+                        currentStyleIndex = style;
+                        isFirst = false;
+                    }
+                    
                     if (currentStyleIndex != style)
                     {
-                        // flush rendering when the style changed
-                        //var styleRange = new Range(textbox, fromDisplay + iLastFlushedChar + 1, iLine, from + iChar, iLine);
-                        var styleRange = new Range(textbox, fromDisplay + iLastFlushedChar + 1, iLine, fromDisplay + displayChar.DisplayIndex + displayChar.DisplayWidth, iLine);
-                        FlushRendering(gr, textbox, currentStyleIndex,
-                                       new Point(startX + (iLastFlushedChar + 1) * textbox.CharWidth, y), styleRange);
-                        //iLastFlushedChar = iChar - 1;
-                        iLastFlushedChar = displayChar.DisplayIndex - 1;
+                        
+                        int startRange = fromDisplay + iNextFlushedChar;
+                        int exclusiveEndChar = fromDisplay + displayChar.DisplayIndex; // We do (displayChar.DisplayIndex) because the current displayChar belongs to the next flush
+                        var styleRange = new Range(textbox, startRange, iLine, exclusiveEndChar, iLine);
+                        var p = new Point(startX + iNextFlushedChar * textbox.CharWidth, y);
+                        FlushRendering(gr, textbox, currentStyleIndex, p, styleRange);
+                        iNextFlushedChar = displayChar.DisplayIndex;
                         currentStyleIndex = style;
                     }
+
+
                 }
 
-                /*
-                for (int iChar = firstChar; iChar <= lastChar; iChar++)
-                {
-                    // style are on string index
-                    StyleIndex style = line[from + iChar].style;
-                    if (currentStyleIndex != style)
-                    {
-                        // flush rendering when the style changed
-                        var styleRange = new Range(textbox, from + iLastFlushedChar + 1, iLine, from + iChar, iLine);
-                        FlushRendering(gr, textbox, currentStyleIndex,
-                                       new Point(startX + (iLastFlushedChar + 1) * textbox.CharWidth, y), styleRange);
-                        iLastFlushedChar = iChar - 1;
-                        currentStyleIndex = style;
-                    }
-                }*/
-
                 // flush the remainder of the text
-                var remainingTextRange = new Range(textbox, fromDisplay + iLastFlushedChar + 1, iLine, fromDisplay + lastChar + 1, iLine);
-                FlushRendering(gr, textbox, currentStyleIndex,
-                    new Point(startX + (iLastFlushedChar + 1) * textbox.CharWidth, y), remainingTextRange);
+                int remainStart = fromDisplay + iNextFlushedChar;
+                var remainingTextRange = new Range(textbox, remainStart, iLine, fromDisplay + lastChar, iLine);
+                var rp = new Point(startX + iNextFlushedChar * textbox.CharWidth, y);
+                FlushRendering(gr, textbox, currentStyleIndex, rp, remainingTextRange);
             }
 
             if (textbox.EndOfLineStyle != null && line.StringLength == to + 1)
