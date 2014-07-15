@@ -46,7 +46,6 @@ namespace UnitTests
                 var dcs = line.GetStyleCharForDisplayRange(0, 6, TABLENGTH, alwaysIncludePartial: true).ToArray();
                 Assert.AreEqual("asdf12", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
             }
-            line.GetStyleCharForDisplayRange(0, 6, TABLENGTH, alwaysIncludePartial: false).ToArray();
         }
 
         [TestMethod]
@@ -59,6 +58,10 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(2, 6, TABLENGTH));
             Assert.AreEqual("df12", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(2, 6, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("df12", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         [TestMethod]
@@ -71,6 +74,10 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(2, 8, TABLENGTH));
             Assert.AreEqual("df1234", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(2, 8, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("df1234", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         [TestMethod]
@@ -83,6 +90,10 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(0, 8, TABLENGTH));
             Assert.AreEqual("asdf1234", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(0, 8, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("asdf1234", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         [TestMethod]
@@ -98,6 +109,10 @@ namespace UnitTests
                 var line = CreateLine(text);
                 string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(0, 10, TABLENGTH));
                 Assert.AreEqual("asdf\t12", result);
+                {
+                    var dcs = line.GetStyleCharForDisplayRange(0, 10, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                    Assert.AreEqual("asdf\t12", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+                }
             }
 
             // "asdff___1234"
@@ -108,6 +123,10 @@ namespace UnitTests
                 var line = CreateLine(text);
                 string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(0, 10, TABLENGTH));
                 Assert.AreEqual("asdff\t12", result);
+                {
+                    var dcs = line.GetStyleCharForDisplayRange(0, 10, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                    Assert.AreEqual("asdff\t12", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+                }
             }
 
             // "asdfff__1234"
@@ -118,6 +137,10 @@ namespace UnitTests
                 var line = CreateLine(text);
                 string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(0, 10, TABLENGTH));
                 Assert.AreEqual("asdfff\t12", result);
+                {
+                    var dcs = line.GetStyleCharForDisplayRange(0, 10, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                    Assert.AreEqual("asdfff\t12", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+                }
             }
 
             // "asdffff_1234"
@@ -128,6 +151,10 @@ namespace UnitTests
                 var line = CreateLine(text);
                 string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(0, 10, TABLENGTH));
                 Assert.AreEqual("asdffff\t12", result);
+                {
+                    var dcs = line.GetStyleCharForDisplayRange(0, 10, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                    Assert.AreEqual("asdffff\t12", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+                }
             }
 
         }
@@ -154,6 +181,10 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(5, 10, TABLENGTH));
             Assert.AreEqual("sdf12", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(5, 10, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("sdf12", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         #region SingleLine_StartsInTab
@@ -169,6 +200,14 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(4, 11, TABLENGTH));
             Assert.AreEqual("\t123", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(4, 11, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("\t123", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
+            {
+                var dcs = line.GetStyleCharForDisplayRange(4, 11, TABLENGTH, alwaysIncludePartial: false).ToArray();
+                Assert.AreEqual("\t123", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         [TestMethod]
@@ -182,6 +221,14 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(5, 11, TABLENGTH));
             Assert.AreEqual("\t123", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(5, 11, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("\t123", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
+            {
+                var dcs = line.GetStyleCharForDisplayRange(5, 11, TABLENGTH, alwaysIncludePartial: false).ToArray();
+                Assert.AreEqual("\t123", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         [TestMethod]
@@ -195,6 +242,14 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(6, 11, TABLENGTH));
             Assert.AreEqual("123", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(6, 11, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("\t123", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
+            {
+                var dcs = line.GetStyleCharForDisplayRange(6, 11, TABLENGTH, alwaysIncludePartial: false).ToArray();
+                Assert.AreEqual("123", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         [TestMethod]
@@ -208,6 +263,14 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(7, 11, TABLENGTH));
             Assert.AreEqual("123", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(7, 11, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("\t123", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
+            {
+                var dcs = line.GetStyleCharForDisplayRange(7, 11, TABLENGTH, alwaysIncludePartial: false).ToArray();
+                Assert.AreEqual("123", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         #endregion
@@ -225,6 +288,14 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(1, 5, TABLENGTH));
             Assert.AreEqual("sdf", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 5, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("sdf\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 5, TABLENGTH, alwaysIncludePartial: false).ToArray();
+                Assert.AreEqual("sdf", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         [TestMethod]
@@ -238,6 +309,14 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(1, 6, TABLENGTH));
             Assert.AreEqual("sdf\t", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 6, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("sdf\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 6, TABLENGTH, alwaysIncludePartial: false).ToArray();
+                Assert.AreEqual("sdf\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         [TestMethod]
@@ -251,6 +330,14 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(1, 7, TABLENGTH));
             Assert.AreEqual("sdf\t", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 7, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("sdf\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 7, TABLENGTH, alwaysIncludePartial: false).ToArray();
+                Assert.AreEqual("sdf\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         [TestMethod]
@@ -264,6 +351,14 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(1, 8, TABLENGTH));
             Assert.AreEqual("sdf\t", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 8, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("sdf\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 8, TABLENGTH, alwaysIncludePartial: false).ToArray();
+                Assert.AreEqual("sdf\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         #endregion
@@ -281,6 +376,14 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(1, 6, TABLENGTH));
             Assert.AreEqual("sdfu", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 6, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("sdfu\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 6, TABLENGTH, alwaysIncludePartial: false).ToArray();
+                Assert.AreEqual("sdfu", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         [TestMethod]
@@ -294,6 +397,14 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(1, 7, TABLENGTH));
             Assert.AreEqual("sdfu\t", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 7, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("sdfu\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 7, TABLENGTH, alwaysIncludePartial: false).ToArray();
+                Assert.AreEqual("sdfu\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         [TestMethod]
@@ -307,6 +418,14 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(1, 8, TABLENGTH));
             Assert.AreEqual("sdfu\t", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 8, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("sdfu\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 8, TABLENGTH, alwaysIncludePartial: false).ToArray();
+                Assert.AreEqual("sdfu\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         #endregion
@@ -324,6 +443,14 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(1, 7, TABLENGTH));
             Assert.AreEqual("sdfuu\t", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 7, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("sdfuu\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 7, TABLENGTH, alwaysIncludePartial: false).ToArray();
+                Assert.AreEqual("sdfuu\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         [TestMethod]
@@ -337,6 +464,14 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(1, 8, TABLENGTH));
             Assert.AreEqual("sdfuu\t", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 8, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("sdfuu\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 8, TABLENGTH, alwaysIncludePartial: false).ToArray();
+                Assert.AreEqual("sdfuu\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         #endregion
@@ -354,6 +489,10 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(1, 7, TABLENGTH));
             Assert.AreEqual("sdfuuu", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 7, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("sdfuuu", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
 
         [TestMethod]
@@ -367,6 +506,14 @@ namespace UnitTests
             var line = CreateLine(text);
             string result = ToCharEnumerableToString(line.GetCharsForDisplayRange(1,8, TABLENGTH));
             Assert.AreEqual("sdfuuu\t", result);
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 8, TABLENGTH, alwaysIncludePartial: true).ToArray();
+                Assert.AreEqual("sdfuuu\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
+            {
+                var dcs = line.GetStyleCharForDisplayRange(1, 8, TABLENGTH, alwaysIncludePartial: false).ToArray();
+                Assert.AreEqual("sdfuuu\t", ToCharEnumerableToString(dcs.Select(d => d.Char.c)));
+            }
         }
         #endregion
     }
