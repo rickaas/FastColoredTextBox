@@ -152,6 +152,24 @@ namespace FastColoredTextBoxNS
             }
         }
 
+        /// <summary>
+        /// Returns the number of display positions that contain white space (SPACE or TAB)
+        /// </summary>
+        /// <param name="tabLenght"></param>
+        /// <returns></returns>
+        public int StartWhiteSpaceCount(int tabLength)
+        {
+            int whiteSpacesCount = 0;
+            for (int i = 0; i < this.chars.Count; i++)
+                if (this.chars[i].c == ' ')
+                    whiteSpacesCount++;
+                else if (this.chars[i].c == '\t')
+                    whiteSpacesCount += TextSizeCalculator.TabWidth(whiteSpacesCount, tabLength);
+                else
+                    break;
+            return whiteSpacesCount;
+        }
+
         public bool IsEmpty
         {
             get { return this.chars.Count == 0; }
