@@ -2057,15 +2057,15 @@ namespace FastColoredTextBoxNS
         {
             if (this.lines != null)
             {
-                // FIXME: Shouldn't this be removing the handlers from this.lines?
-                ts.LineInserted -= ts_LineInserted;
-                ts.LineRemoved -= ts_LineRemoved;
-                ts.TextChanged -= ts_TextChanged;
-                ts.RecalcNeeded -= ts_RecalcNeeded;
-                ts.RecalcWordWrap -= ts_RecalcWordWrap;
-                ts.TextChanging -= ts_TextChanging;
+                // Detach event handlers
+                this.lines.LineInserted -= ts_LineInserted;
+                this.lines.LineRemoved -= ts_LineRemoved;
+                this.lines.TextChanged -= ts_TextChanged;
+                this.lines.RecalcNeeded -= ts_RecalcNeeded;
+                this.lines.RecalcWordWrap -= ts_RecalcWordWrap;
+                this.lines.TextChanging -= ts_TextChanging;
 
-                lines.Dispose();
+                this.lines.Dispose();
             }
 
             LineInfos.Clear();
