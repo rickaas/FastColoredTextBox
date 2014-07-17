@@ -101,7 +101,6 @@ namespace FastColoredTextBoxNS
             }
         }
 
-        // FIXME
         private void _GetText(out string text, out List<Place> charIndexToPlace)
         {
             //try get cached text
@@ -135,8 +134,7 @@ namespace FastColoredTextBoxNS
                     // this is not a column selection so if we are at the last line of a range we end at the min(line_end, toChar),
                     // otherwise we end at the end of the line
                     var lineWidth = tb.TextSource[y].GetDisplayWidth(tb.TabLength);
-                    // FIXME: are the minus 1 needed?
-                    int toX = y == toLine ? Math.Min(toChar, lineWidth) : lineWidth;
+                    int toX = y == toLine ? Math.Min(toChar, lineWidth) : lineWidth; // exclusive
 
                     var displayChars = tb.TextSource[y].GetStyleCharForDisplayRange(fromX, toX, tb.TabLength);
                     foreach (var dc in displayChars)
@@ -195,7 +193,7 @@ namespace FastColoredTextBoxNS
                     // this is not a column selection so if we are at the last line of a range we end at the min(line_end, toChar),
                     // otherwise we end at the end of the line
                     var lineWidth = tb.TextSource[y].GetDisplayWidth(tb.TabLength);
-                    int toX = y == toLine ? Math.Min(lineWidth, toChar) : lineWidth;
+                    int toX = y == toLine ? Math.Min(lineWidth, toChar) : lineWidth; // the character at the display position is exclusive
 
                     var chars = tb.TextSource[y].GetCharsForDisplayRange(fromX, toX, tb.TabLength);
                     foreach (char c in chars) 
@@ -648,7 +646,7 @@ namespace FastColoredTextBoxNS
 
             if (preferedPos < 0)
             {
-                int wrapIndex = tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar);
+                int wrapIndex = tb.LineInfos[start.iLine].GetWordWrapStringIndex(start.iChar); // FIXME: convert to string-index
                 preferedPos = start.iChar - tb.LineInfos[start.iLine].GetWordWrapStringStartPosition(wrapIndex);
             }
 
@@ -1405,7 +1403,7 @@ namespace FastColoredTextBoxNS
                 }
                 if (r.Start.iChar < tb.GetLineDisplayWidth(r.Start.iLine))
                 {
-                    //if ((tb.TextSource[r.Start].style & mask) == 0)
+                    //if ((tb.TextSource[r.Start].style & mask) == 0) // FIXME
                     if (false)
                     {
                         break;

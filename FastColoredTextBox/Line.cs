@@ -349,6 +349,7 @@ namespace FastColoredTextBoxNS
         /// <param name="tabLength"></param>
         /// <param name="charDisplayIndex"></param>
         /// <param name="charIndex"></param>
+        /// <param name="alwaysIncludePartial">Iff true and displayIndex points to a position inside a TAB the tab is always included, otherwise it may be excluded.</param>
         internal void DisplayIndexToPosition(int displayIndex, int tabLength, out int charDisplayIndex, out int charIndex, bool alwaysIncludePartial=false) 
         {
             // first convert to fromDisplayIndex to a character index in this line
@@ -422,7 +423,6 @@ namespace FastColoredTextBoxNS
         /// <param name="toDisplayIndex">exclusive</param>
         /// <param name="tabLength"></param>
         /// <returns></returns>
-        // FIXME: toDisplayIndex is exclusive, make it inclusive
         public IEnumerable<char> GetCharsForDisplayRange(int fromDisplayIndex, int toDisplayIndex, int tabLength)
         {
             // first convert to fromDisplayIndex to a character index in this line
@@ -464,8 +464,14 @@ namespace FastColoredTextBoxNS
 
         }
 
-        // Char, string index, display index
-        // FIXME: toDisplayIndex is exclusive, make it inclusive
+        /// <summary>
+        /// Returns DisplayChar structs for the given range.
+        /// </summary>
+        /// <param name="fromDisplayIndex">inclusive</param>
+        /// <param name="toDisplayIndex">exclusive</param>
+        /// <param name="tabLength"></param>
+        /// <param name="alwaysIncludePartial">Iff true and displayIndex points to a position inside a TAB the tab is always included, otherwise it may be excluded.</param>
+        /// <returns></returns>
         public IEnumerable<DisplayChar> GetStyleCharForDisplayRange(int fromDisplayIndex, int toDisplayIndex, int tabLength, bool alwaysIncludePartial = false)
         {
             // first convert to fromDisplayIndex to a character index in this line
@@ -523,13 +529,12 @@ namespace FastColoredTextBoxNS
         /// <returns></returns>
         public int GetDisplayWidthForSubString(int count, int tabLength) 
         {
-            // FIXME: What if stringIndex < 0
             if (count < 0)
             {
                 return 0;
             }
-            var chars = CharHelper.ToCharEnumerable(this.chars.GetRange(0, count));
-            return TextSizeCalculator.TextWidth(chars, tabLength);
+            var cs = CharHelper.ToCharEnumerable(this.chars.GetRange(0, count));
+            return TextSizeCalculator.TextWidth(cs, tabLength);
         }
 
         public int GetDisplayWidthForRange(int fromStringIndex, int toStringIndex, int tabLength)
@@ -655,7 +660,7 @@ namespace FastColoredTextBoxNS
         }
 
         /// <summary>
-        /// Gets index of wordwrap string for given char position
+        /// Gets index of wordwrap string segment for given char position
         /// </summary>
         public int GetWordWrapStringIndex(int iChar)
         {
