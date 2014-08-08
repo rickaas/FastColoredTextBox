@@ -10,7 +10,9 @@ namespace FastColoredTextBoxNS
         void Dispose();
         void FindNext(string text);
         void FindPrevious(string text);
-        void Show();
+        void Show(IWin32Window parent);
+        bool Focus();
+        bool Visible { get; }
         TextBox FindTextBox { get; }
         void Close();
     }

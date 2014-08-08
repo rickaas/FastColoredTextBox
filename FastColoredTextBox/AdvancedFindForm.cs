@@ -129,6 +129,8 @@ namespace FastColoredTextBoxNS
                 if (cbWholeWord.Checked)
                     pattern = "\\b" + pattern + "\\b";
                 // the current position
+                Range startSelection = tb.Selection.Clone();
+                startSelection.Normalize();
                 Range range = tb.Selection.Clone();
                 range.Normalize();
 
@@ -161,6 +163,14 @@ namespace FastColoredTextBoxNS
                 if (foundMatch)
                 {
                     this.hasPreviousFindResult = true;
+                    Range endSelection = tb.Selection.Clone();
+                    endSelection.Normalize();
+                    // There is no Range.Equals()
+                    if (endSelection.Start.Equals(startSelection.Start) && endSelection.End.Equals(startSelection.End))
+                    {
+                        // So, we've actually found the previous selection. Let's try finding the next one.
+                        Find(pattern, direction);
+                    }
                     return;
                 }
 

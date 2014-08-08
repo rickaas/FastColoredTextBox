@@ -56,7 +56,7 @@
             this.btFindNext.Name = "btFindNext";
             this.btFindNext.Size = new System.Drawing.Size(91, 23);
             this.btFindNext.TabIndex = 4;
-            this.btFindNext.Text = "Find next";
+            this.btFindNext.Text = "Find &next";
             this.btFindNext.UseVisualStyleBackColor = true;
             this.btFindNext.Click += new System.EventHandler(this.btFindNext_Click);
             // 
@@ -89,7 +89,7 @@
             this.cbMatchCase.Name = "cbMatchCase";
             this.cbMatchCase.Size = new System.Drawing.Size(82, 17);
             this.cbMatchCase.TabIndex = 1;
-            this.cbMatchCase.Text = "Match case";
+            this.cbMatchCase.Text = "Match &case";
             this.cbMatchCase.UseVisualStyleBackColor = true;
             this.cbMatchCase.CheckedChanged += new System.EventHandler(this.cbMatchCase_CheckedChanged);
             // 
@@ -109,7 +109,7 @@
             this.cbWholeWord.Name = "cbWholeWord";
             this.cbWholeWord.Size = new System.Drawing.Size(113, 17);
             this.cbWholeWord.TabIndex = 2;
-            this.cbWholeWord.Text = "Match whole word";
+            this.cbWholeWord.Text = "Match &whole word";
             this.cbWholeWord.UseVisualStyleBackColor = true;
             this.cbWholeWord.CheckedChanged += new System.EventHandler(this.cbMatchCase_CheckedChanged);
             // 
@@ -120,7 +120,7 @@
             this.btFindPrevious.Name = "btFindPrevious";
             this.btFindPrevious.Size = new System.Drawing.Size(91, 23);
             this.btFindPrevious.TabIndex = 6;
-            this.btFindPrevious.Text = "Find previous";
+            this.btFindPrevious.Text = "Find &previous";
             this.btFindPrevious.UseVisualStyleBackColor = true;
             this.btFindPrevious.Click += new System.EventHandler(this.btFindPrevious_Click);
             // 
@@ -143,7 +143,6 @@
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Find";
-            this.TopMost = true;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FindForm_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();

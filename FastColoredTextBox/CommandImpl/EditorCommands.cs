@@ -227,9 +227,9 @@ namespace FastColoredTextBoxNS.CommandImpl
         {
             IFindForm findForm = textbox.findForm;
             if (findForm == null) 
-                findForm = new AdvancedFindForm(textbox);
+                textbox.findForm = findForm = new AdvancedFindForm(textbox);
 
-            if (findText != null)
+            if (!string.IsNullOrEmpty(findText))
             {
                 findForm.FindTextBox.Text = findText;
             }
@@ -239,7 +239,10 @@ namespace FastColoredTextBoxNS.CommandImpl
             }
 
             findForm.FindTextBox.SelectAll();
-            findForm.Show();
+            if (!findForm.Visible)
+                findForm.Show(textbox);
+            // Focus makes sure executing Find with a form already shown focuses it again
+            findForm.Focus();
         }
 
         /// <summary>
@@ -252,9 +255,9 @@ namespace FastColoredTextBoxNS.CommandImpl
 
             ReplaceForm replaceForm = textbox.replaceForm;
             if (replaceForm == null)
-                replaceForm = new ReplaceForm(textbox);
+                textbox.replaceForm = replaceForm = new ReplaceForm(textbox);
 
-            if (findText != null)
+            if (!string.IsNullOrEmpty(findText))
             {
                 replaceForm.tbFind.Text = findText;
             }
@@ -264,7 +267,9 @@ namespace FastColoredTextBoxNS.CommandImpl
             }
 
             replaceForm.tbFind.SelectAll();
-            replaceForm.Show();
+            if (!replaceForm.Visible)
+                replaceForm.Show(textbox);
+            replaceForm.Focus();
         }
     }
 }
