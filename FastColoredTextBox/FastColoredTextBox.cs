@@ -555,10 +555,10 @@ namespace FastColoredTextBoxNS
         }
 
         [Browsable(false)]
-        public IFindForm findForm { get; private set; }
+        public IFindForm findForm { get; set; }
 
         [Browsable(false)]
-        public ReplaceForm replaceForm { get; private set; }
+        public ReplaceForm replaceForm { get; set; }
 
         /// <summary>
         /// Returns this.TextSource.Count.
