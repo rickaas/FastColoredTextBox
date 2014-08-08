@@ -125,7 +125,7 @@ namespace FastColoredTextBoxNS
             this.ForeBrush = foreBrush;
             this.BackgroundBrush = backgroundBrush;
             this.FontStyle = fontStyle;
-            this.TabDrawColor = Color.FromArgb(255, 0, 0, 255);
+            this.TabDrawColor = Color.Gray;
             stringFormat = new StringFormat(StringFormatFlags.MeasureTrailingSpaces);
         }
 
@@ -134,19 +134,19 @@ namespace FastColoredTextBoxNS
         {
             //DisplayChar displayChar in line.GetStyleCharForDisplayRange(firstChar, lastChar, range.tb.TabLength);
 
-            int backgroundWidth = (range.End.iChar - range.Start.iChar)*range.tb.CharWidth;
+            int backgroundWidth = (range.End.iChar - range.Start.iChar) * range.tb.CharWidth;
 
             //draw background
             if (BackgroundBrush != null)
                 gr.FillRectangle(BackgroundBrush, position.X, position.Y, backgroundWidth, range.tb.CharHeight);
             //draw chars
-            using(var f = new Font(range.tb.Font, FontStyle))
+            using (var f = new Font(range.tb.Font, FontStyle))
             {
                 //Font fHalfSize = new Font(range.tb.Font.FontFamily, f.SizeInPoints/2, FontStyle);
                 Line line = range.tb.TextSource[range.Start.iLine];
                 float dx = range.tb.CharWidth;
-                float y = position.Y + range.tb.LineInterval/2;
-                float x = position.X - range.tb.CharWidth/3;
+                float y = position.Y + range.tb.LineInterval / 2;
+                float x = position.X - range.tb.CharWidth / 3;
 
                 if (ForeBrush == null)
                     ForeBrush = new SolidBrush(range.tb.ForeColor);
@@ -182,7 +182,7 @@ namespace FastColoredTextBoxNS
                 }
                 else
                 {
-                    foreach (DisplayChar displayChar in line.GetStyleCharForDisplayRange(range.Start.iChar, range.End.iChar, range.tb.TabLength, alwaysIncludePartial:true))
+                    foreach (DisplayChar displayChar in line.GetStyleCharForDisplayRange(range.Start.iChar, range.End.iChar, range.tb.TabLength, alwaysIncludePartial: true))
                     {
                         // draw char
                         char c = displayChar.Char.c;
@@ -195,15 +195,18 @@ namespace FastColoredTextBoxNS
                                 int partial = displayChar.DisplayIndex + tabWidth - range.Start.iChar;
                                 tabWidth = partial;
                             }
-                            using (Pen pen = new Pen(this.TabDrawColor, range.tb.CharHeight / 10F))
+                            if (this.SpecialTabDraw)
                             {
-                                pen.EndCap = LineCap.ArrowAnchor;
-                                // add (range.tb.CharWidth/3) because the tab-arrow doesn't need spacing
-                                gr.DrawLine(pen,
-                                            x + range.tb.CharWidth / 3F,
-                                            y + (range.tb.CharHeight / 2F),
-                                            x + (tabWidth * dx) + range.tb.CharWidth / 3F,
-                                            y + (range.tb.CharHeight / 2F));
+                                using (Pen pen = new Pen(this.TabDrawColor, range.tb.CharHeight / 10F))
+                                {
+                                    pen.EndCap = LineCap.ArrowAnchor;
+                                    // add (range.tb.CharWidth/3) because the tab-arrow doesn't need spacing
+                                    gr.DrawLine(pen,
+                                                x + range.tb.CharWidth / 3F,
+                                                y + (range.tb.CharHeight / 2F),
+                                                x + (tabWidth * dx) + range.tb.CharWidth / 3F,
+                                                y + (range.tb.CharHeight / 2F));
+                                }
                             }
                             x += tabWidth * dx;
                         }
@@ -269,10 +272,10 @@ namespace FastColoredTextBoxNS
         public override void Dispose()
         {
             base.Dispose();
-            
-            if(ForeBrush!=null)
+
+            if (ForeBrush != null)
                 ForeBrush.Dispose();
-            if(BackgroundBrush!=null)
+            if (BackgroundBrush != null)
                 BackgroundBrush.Dispose();
         }
 
@@ -282,7 +285,7 @@ namespace FastColoredTextBoxNS
 
             if (BackgroundBrush is SolidBrush)
             {
-                var s =  ExportToHTML.GetColorAsString((BackgroundBrush as SolidBrush).Color);
+                var s = ExportToHTML.GetColorAsString((BackgroundBrush as SolidBrush).Color);
                 if (s != "")
                     result += "background-color:" + s + ";";
             }
@@ -310,10 +313,10 @@ namespace FastColoredTextBoxNS
 
             if (BackgroundBrush is SolidBrush)
                 result.BackColor = (BackgroundBrush as SolidBrush).Color;
-            
+
             if (ForeBrush is SolidBrush)
                 result.ForeColor = (ForeBrush as SolidBrush).Color;
-            
+
             if ((FontStyle & FontStyle.Bold) != 0)
                 result.AdditionalTags += @"\b";
             if ((FontStyle & FontStyle.Italic) != 0)
@@ -332,7 +335,7 @@ namespace FastColoredTextBoxNS
     /// </summary>
     public class FoldedBlockStyle : TextStyle
     {
-        public FoldedBlockStyle(Brush foreBrush, Brush backgroundBrush, FontStyle fontStyle):
+        public FoldedBlockStyle(Brush foreBrush, Brush backgroundBrush, FontStyle fontStyle) :
             base(foreBrush, backgroundBrush, fontStyle)
         {
         }
@@ -344,7 +347,7 @@ namespace FastColoredTextBoxNS
                 base.Draw(gr, position, range);
 
                 int firstNonSpaceSymbolX = position.X;
-                
+
                 //find first non space symbol
                 var line = range.tb.TextSource[range.Start.iLine];
                 var displayCharRange = line.GetStyleCharForDisplayRange(range.Start.iChar, range.End.iChar, range.tb.TabLength);
@@ -370,7 +373,7 @@ namespace FastColoredTextBoxNS
             else
             {
                 //draw '...'
-                using(Font f = new Font(range.tb.Font, FontStyle))
+                using (Font f = new Font(range.tb.Font, FontStyle))
                     gr.DrawString("...", f, ForeBrush, range.tb.LeftIndent, position.Y - 2);
                 //create marker
                 range.tb.visibleMarkers.Add(new FoldedAreaMarker(range.Start.iLine, new Rectangle(range.tb.LeftIndent + 2, position.Y, 2 * range.tb.CharHeight, range.tb.CharHeight)));
@@ -383,7 +386,7 @@ namespace FastColoredTextBoxNS
     /// </summary>
     public class SelectionStyle : Style
     {
-        public Brush BackgroundBrush{get;set;}
+        public Brush BackgroundBrush { get; set; }
 
         /// <summary>
         /// Draw the \t (tab character) using a special character.
@@ -392,7 +395,8 @@ namespace FastColoredTextBoxNS
 
         public override bool IsExportable
         {
-            get{return false;}  set{}
+            get { return false; }
+            set { }
         }
 
         public SelectionStyle(Brush backgroundBrush)
@@ -454,7 +458,7 @@ namespace FastColoredTextBoxNS
     /// </summary>
     public class MarkerStyle : Style
     {
-        public Brush BackgroundBrush{get;set;}
+        public Brush BackgroundBrush { get; set; }
 
         public MarkerStyle(Brush backgroundBrush)
         {
@@ -518,7 +522,7 @@ namespace FastColoredTextBoxNS
             gr.FillPath(Brushes.White, GetRoundedRectangle(rect, 1));
             gr.DrawPath(borderPen, GetRoundedRectangle(rect, 1));
             //add visual marker for handle mouse events
-            AddVisualMarker(range.tb, new StyleVisualMarker(new Rectangle(p.X-range.tb.CharWidth, p.Y, range.tb.CharWidth, range.tb.CharHeight), this));
+            AddVisualMarker(range.tb, new StyleVisualMarker(new Rectangle(p.X - range.tb.CharWidth, p.Y, range.tb.CharWidth, range.tb.CharHeight), this));
         }
 
         public override void Dispose()
@@ -615,7 +619,7 @@ namespace FastColoredTextBoxNS
             // TODO: Check if range is the last character of the line
             //bool isLastChar = range.tb[range.Start.iLine].Count == range.End.iChar;
             var line = range.tb.TextSource[range.Start.iLine]; // text on the line
-            
+
             switch (line.EolFormat)
             {
                 case EolFormat.LF:
