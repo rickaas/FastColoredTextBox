@@ -108,24 +108,19 @@ namespace FastColoredTextBoxNS
         //public readonly Font Font;
         public StringFormat stringFormat;
 
-        public Color TabDrawColor { get; set; }
+        public Color WhiteSpaceDrawColor { get; set; }
 
         /// <summary>
-        /// Draw the \t (tab character) using a special character.
+        /// Draw white space (tab character and space) using a special character.
         /// </summary>
-        public bool SpecialTabDraw { get; set; }
-
-        /// <summary>
-        /// When true the TAB character isn't drawn, but the required tab width is still skipped
-        /// </summary>
-        public bool HiddenTabCharacter { get; set; }
+        public bool SpecialWhiteSpaceDraw { get; set; }
 
         public TextStyle(Brush foreBrush, Brush backgroundBrush, FontStyle fontStyle)
         {
             this.ForeBrush = foreBrush;
             this.BackgroundBrush = backgroundBrush;
             this.FontStyle = fontStyle;
-            this.TabDrawColor = Color.Gray;
+            this.WhiteSpaceDrawColor = Color.Gray;
             stringFormat = new StringFormat(StringFormatFlags.MeasureTrailingSpaces);
         }
 
@@ -195,9 +190,9 @@ namespace FastColoredTextBoxNS
                                 int partial = displayChar.DisplayIndex + tabWidth - range.Start.iChar;
                                 tabWidth = partial;
                             }
-                            if (this.SpecialTabDraw)
+                            if (this.SpecialWhiteSpaceDraw)
                             {
-                                using (Pen pen = new Pen(this.TabDrawColor, range.tb.CharHeight / 10F))
+                                using (Pen pen = new Pen(this.WhiteSpaceDrawColor, range.tb.CharHeight / 10F))
                                 {
                                     pen.EndCap = LineCap.ArrowAnchor;
                                     // add (range.tb.CharWidth/3) because the tab-arrow doesn't need spacing
@@ -210,8 +205,21 @@ namespace FastColoredTextBoxNS
                             }
                             x += tabWidth * dx;
                         }
+                        else if (c == ' ' && this.SpecialWhiteSpaceDraw)
+                        {
+                            using (Pen pen = new Pen(this.WhiteSpaceDrawColor, range.tb.CharHeight / 10F))
+                            {
+                                gr.DrawLine(pen,
+                                            x + range.tb.CharWidth / 2F,
+                                            y + (range.tb.CharHeight / 2F),
+                                            x + range.tb.CharWidth / 2F + 1,
+                                            y + (range.tb.CharHeight / 2F));
+                            }
+                            x += dx;
+                        }
                         else
                         {
+
                             gr.DrawString(c.ToString(), f, ForeBrush, x, y, stringFormat);
                             x += dx;
                         }
@@ -388,11 +396,6 @@ namespace FastColoredTextBoxNS
     {
         public Brush BackgroundBrush { get; set; }
 
-        /// <summary>
-        /// Draw the \t (tab character) using a special character.
-        /// </summary>
-        public bool SpecialTabDraw { get; set; }
-
         public override bool IsExportable
         {
             get { return false; }
@@ -416,26 +419,6 @@ namespace FastColoredTextBoxNS
             if (BackgroundBrush != null)
             {
                 int backgroundWidth = (range.End.iChar - range.Start.iChar) * range.tb.CharWidth;
-                /*
-                if (this.SpecialTabDraw)
-                {
-                    // TODO: Can range span multiple lines? I don't think so...
-                    var llll = range.tb.TextSource[range.Start.iLine]; // text on the line
-                    string beforeRangeText = llll.Text.Substring(0, range.Start.iChar); // all text before the range
-                    string rangeText = range.Text; // text within the range
-
-                    // Calculate where previous range ended
-                    int beforeRangeSize = TextSizeCalculator.TextWidth(beforeRangeText, range.tb.TabLength);
-                    int rangeSize = TextSizeCalculator.TextWidth(beforeRangeSize, rangeText, range.tb.TabLength) -
-                                    beforeRangeSize;
-
-                    // position.X should be at the correct location
-                    backgroundWidth = rangeSize*range.tb.CharWidth;
-                }
-                else
-                {
-                    backgroundWidth = (range.End.iChar - range.Start.iChar)*range.tb.CharWidth;
-                }*/
                 Rectangle rect = new Rectangle(position.X, position.Y, backgroundWidth, range.tb.CharHeight);
                 if (rect.Width == 0)
                     return;
