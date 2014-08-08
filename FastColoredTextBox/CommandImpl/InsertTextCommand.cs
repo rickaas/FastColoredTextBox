@@ -45,7 +45,7 @@ namespace FastColoredTextBoxNS.CommandImpl
             base.Execute();
         }
 
-        internal static void InsertText(string insertedText, TextSource ts, bool normalizeEOL=false)
+        internal static void InsertText(string insertedText, TextSource ts, bool normalizeEOL = false)
         {
             var tb = ts.CurrentTB;
             try
@@ -88,9 +88,15 @@ namespace FastColoredTextBoxNS.CommandImpl
                             break;
                     }
                 }
+
+                // find the string index for the first character
+                int charStringIndex = ts[tb.Selection.Start.iLine].DisplayIndexToStringIndex(tb.Selection.Start.iChar, tb.TabLength);
+
                 foreach (char c in insertedText)
                 {
-                    InsertCharCommand.InsertChar(c, ref cc, ts);
+                    int nextCharStringIndex;
+                    InsertCharCommand.InsertChar(c, ref cc, ts, charStringIndex, out nextCharStringIndex);
+                    charStringIndex = nextCharStringIndex; // grab next index from out parameter because an '\n' resets the stringIndex back to zero.
                 }
                 ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(0, 1));
             }

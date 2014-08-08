@@ -40,7 +40,7 @@ namespace FastColoredTextBoxNS.CommandImpl
                     if (deletedChar != '\x0')
                     {
                         ts.CurrentTB.ExpandBlock(ts.CurrentTB.Selection.Start.iLine);
-                        InsertChar(deletedChar, ref cc, ts);
+                        _InsertChar(deletedChar, ref cc, ts, -1);
                     }
                     break;
                 default:
@@ -79,16 +79,25 @@ namespace FastColoredTextBoxNS.CommandImpl
             //{
             //    InsertChar(insertChar, ref deletedChar, ts);
             //}
-            InsertChar(c, ref deletedChar, ts); // only supports inserting a single char
+            _InsertChar(c, ref deletedChar, ts, -1); // only supports inserting a single char
 
             ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(ts.CurrentTB.Selection.Start.iLine, ts.CurrentTB.Selection.Start.iLine));
             base.Execute();
         }
 
-        internal static void InsertChar(char c, ref char deletedChar, TextSource ts)
+
+        internal static void _InsertChar(char c, ref char deletedChar, TextSource ts, int charStringIndex)
+        {
+            int ignore;
+            InsertChar(c, ref deletedChar, ts, charStringIndex, out ignore);
+        }
+
+        // charStringIndex points to the index of the char in the string
+        // nextCharStringIndex will point to the next character
+        internal static void InsertChar(char c, ref char deletedChar, TextSource ts, int charStringIndex, out int nextCharStringIndex)
         {
             var tb = ts.CurrentTB;
-
+            nextCharStringIndex = -1; // value unknown
             switch (c)
             {
                 case '\n':
@@ -104,6 +113,7 @@ namespace FastColoredTextBoxNS.CommandImpl
                     {
                         // If we have a CR before this LF, we do not need to insert a new line: it has already happened
                         tb.TextSource[tb.Selection.Start.iLine - 1].EolFormat = EolFormat.CRLF;
+                        nextCharStringIndex = 0; // first index on next line
                         break;
                     }
                     if (tb.TextSource[tb.Selection.Start.iLine].EolFormat == EolFormat.CR &&
@@ -111,6 +121,7 @@ namespace FastColoredTextBoxNS.CommandImpl
                     {
                         // A \r followed by a \n
                         tb.TextSource[tb.Selection.Start.iLine].EolFormat = EolFormat.CRLF;
+                        nextCharStringIndex = 0; // first index on next line
                         break;
                     }
 
@@ -123,7 +134,7 @@ namespace FastColoredTextBoxNS.CommandImpl
                     tb.TextSource[tb.Selection.Start.iLine].EolFormat = EolFormat.LF;
 
                     InsertLine(ts);
-
+                    nextCharStringIndex = 0; // first index on next line
                     break;
                 case '\r':
                     if (!ts.CurrentTB.allowInsertRemoveLines)
@@ -149,7 +160,7 @@ namespace FastColoredTextBoxNS.CommandImpl
                     {
                         tb.TextSource[tb.Selection.Start.iLine].EolFormat = EolFormat.CR;
                     }
-
+                    nextCharStringIndex = 0; // first index on next line
                     break;
                 case '\b'://backspace
                     if (tb.Selection.Start.iChar == 0 && tb.Selection.Start.iLine == 0)
@@ -197,10 +208,23 @@ namespace FastColoredTextBoxNS.CommandImpl
                     else
                     {
                         // allow \t as characters, do not convert to spaces
-                        int stringIndex = ts[tb.Selection.Start.iLine].DisplayIndexToStringIndex(tb.Selection.Start.iChar, tb.TabLength);
+                        int stringIndex;
+                        if (charStringIndex >= 0)
+                        {
+                            // stringIndex is known before hand
+                            stringIndex = charStringIndex;
+                        }
+                        else
+                        {
+                            // tb.Selection.Start.iChar is a display index and has to be converted to a string index
+                            // This can be slow... :(
+                            stringIndex = ts[tb.Selection.Start.iLine].DisplayIndexToStringIndex(tb.Selection.Start.iChar, tb.TabLength);
+                        }
+                        nextCharStringIndex = stringIndex + 1;
+
                         ts[tb.Selection.Start.iLine].Insert(stringIndex, new Char(c));
 
-                        int displayEnd = ts[tb.Selection.Start.iLine].GetDisplayWidthForSubString(stringIndex+1, tb.TabLength);
+                        int displayEnd = tb.Selection.Start.iChar + TextSizeCalculator.TabWidth(tb.Selection.Start.iChar, tb.TabLength);
                         //ts[tb.Selection.Start.iLine].Insert(tb.Selection.Start.iChar, new Char(c));
 
                         //tb.Selection.Start = new Place(tb.Selection.Start.iChar + 1, tb.Selection.Start.iLine);
@@ -209,7 +233,19 @@ namespace FastColoredTextBoxNS.CommandImpl
                     break;
                 default:
                     {
-                        int stringIndex = ts[tb.Selection.Start.iLine].DisplayIndexToStringIndex(tb.Selection.Start.iChar, tb.TabLength);
+                        int stringIndex;
+                        if (charStringIndex >= 0)
+                        {
+                            // stringIndex is known before hand
+                            stringIndex = charStringIndex;
+                        }
+                        else
+                        {
+                            // tb.Selection.Start.iChar is a display index and has to be converted to a string index
+                            // This can be slow... :(
+                            stringIndex = ts[tb.Selection.Start.iLine].DisplayIndexToStringIndex(tb.Selection.Start.iChar, tb.TabLength);
+                        }
+                        nextCharStringIndex = stringIndex + 1;
                         ts[tb.Selection.Start.iLine].Insert(stringIndex, new Char(c));
                     }
                     //ts[tb.Selection.Start.iLine].Insert(tb.Selection.Start.iChar, new Char(c));
@@ -230,6 +266,7 @@ namespace FastColoredTextBoxNS.CommandImpl
             else
                 BreakLines(tb.Selection.Start.iLine, tb.Selection.Start.iChar, ts);
 
+            // Move selection to next line
             tb.Selection.Start = new Place(0, tb.Selection.Start.iLine + 1);
             ts.NeedRecalc(new TextSource.TextSourceTextChangedEventArgs(0, 1));
         }
