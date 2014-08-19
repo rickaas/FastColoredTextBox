@@ -27,7 +27,7 @@ namespace Tester
         public EndOfLineSample()
         {
             InitializeComponent();
-            this.fctb.EndOfLineStyle = new EndOfLineStyle(fctb.Font);
+            this.fctb.EndOfLineStyle = new EndOfLineStyle(fctb.DefaultStyle.FontStyle);
             this.wordWrapCheckBox.CheckStateChanged += WordWrapCheckBoxOnCheckStateChanged;
         }
 

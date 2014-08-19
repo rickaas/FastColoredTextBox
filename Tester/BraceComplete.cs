@@ -33,7 +33,7 @@ namespace Tester
         public BraceComplete()
         {
             InitializeComponent();
-            this.fastColoredTextBox1.EndOfLineStyle = new EndOfLineStyle(fastColoredTextBox1.Font);
+            this.fastColoredTextBox1.EndOfLineStyle = new EndOfLineStyle(fastColoredTextBox1.DefaultStyle.FontStyle);
             this.fastColoredTextBox1.AutoCompleteBrackets = false;
             this.fastColoredTextBox1.TextChanged += FastColoredTextBox1OnTextChanged;
             this.fastColoredTextBox1.TextChangedDelayed += FastColoredTextBox1OnTextChangedDelayed;
