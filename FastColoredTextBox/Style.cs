@@ -537,18 +537,18 @@ namespace FastColoredTextBoxNS
             //
         }
     }
-
+    
     /// <summary>
     /// Draw EOL marker after the last character in a line.
     /// </summary>
     public class EndOfLineStyle : Style
     {
 
-        public Font Font { get; private set; }
+        public FontStyle FontStyle { get; private set; }
 
-        public EndOfLineStyle(Font f)
+        public EndOfLineStyle(FontStyle f)
         {
-            this.Font = f;
+            this.FontStyle = f;
         }
 
         public override void Draw(Graphics gr, Point position, Range range)
@@ -558,20 +558,23 @@ namespace FastColoredTextBoxNS
             //bool isLastChar = range.tb[range.Start.iLine].Count == range.End.iChar;
             var line = range.tb.TextSource[range.Start.iLine]; // text on the line
 
-            switch (line.EolFormat)
+            using (var f = new Font(range.tb.Font, FontStyle))
             {
-                case EolFormat.LF:
-                    gr.DrawString("¶", this.Font, Brushes.Gray, position);
-                    break;
-                case EolFormat.CRLF:
-                    gr.DrawString("§¶", this.Font, Brushes.Gray, position);
-                    break;
-                case EolFormat.CR:
-                    gr.DrawString("§", this.Font, Brushes.Gray, position);
-                    break;
-                case EolFormat.None:
-                default:
-                    break;
+                switch (line.EolFormat)
+                {
+                    case EolFormat.LF:
+                        gr.DrawString("¶", f, Brushes.Gray, position);
+                        break;
+                    case EolFormat.CRLF:
+                        gr.DrawString("§¶", f, Brushes.Gray, position);
+                        break;
+                    case EolFormat.CR:
+                        gr.DrawString("§", f, Brushes.Gray, position);
+                        break;
+                    case EolFormat.None:
+                    default:
+                        break;
+                }
             }
         }
 
