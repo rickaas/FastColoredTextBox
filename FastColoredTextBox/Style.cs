@@ -127,8 +127,6 @@ namespace FastColoredTextBoxNS
         // range is in display coordinates
         public override void Draw(Graphics gr, Point position, Range range)
         {
-            //DisplayChar displayChar in line.GetStyleCharForDisplayRange(firstChar, lastChar, range.tb.TabLength);
-
             int backgroundWidth = (range.End.iChar - range.Start.iChar) * range.tb.CharWidth;
 
             //draw background
@@ -137,7 +135,6 @@ namespace FastColoredTextBoxNS
             //draw chars
             using (var f = new Font(range.tb.Font, FontStyle))
             {
-                //Font fHalfSize = new Font(range.tb.Font.FontFamily, f.SizeInPoints/2, FontStyle);
                 Line line = range.tb.TextSource[range.Start.iLine];
                 float dx = range.tb.CharWidth;
                 float y = position.Y + range.tb.LineInterval / 2;
@@ -231,55 +228,6 @@ namespace FastColoredTextBoxNS
                             x += dx;
                         }
                     }
-                    /*
-                    //classic mode 
-                    if (this.SpecialTabDraw)
-                    {
-                        int currentSize = beforeRangeSize;
-                        for (int i = range.Start.iChar; i < range.End.iChar; i++)
-                        {
-                            //draw char
-                            char c = line[i].c;
-                            if (c == '\t')
-                            {
-                                int tabWidth = TextSizeCalculator.TabWidth(currentSize, range.tb.TabLength);
-                                // How do we print tabs?
-                                // draw the rightwards arrow character (http://www.fileformat.info/info/unicode/char/2192/index.htm)
-                                //gr.DrawString("\u2192", f, ForeBrush, x, y, stringFormat);
-                                // or draw an arrow via DrawLine?
-                                if (!this.HiddenTabCharacter)
-                                {
-                                    using (Pen pen = new Pen(this.TabDrawColor, range.tb.CharHeight / 10F))
-                                    {
-                                        pen.EndCap = LineCap.ArrowAnchor;
-                                        // add (range.tb.CharWidth/3) because the tab-arrow doesn't need spacing
-                                        gr.DrawLine(pen,
-                                                    x + range.tb.CharWidth / 3F,
-                                                    y + (range.tb.CharHeight / 2F),
-                                                    x + (tabWidth * dx) + range.tb.CharWidth / 3F,
-                                                    y + (range.tb.CharHeight / 2F));
-                                    }
-                                }
-                                x += tabWidth * dx; // tab has variable width
-                                currentSize += tabWidth;
-                            }
-                            else
-                            {
-                                currentSize++;
-                                gr.DrawString(c.ToString(), f, ForeBrush, x, y, stringFormat);
-                                x += dx;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        for (int i = range.Start.iChar; i < range.End.iChar; i++)
-                        {
-                            //draw char
-                            gr.DrawString(line[i].c.ToString(), f, ForeBrush, x, y, stringFormat);
-                            x += dx;
-                        }
-                    }*/
                 }
             }
         }
