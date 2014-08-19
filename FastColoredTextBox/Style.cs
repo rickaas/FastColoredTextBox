@@ -192,9 +192,14 @@ namespace FastColoredTextBoxNS
                             }
                             if (this.SpecialWhiteSpaceDraw)
                             {
-                                using (Pen pen = new Pen(this.WhiteSpaceDrawColor, range.tb.CharHeight / 10F))
+                                using (Pen pen = new Pen(this.WhiteSpaceDrawColor, 1))
+                                using (GraphicsPath capPath = new GraphicsPath())
                                 {
-                                    pen.EndCap = LineCap.ArrowAnchor;
+                                    // A relative sized arrow
+                                    capPath.AddLine((range.tb.CharHeight / -3F), range.tb.CharWidth / -2F, 0, -1); // lower line
+                                    capPath.AddLine((range.tb.CharHeight / 3F), range.tb.CharWidth / -2F, 0, -1); // upper line
+                                    pen.CustomEndCap = new System.Drawing.Drawing2D.CustomLineCap(null, capPath);
+
                                     // add (range.tb.CharWidth/3) because the tab-arrow doesn't need spacing
                                     gr.DrawLine(pen,
                                                 x + range.tb.CharWidth / 3F,
@@ -207,13 +212,15 @@ namespace FastColoredTextBoxNS
                         }
                         else if (c == ' ' && this.SpecialWhiteSpaceDraw)
                         {
+                            // draw a dot
                             using (Pen pen = new Pen(this.WhiteSpaceDrawColor, range.tb.CharHeight / 10F))
                             {
                                 gr.DrawLine(pen,
-                                            x + range.tb.CharWidth / 2F,
+                                            x + range.tb.CharWidth / 3F + range.tb.CharWidth / 2F - range.tb.CharHeight / 20F,
                                             y + (range.tb.CharHeight / 2F),
-                                            x + range.tb.CharWidth / 2F + 1,
+                                            x + range.tb.CharWidth / 3F + range.tb.CharWidth / 2F + range.tb.CharHeight / 20F,
                                             y + (range.tb.CharHeight / 2F));
+                                 
                             }
                             x += dx;
                         }
