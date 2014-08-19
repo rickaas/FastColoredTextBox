@@ -30,10 +30,8 @@ namespace Tester
             InitializeComponent();
             this.fastColoredTextBox1.ConvertTabToSpaces = false;
             //this.fastColoredTextBox1.DefaultStyle = new TabCharStyle(null, null, FontStyle.Regular, true);
-            this.fastColoredTextBox1.DefaultStyle.SpecialTabDraw = true;
-            this.fastColoredTextBox1.DefaultStyle.HiddenTabCharacter = true;
-            this.fastColoredTextBox1.DefaultStyle.TabDrawColor = Color.Gold;
-            this.fastColoredTextBox1.SelectionStyle.SpecialTabDraw = true;
+            this.fastColoredTextBox1.DefaultStyle.SpecialWhiteSpaceDraw = true;
+            this.fastColoredTextBox1.DefaultStyle.WhiteSpaceDrawColor = Color.Gold;
             this.fastColoredTextBox1.Text = CreateText();
         }
 
