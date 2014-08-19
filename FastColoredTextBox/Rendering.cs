@@ -140,13 +140,13 @@ namespace FastColoredTextBoxNS
                 }
 
                 var caretRect = new Rectangle(textbox.HorizontalScroll.Value + car.X, textbox.VerticalScroll.Value + car.Y, carWidth, textbox.CharHeight + 1);
-                if (textbox.prevCaretRect != caretRect)
-                {
-                    // caret changed
-                    NativeMethods.CreateCaret(textbox.Handle, 0, carWidth, textbox.CharHeight + 1);
-                    NativeMethods.SetCaretPos(car.X, car.Y);
-                    NativeMethods.ShowCaret(textbox.Handle);
-                }
+                // Previously we would only show the caret when the caret position changed textbox.prevCaretRect != caretRect
+                // However, this resulted in a hidden caret when you clicked on the same spot in the text editor during a RDP session,
+                // so now we always show the caret.
+
+                NativeMethods.CreateCaret(textbox.Handle, 0, carWidth, textbox.CharHeight + 1);
+                NativeMethods.SetCaretPos(car.X, car.Y);
+                NativeMethods.ShowCaret(textbox.Handle);
 
                 textbox.prevCaretRect = caretRect;
             }
