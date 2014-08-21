@@ -2,17 +2,12 @@
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using FastColoredTextBoxNS.CommandImpl;
 
 namespace FastColoredTextBoxNS
 {
     public partial class AdvancedFindForm : Form, IFindForm
     {
-
-        private enum FindNextDirection
-        {
-            Next,
-            Previous
-        }
 
         FastColoredTextBox tb;
 
@@ -43,218 +38,47 @@ namespace FastColoredTextBoxNS
 
         private void btFindNext_Click(object sender, EventArgs e)
         {
-            this.Find(tbFind.Text, FindNextDirection.Next);
+            this.Find(tbFind.Text, SearchPatternCommand.FindNextDirection.Next);
         }
 
         private void btFindPrevious_Click(object sender, EventArgs e)
         {
-            this.Find(tbFind.Text, FindNextDirection.Previous);
-        }
-
-        private Place NextPlace(Place p)
-        {
-            int lineLength = tb.GetLineDisplayWidth(p.iLine);
-            if (p.iChar < lineLength - 1)
-            {
-                return new Place(p.iChar+1, p.iLine);
-            }
-            else
-            {
-                // place is at last character of the line
-                if (p.iLine < tb.LinesCount - 1)
-                {
-                    // move to next line
-                    return new Place(0, p.iLine + 1);
-                }
-                else
-                {
-                    // already at last line, move to first line
-                    return new Place(0,0);
-                }
-                
-            }
-        }
-
-        private Place PrevPlace(Place p)
-        {
-            if (p.iChar == 0)
-            {
-                // move to previous line
-                if (p.iLine == 0)
-                {
-                    // already at first line, move to the last character at last line
-                    return new Place(tb.GetLineDisplayWidth(tb.LinesCount - 1), tb.LinesCount - 1);
-                }
-                else
-                {
-                    return new Place(tb.GetLineDisplayWidth(p.iLine - 1) - 1, p.iLine - 1);
-                }
-            }
-            else
-            {
-                return new Place(p.iChar - 1, p.iLine);
-            }
-        }
-
-        private Place EndOfLine(Place p)
-        {
-            return new Place(tb.GetLineDisplayWidth(p.iLine) - 1, p.iLine);
-        }
-        private Place StartOfLine(Place p)
-        {
-            return new Place(0, p.iLine);
+            this.Find(tbFind.Text, SearchPatternCommand.FindNextDirection.Previous);
         }
 
         public void FindNext(string pattern)
         {
-            this.Find(pattern, FindNextDirection.Next);
+            this.Find(pattern, SearchPatternCommand.FindNextDirection.Next);
         }
 
         public void FindPrevious(string pattern)
         {
-            this.Find(pattern, FindNextDirection.Previous);
+            this.Find(pattern, SearchPatternCommand.FindNextDirection.Previous);
         }
 
-        private void Find(string pattern, FindNextDirection direction)
+        private void Find(string pattern, SearchPatternCommand.FindNextDirection direction)
         {
-            string originalPattern = pattern;
-            Place start = new Place(0,0);
-            Place endOfDocument = new Place(tb.GetLineDisplayWidth(tb.LinesCount - 1), tb.LinesCount - 1);
             try
             {
+                string originalPattern = pattern;
                 // create Regex
                 RegexOptions opt = cbMatchCase.Checked ? RegexOptions.None : RegexOptions.IgnoreCase;
                 if (!cbRegex.Checked)
                     pattern = Regex.Escape(pattern);
                 if (cbWholeWord.Checked)
                     pattern = "\\b" + pattern + "\\b";
-                // the current position
-                Range startSelection = tb.Selection.Clone();
-                startSelection.Normalize();
-                Range range = tb.Selection.Clone();
-                range.Normalize();
 
-                // remember the start position
-                start = new Place(range.Start.iChar, range.Start.iLine);
-
-                if (direction == FindNextDirection.Next)
+                bool foundMatch = SearchPatternCommand.Find(this.tb, pattern, opt, direction, this.hasPreviousFindResult);
+                if (!foundMatch && !this.hasPreviousFindResult)
                 {
-                    // search till the end of the document
-                    if (this.hasPreviousFindResult)
-                    {
-                        // increase range.Start with one position (if we don't do this will keep finding the same string)
-                        range.Start = NextPlace(start);
-                    }
-                    else
-                    {
-                        range.Start = start;
-                    }
-                    range.End = endOfDocument; // search until end of document
+                    MessageBox.Show(String.Format("Pattern {0} not found.", originalPattern));
                 }
-                else // find previous
-                {
-                    // search backwards till start of document
-                    range.Start = new Place(0, 0);
-                    range.End = start;
-                }
-
-                Place foundMatchPlace;
-                bool foundMatch = TryFindNext(pattern, opt, direction, range, out foundMatchPlace);
-                if (foundMatch)
-                {
-                    this.hasPreviousFindResult = true;
-                    Range endSelection = tb.Selection.Clone();
-                    endSelection.Normalize();
-                    // There is no Range.Equals()
-                    if (endSelection.Start.Equals(startSelection.Start) && endSelection.End.Equals(startSelection.End))
-                    {
-                        // So, we've actually found the previous selection. Let's try finding the next one.
-                        Find(pattern, direction);
-                    }
-                    return;
-                }
-
-
-                // Searching forwarded and started at (0,0) => we have found nothing...
-                if (direction == FindNextDirection.Next && start == new Place(0, 0))
-                {
-                    // Only show message when we don't have a previous find.
-                    if (!this.hasPreviousFindResult) MessageBox.Show(String.Format("Pattern {0} not found.", originalPattern));
-                    this.hasPreviousFindResult = false;
-                    return;
-                }
-                // Searching backward and started at end of document => we have found nothing
-                if (direction == FindNextDirection.Previous && start == endOfDocument)
-                {
-                    // Only show message when we don't have a previous find.
-                    if (!this.hasPreviousFindResult) MessageBox.Show(String.Format("Pattern {0} not found.", originalPattern));
-                    this.hasPreviousFindResult = false;
-                    return;
-                }
-
-                // we haven't searched the entire document
-
-                // Change the search range depending on whether we are searching for the next or previous
-                if (direction == FindNextDirection.Next)
-                {
-                    // search from (0,0) to the line-end of start
-                    range.Start = new Place(0, 0);
-                    range.End = EndOfLine(start);
-                }
-                else // find previous
-                {
-                    // search from document-end to line-start of start
-                    range.Start = StartOfLine(start);
-                    range.End = endOfDocument; // search until end of document
-                }
-
-                Place foundMatchPlace2;
-                bool foundMatch2 = TryFindNext(pattern, opt, direction, range, out foundMatchPlace2);
-                if (foundMatch2)
-                {
-                    this.hasPreviousFindResult = true;
-                    return;
-                }
-
-                
-                // Found nothing
-                // Only show message when we don't have a previous find.
-                if (!this.hasPreviousFindResult) MessageBox.Show(String.Format("Pattern {0} not found.", originalPattern));
-                this.hasPreviousFindResult = false;
-
+                this.hasPreviousFindResult = foundMatch;
             }
             catch (Exception e)
             {
                 MessageBox.Show(this, e.Message, "Exception while searching");
             }
-        }
-
-        private bool TryFindNext(string pattern, RegexOptions opt, FindNextDirection direction, Range range, out Place foundMatchPlace)
-        {
-            if (direction == FindNextDirection.Next)
-            {
-                foreach (var r in range.GetRangesByLines(pattern, opt))
-                {
-                    foundMatchPlace = r.Start;
-                    tb.Selection = r;
-                    tb.DoSelectionVisible();
-                    tb.Invalidate();
-                    return true; // always return on the first match
-                }
-            }
-            else // find previous
-            {
-                foreach (var r in range.GetRangesByLinesReversed(pattern, opt))
-                {
-                    foundMatchPlace = r.Start;
-                    tb.Selection = r;
-                    tb.DoSelectionVisible();
-                    tb.Invalidate();
-                    return true; // always return on the first match
-                }
-            }
-            foundMatchPlace = Place.Empty;
-            return false;
         }
 
         private void tbFind_KeyPress(object sender, KeyPressEventArgs e)
