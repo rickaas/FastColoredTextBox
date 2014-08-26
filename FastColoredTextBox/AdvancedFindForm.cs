@@ -14,16 +14,24 @@ namespace FastColoredTextBoxNS
 
         private bool hasPreviousFindResult = false;
 
+        private readonly Action<string, RegexOptions> markTextAction;
+
         public TextBox FindTextBox
         {
             get { return this.tbFind; }
         }
 
-        public AdvancedFindForm(FastColoredTextBox tb)
+        public AdvancedFindForm(FastColoredTextBox tb, Action<string, RegexOptions> markTextAction)
         {
             InitializeComponent();
             this.tb = tb;
+            this.markTextAction = markTextAction;
             this.tbFind.TextChanged += TbFindOnTextChanged;
+
+            if (this.markTextAction == null)
+            {
+                this.btMarkAll.Enabled = false;
+            }
         }
 
         private void TbFindOnTextChanged(object sender, EventArgs eventArgs)
@@ -131,6 +139,22 @@ namespace FastColoredTextBoxNS
         private void cbMatchCase_CheckedChanged(object sender, EventArgs e)
         {
             ResetSearch();
+        }
+
+        private void btMarkAll_Click(object sender, EventArgs e)
+        {
+            if (this.markTextAction != null)
+            {
+                string pattern = tbFind.Text;
+                // create Regex
+                RegexOptions opt = cbMatchCase.Checked ? RegexOptions.None : RegexOptions.IgnoreCase;
+                if (!cbRegex.Checked)
+                    pattern = Regex.Escape(pattern);
+                if (cbWholeWord.Checked)
+                    pattern = "\\b" + pattern + "\\b";
+
+                this.markTextAction(pattern, opt);
+            }
         }
 
     }

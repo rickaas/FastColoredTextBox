@@ -36,12 +36,13 @@
             this.label1 = new System.Windows.Forms.Label();
             this.cbWholeWord = new System.Windows.Forms.CheckBox();
             this.btFindPrevious = new System.Windows.Forms.Button();
+            this.btMarkAll = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btClose
             // 
             this.btClose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btClose.Location = new System.Drawing.Point(304, 68);
+            this.btClose.Location = new System.Drawing.Point(304, 97);
             this.btClose.Name = "btClose";
             this.btClose.Size = new System.Drawing.Size(91, 23);
             this.btClose.TabIndex = 5;
@@ -124,11 +125,23 @@
             this.btFindPrevious.UseVisualStyleBackColor = true;
             this.btFindPrevious.Click += new System.EventHandler(this.btFindPrevious_Click);
             // 
-            // FindForm
+            // btMarkAll
+            // 
+            this.btMarkAll.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btMarkAll.Location = new System.Drawing.Point(304, 68);
+            this.btMarkAll.Name = "btMarkAll";
+            this.btMarkAll.Size = new System.Drawing.Size(91, 23);
+            this.btMarkAll.TabIndex = 7;
+            this.btMarkAll.Text = "Mark All";
+            this.btMarkAll.UseVisualStyleBackColor = true;
+            this.btMarkAll.Click += new System.EventHandler(this.btMarkAll_Click);
+            // 
+            // AdvancedFindForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(407, 123);
+            this.ClientSize = new System.Drawing.Size(407, 135);
+            this.Controls.Add(this.btMarkAll);
             this.Controls.Add(this.btFindPrevious);
             this.Controls.Add(this.cbWholeWord);
             this.Controls.Add(this.label1);
@@ -138,7 +151,7 @@
             this.Controls.Add(this.btFindNext);
             this.Controls.Add(this.btClose);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
-            this.Name = "FindForm";
+            this.Name = "AdvancedFindForm";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -159,5 +172,6 @@
         private System.Windows.Forms.CheckBox cbWholeWord;
         public System.Windows.Forms.TextBox tbFind;
         private System.Windows.Forms.Button btFindPrevious;
+        private System.Windows.Forms.Button btMarkAll;
     }
 }

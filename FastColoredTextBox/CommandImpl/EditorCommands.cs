@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using FastColoredTextBoxNS.EventArgDefs;
@@ -223,11 +224,11 @@ namespace FastColoredTextBoxNS.CommandImpl
         /// <summary>
         /// Shows find dialog
         /// </summary>
-        public static void ShowFindDialog(FastColoredTextBox textbox, string findText = null)
+        public static void ShowFindDialog(FastColoredTextBox textbox, string findText = null, Action<string, RegexOptions> markTextAction = null)
         {
             IFindForm findForm = textbox.findForm;
-            if (findForm == null) 
-                textbox.findForm = findForm = new AdvancedFindForm(textbox);
+            if (findForm == null)
+                textbox.findForm = findForm = new AdvancedFindForm(textbox, markTextAction);
 
             if (!string.IsNullOrEmpty(findText))
             {
