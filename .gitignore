@@ -109,3 +109,5 @@ UpgradeLog*.XML
 Binary/Tester.exe
 Binary/FastColoredTextBox.dll
 Binary/FastColoredTextBox.xml
+
+/.vs/**
