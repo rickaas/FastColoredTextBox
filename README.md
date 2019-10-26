@@ -10,3 +10,11 @@ It has such settings as foreground color, font style, background color which can
 ![Fast Colored TextBox](http://www.codeproject.com/KB/edit/FastColoredTextBox_/fastcoloredtextbox2.png)
 
 More details http://www.codeproject.com/Articles/161871/Fast-Colored-TextBox-for-syntax-highlighting
+
+## Development
+
+Active development to clean things up will be done in the `next` branch.
+ * Use newest Visual Studio 2019
+ * Clean up tests
+ * drop VB support
+ * Use CI (run tests, code quality)
