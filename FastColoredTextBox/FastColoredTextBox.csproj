@@ -69,7 +69,6 @@
     <Compile Include="CommandImpl\InsertTextCommand.cs" />
     <Compile Include="CommandImpl\MoveCommands.cs" />
     <Compile Include="CommandImpl\MultiRangeCommand.cs" />
-    <Compile Include="CommandImpl\PrintHelper.cs" />
     <Compile Include="CommandImpl\RemoveLinesCommand.cs" />
     <Compile Include="CommandImpl\ReplaceMultipleTextCommand.cs" />
     <Compile Include="CommandImpl\ReplaceTextCommand.cs" />
