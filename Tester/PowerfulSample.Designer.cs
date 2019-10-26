@@ -60,8 +60,6 @@ namespace Tester
             this.goLeftBracketToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.goRightBracketToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem7 = new System.Windows.Forms.ToolStripSeparator();
-            this.miPrint = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem9 = new System.Windows.Forms.ToolStripSeparator();
             this.startStopMacroRecordingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.executeMacroToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.miLanguage = new System.Windows.Forms.ToolStripMenuItem();
@@ -125,8 +123,6 @@ namespace Tester
             this.goLeftBracketToolStripMenuItem,
             this.goRightBracketToolStripMenuItem,
             this.toolStripMenuItem7,
-            this.miPrint,
-            this.toolStripMenuItem9,
             this.startStopMacroRecordingToolStripMenuItem,
             this.executeMacroToolStripMenuItem});
             this.editToolStripMenuItem.Name = "editToolStripMenuItem";
@@ -289,18 +285,6 @@ namespace Tester
             // 
             this.toolStripMenuItem7.Name = "toolStripMenuItem7";
             this.toolStripMenuItem7.Size = new System.Drawing.Size(264, 6);
-            // 
-            // miPrint
-            // 
-            this.miPrint.Name = "miPrint";
-            this.miPrint.Size = new System.Drawing.Size(267, 22);
-            this.miPrint.Text = "Print...";
-            this.miPrint.Click += new System.EventHandler(this.miPrint_Click);
-            // 
-            // toolStripMenuItem9
-            // 
-            this.toolStripMenuItem9.Name = "toolStripMenuItem9";
-            this.toolStripMenuItem9.Size = new System.Drawing.Size(264, 6);
             // 
             // startStopMacroRecordingToolStripMenuItem
             // 
@@ -520,13 +504,11 @@ namespace Tester
         private System.Windows.Forms.ToolStripMenuItem goRightBracketToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem jSToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem7;
-        private System.Windows.Forms.ToolStripMenuItem miPrint;
         private System.Windows.Forms.ToolStripMenuItem miChangeColors;
         private System.Windows.Forms.ToolStripMenuItem cSharpbuiltinHighlighterToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem setSelectedAsReadonlyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem setSelectedAsWritableToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem8;
-        private System.Windows.Forms.ToolStripSeparator toolStripMenuItem9;
         private System.Windows.Forms.ToolStripMenuItem startStopMacroRecordingToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem executeMacroToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem changeHotkeysToolStripMenuItem;

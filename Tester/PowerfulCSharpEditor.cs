@@ -454,7 +454,6 @@ namespace Tester
                     pasteToolStripButton.Enabled = pasteToolStripMenuItem.Enabled = true;
                     cutToolStripButton.Enabled = cutToolStripMenuItem.Enabled =
                     copyToolStripButton.Enabled = copyToolStripMenuItem.Enabled = !tb.Selection.IsEmpty;
-                    printToolStripButton.Enabled = true;
                 }
                 else
                 {
@@ -463,7 +462,6 @@ namespace Tester
                     cutToolStripButton.Enabled = cutToolStripMenuItem.Enabled =
                     copyToolStripButton.Enabled = copyToolStripMenuItem.Enabled = false;
                     pasteToolStripButton.Enabled = pasteToolStripMenuItem.Enabled = false;
-                    printToolStripButton.Enabled = false;
                     undoStripButton.Enabled = undoToolStripMenuItem.Enabled = false;
                     redoStripButton.Enabled = redoToolStripMenuItem.Enabled = false;
                     dgvObjectExplorer.RowCount = 0;
@@ -472,18 +470,6 @@ namespace Tester
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-            }
-        }
-
-        private void printToolStripButton_Click(object sender, EventArgs e)
-        {
-            if(CurrentTB!=null)
-            {
-                var settings = new PrintDialogSettings();
-                settings.Title = tsFiles.SelectedItem.Title;
-                settings.Header = "&b&w&b";
-                settings.Footer = "&b&p";
-                PrintHelper.Print(this.CurrentTB, settings);
             }
         }
 

@@ -331,11 +331,6 @@ namespace Tester
                 }
         }
 
-        private void miPrint_Click(object sender, EventArgs e)
-        {
-            PrintHelper.Print(fctb, new PrintDialogSettings() { ShowPrintPreviewDialog = true });
-        }
-
         Random rnd = new Random();
 
         private void miChangeColors_Click(object sender, EventArgs e)
