@@ -1,17 +1,17 @@
 ﻿using System;
 using FastColoredTextBoxNS;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace UnitTests
 {
-    [TestClass]
+    [TestFixture]
     public class TabSizeCalculatorTests
     {
         private const int TAB_LENGTH = 4;
 
         #region
 
-        [TestMethod]
+        [Test]
         public void TestAdjust()
         {
             string prev = "";
@@ -22,7 +22,7 @@ namespace UnitTests
 
         #endregion
 
-        [TestMethod]
+        [Test]
         public void TestCharIndexAtCharWidthPoint()
         {
             string text;
@@ -135,7 +135,7 @@ namespace UnitTests
             Assert.AreEqual(4, result);
         }
 
-        [TestMethod]
+        [Test]
         public void CharIndexForLongString()
         {
             string s = CreateLongString();
@@ -170,7 +170,7 @@ namespace UnitTests
         // charWidth = 1
         // charWidth = 8
 
-        [TestMethod]
+        [Test]
         public void CharIndexAtCharWidthPoint()
         {
             string text;
@@ -269,7 +269,7 @@ namespace UnitTests
 
         #region Tab Width
 
-        [TestMethod]
+        [Test]
         public void TestTabWidth()
         {
             int preceedingTextLength;
@@ -304,7 +304,7 @@ namespace UnitTests
 
         #region Text Width
 
-        [TestMethod]
+        [Test]
         public void TestTextWidth()
         {
             string text;
@@ -338,7 +338,7 @@ namespace UnitTests
 
         }
         
-        [TestMethod]
+        [Test]
         public void TextWidthWithPreceedingText()
         {
             int preceedingTextLength;
