@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using FastColoredTextBoxNS;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace UnitTests
 {
-    [TestClass]
+    [TestFixture]
     public class MoveCaretTests
     {
-        [TestMethod]
+        [Test]
         public void MoveWordRight()
         {
             var tb = new FastColoredTextBox();
@@ -26,7 +26,7 @@ namespace UnitTests
             Assert.AreEqual(new Place(7, 0), tb.Selection.End);
         }
 
-        [TestMethod]
+        [Test]
         public void MoveWordRightToPatientDays()
         {
             var tb = new FastColoredTextBox();

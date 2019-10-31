@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using FastColoredTextBoxNS;
 using FastColoredTextBoxNS.CommandImpl;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NUnit.Framework;
 
 namespace UnitTests.Commands
 {
-    [TestClass]
+    [TestFixture]
     public class InsertTextCommandTests
     {
         private string[] GetLines()
@@ -27,7 +27,7 @@ namespace UnitTests.Commands
             return String.Join("\r\n", GetLines());
         }
 
-        [TestMethod]
+        [Test]
         public void InsertEOL()
         {
             FastColoredTextBox fctb = new FastColoredTextBox();
@@ -51,7 +51,7 @@ namespace UnitTests.Commands
         }
 
 
-        [TestMethod]
+        [Test]
         public void InsertTextWithCRLF()
         {
             FastColoredTextBox fctb = new FastColoredTextBox();
