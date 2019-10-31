@@ -7,6 +7,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tester", "Tester\Tester.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FastColoredTextBox", "FastColoredTextBox\FastColoredTextBox.csproj", "{6DD14A85-CCFC-4774-BD26-0F5772512319}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Root", "Root", "{0D0DAC0C-3F71-4CD1-B6D1-75885966F0D2}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		azure-pipelines.yml = azure-pipelines.yml
+		license.txt = license.txt
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
